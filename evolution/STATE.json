@@ -1,0 +1,48 @@
+{
+  "project": "Math Arcade",
+  "version": "2.0.0",
+  "repository": "https://github.com/Ayoubvvch/math-arcade",
+  "deployment": "https://ayoubvvch.github.io/math-arcade/",
+  "owner": "Ayoub (eulerx0)",
+  "chatId": "8959256425",
+  "evolutionMode": "Autonomous Twice-Daily (Alpha/Omega)",
+  "schedule": {
+    "morningPhase": "05:00 UTC - Phase Alpha (Creation & Game Construction)",
+    "eveningPhase": "17:00 UTC - Phase Omega (Hardening, Tuning & Mathematical Audit)"
+  },
+  "metrics": {
+    "totalCyclesCompleted": 2,
+    "lastCycleTimestamp": "2026-11-13T23:20:00Z",
+    "lastCyclePhase": "Genesis & Game 2 Integration",
+    "totalGamesLive": 2,
+    "verificationStatus": "PASSED_100_PERCENT"
+  },
+  "liveGames": [
+    {
+      "id": "mathcore-survivor",
+      "slug": "mathcore-survivor",
+      "title": "MathCore: PlayStation Survivor",
+      "category": "Algebra & Parity",
+      "version": "1.2.0",
+      "status": "STABLE"
+    },
+    {
+      "id": "math-battle",
+      "slug": "math-battle",
+      "title": "Math Battle: Calculus Showdown",
+      "category": "Differential Calculus",
+      "version": "2.0.0",
+      "status": "STABLE"
+    }
+  ],
+  "currentSprint": {
+    "id": "SPRINT_01",
+    "name": "Moroccan 2BAC PC Mathematical Foundation",
+    "startDate": "2026-11-14",
+    "endDate": "2026-11-20",
+    "activeTargetGame": "complex-plane-duel",
+    "activeTargetCategory": "Complex Numbers (الأعداد العقدية - Argand Plane)",
+    "nextPlannedGame": "integral-area-slicer",
+    "qualityFocus": "PlayStation Haptics, 120 FPS Rendering, Mobile Touch Responsiveness"
+  }
+}
