@@ -1,1 +1,32 @@
-[]
+[
+  {
+    "id": "mathcore-survivor",
+    "title": "MathCore: Sandbox Survivor",
+    "slug": "mathcore-survivor",
+    "category": "Algebra & Survival",
+    "difficulty": "Intermediate",
+    "difficultyLevel": 3,
+    "version": "1.0.0",
+    "description": "2D neon survival sandbox where you pilot a mathematical core craft. Match dynamic equations using 4 face buttons, build algebraic parity turrets, and unleash lightning strikes.",
+    "mathConcepts": [
+      "Linear Equations (ax = b)",
+      "Arithmetic Parity (2n, 2n+1)",
+      "Divisibility Rules (3n)",
+      "Cartesian Coordinates"
+    ],
+    "controls": [
+      "Left Stick / WASD: Move Core Craft",
+      "✕, ◯, ▢, △ (A, B, X, Y): 4 Core Math Operations",
+      "RT / Space: Kinetic Bolt & EMP Shockwave",
+      "LT / F / Right Click: Place Geometric Defense Tower",
+      "LB / RB / Q, E: Cycle Building Blueprint",
+      "D-Pad / Scroll: Fine-tune X step-by-step"
+    ],
+    "path": "games/mathcore-survivor/index.html",
+    "badge": "Algebra",
+    "icon": "∑",
+    "accentColor": "#00f3ff",
+    "status": "ready",
+    "featured": true
+  }
+]
