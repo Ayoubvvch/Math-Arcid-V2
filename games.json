@@ -1,26 +1,26 @@
 [
   {
     "id": "mathcore-survivor",
-    "title": "MathCore: Sandbox Survivor",
+    "title": "MathCore: PlayStation Survivor",
     "slug": "mathcore-survivor",
     "category": "Algebra & Survival",
     "difficulty": "Intermediate",
     "difficultyLevel": 3,
-    "version": "1.0.0",
-    "description": "2D neon survival sandbox where you pilot a mathematical core craft. Match dynamic equations using 4 face buttons, build algebraic parity turrets, and unleash lightning strikes.",
+    "version": "1.2.0",
+    "description": "Tactical 2D mathematical survival sandbox engineered exclusively for PlayStation controller (✕, ◯, ▢, △). Match linear equations, track targets with the mathematical threat compass, and unleash chain lightning strikes.",
     "mathConcepts": [
       "Linear Equations (ax = b)",
       "Arithmetic Parity (2n, 2n+1)",
       "Divisibility Rules (3n)",
-      "Cartesian Coordinates"
+      "Cartesian Geometry"
     ],
     "controls": [
-      "Left Stick / WASD: Move Core Craft",
-      "✕, ◯, ▢, △ (A, B, X, Y): 4 Core Math Operations",
-      "RT / Space: Kinetic Bolt & EMP Shockwave",
-      "LT / F / Right Click: Place Geometric Defense Tower",
-      "LB / RB / Q, E: Cycle Building Blueprint",
-      "D-Pad / Scroll: Fine-tune X step-by-step"
+      "Left Stick / WASD: Move Mathematical Core Craft",
+      "✕, ◯, ▢, △: 4 PlayStation Core Math Operations",
+      "R2 / Space: EMP Shockwave & Kinetic Plasma",
+      "L2 / F / Right Click: Place Geometric Parity Turret",
+      "L1 / R1: Cycle Turret Blueprints",
+      "D-Pad: Step X value by ±1"
     ],
     "path": "games/mathcore-survivor/index.html",
     "badge": "Algebra",

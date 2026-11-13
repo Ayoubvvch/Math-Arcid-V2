@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>نواة الرياضيات: البقاء بالمعادلات | MathCore: Sandbox Survivor</title>
+    <title>نواة الرياضيات: البقاء بالمعادلات | MathCore PlayStation Edition</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts: Cairo & JetBrains Mono -->
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&family=JetBrains+Mono:wght@600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&family=JetBrains+Mono:wght@600;800;900&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Modular Game CSS -->
@@ -18,9 +18,9 @@
     <!-- MAIN 2D GAME CANVAS -->
     <canvas id="gameCanvas"></canvas>
 
-    <!-- TOP HUD BAR -->
+    <!-- TOP HUD: PLAYER STATS, OBJECTIVE & SCORE -->
     <header class="fixed top-2 inset-x-2 sm:top-3 sm:inset-x-4 flex flex-wrap items-center justify-between gap-2 pointer-events-none z-20">
-        <!-- Right Side (RTL): Player Stats & Base HP -->
+        <!-- Right Side (RTL): Health, Matter, Wave Mission Goal & Combo -->
         <div class="cyber-panel rounded-2xl px-3 py-2 flex items-center gap-3 sm:gap-5 pointer-events-auto">
             <!-- Health -->
             <div class="flex items-center gap-2">
@@ -29,7 +29,7 @@
                 </div>
                 <div>
                     <div class="flex justify-between text-[11px] text-slate-300 font-bold">
-                        <span>درع المركبة</span>
+                        <span>درع النواة</span>
                         <span id="hpText" class="math-font text-rose-400">100/100</span>
                     </div>
                     <div class="w-20 sm:w-28 h-2 bg-slate-800 rounded-full overflow-hidden mt-0.5 border border-slate-700">
@@ -38,37 +38,53 @@
                 </div>
             </div>
 
-            <!-- Math Matter (Resources) -->
+            <!-- Energy Matter -->
             <div class="flex items-center gap-2 border-r border-slate-700/80 pr-3">
                 <div class="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-400/50 flex items-center justify-center text-cyan-300">
                     <i class="fa-solid fa-gem"></i>
                 </div>
                 <div>
-                    <div class="text-[11px] text-slate-400 font-bold">بلورات الطاقة</div>
+                    <div class="text-[10px] text-slate-400 font-bold">بلورات الطاقة</div>
                     <div id="matterText" class="math-font text-sm sm:text-base font-extrabold text-cyan-300 glow-text-cyan">120</div>
                 </div>
             </div>
 
-            <!-- Wave & Score -->
+            <!-- Wave Mission Goal Progress -->
+            <div class="flex items-center gap-2 border-r border-slate-700/80 pr-3">
+                <div>
+                    <div class="flex justify-between items-center text-[11px] font-bold">
+                        <span id="waveText" class="math-font text-amber-400">WAVE 1</span>
+                        <span id="waveGoalText" class="math-font text-emerald-400 text-[10px] mr-2">0 / 6 معادلة</span>
+                    </div>
+                    <div class="w-24 sm:w-32 h-2 bg-slate-800 rounded-full overflow-hidden mt-0.5 border border-slate-700">
+                        <div id="waveProgressBar" class="h-full bg-gradient-to-r from-amber-500 to-emerald-400 transition-all duration-200" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Score, High Score & Combo -->
             <div class="hidden md:flex items-center gap-3 border-r border-slate-700/80 pr-3">
                 <div>
-                    <div class="text-[11px] text-slate-400 font-bold">الموجة الرياضية</div>
-                    <div id="waveText" class="math-font text-sm font-extrabold text-amber-400">WAVE 1</div>
+                    <div class="text-[10px] text-slate-400 font-bold">النقاط الرياضية</div>
+                    <div id="scoreText" class="math-font text-sm font-extrabold text-cyan-300">0</div>
                 </div>
                 <div>
-                    <div class="text-[11px] text-slate-400 font-bold">القتلى بالمعادلات</div>
-                    <div id="killsText" class="math-font text-sm font-extrabold text-emerald-400">0</div>
+                    <div class="text-[10px] text-slate-400 font-bold">أعلى رقم</div>
+                    <div id="highScoreText" class="math-font text-sm font-extrabold text-slate-300">0</div>
+                </div>
+                <div id="comboText" class="text-xs font-black text-amber-400 transition-opacity duration-200 opacity-0 animate-bounce">
+                    COMBO x2! 🔥
                 </div>
             </div>
         </div>
 
-        <!-- Center Match Banner -->
+        <!-- Center Match Alert Banner -->
         <div id="matchAlertBanner" class="cyber-panel rounded-full px-4 py-1.5 border-emerald-400/80 bg-emerald-950/70 text-emerald-300 font-bold text-xs sm:text-sm flex items-center gap-2 transition-all duration-200 opacity-0 scale-90 pointer-events-none">
             <i class="fa-solid fa-bolt text-amber-300 animate-bounce"></i>
             <span id="matchAlertText">تطابق رياضي! صاعقة النواة نشطة</span>
         </div>
 
-        <!-- Left Side (RTL): Controller Status, Controls, and Navigation -->
+        <!-- Left Side (RTL): Navigation & PlayStation Status -->
         <div class="flex items-center gap-2 pointer-events-auto">
             <!-- Back to Math Arcade Hub -->
             <a href="../../index.html" class="cyber-panel cyber-btn rounded-xl px-3 py-2 flex items-center gap-2 bg-slate-900/80 border-cyan-400/60 text-cyan-300 hover:text-white font-bold text-xs" title="العودة لصالة ألعاب الرياضيات">
@@ -76,26 +92,26 @@
                 <span class="hidden sm:inline">Math Arcade</span>
             </a>
 
-            <!-- Gamepad Indicator -->
+            <!-- PlayStation Gamepad Indicator -->
             <div id="gamepadBadge" class="cyber-panel rounded-xl px-3 py-2 flex items-center gap-2 text-xs font-bold border-slate-700">
-                <i id="gamepadIcon" class="fa-solid fa-gamepad text-slate-400 text-base"></i>
+                <i id="gamepadIcon" class="fa-brands fa-playstation text-slate-400 text-base"></i>
                 <div class="hidden sm:block">
                     <div class="text-[10px] text-slate-400 leading-none">يد التحكم</div>
-                    <div id="gamepadStatusText" class="text-slate-300 text-[11px]">بانتظار ضغط زر...</div>
+                    <div id="gamepadStatusText" class="text-slate-300 text-[11px]">بانتظار يد PlayStation...</div>
                 </div>
             </div>
 
-            <!-- Sound Button -->
+            <!-- Sound Toggle -->
             <button id="soundToggleBtn" class="cyber-panel cyber-btn rounded-xl w-10 h-10 flex items-center justify-center text-cyan-300 hover:text-white" title="كتم/تشغيل الصوت">
                 <i id="soundIcon" class="fa-solid fa-volume-high"></i>
             </button>
 
-            <!-- Help / Controls Button -->
+            <!-- Help Guide -->
             <button id="helpToggleBtn" class="cyber-panel cyber-btn rounded-xl w-10 h-10 flex items-center justify-center text-amber-300 hover:text-white" title="طريقة اللعب والتحكم">
                 <i class="fa-solid fa-circle-question text-lg"></i>
             </button>
 
-            <!-- Open-Source Sandbox Modder Button -->
+            <!-- Modder Drawer -->
             <button id="modderToggleBtn" class="cyber-panel cyber-btn rounded-xl px-3 py-2 flex items-center gap-2 bg-gradient-to-r from-cyan-500/20 to-purple-500/20 border-cyan-400/60 text-cyan-200 font-bold text-xs sm:text-sm">
                 <i class="fa-solid fa-sliders text-cyan-300"></i>
                 <span>عدّل اللعبة (Sandbox)</span>
@@ -103,32 +119,32 @@
         </div>
     </header>
 
-    <!-- BOTTOM HUD: MATH CORE CONTROLLER & SANDBOX BUILD BAR -->
+    <!-- BOTTOM HUD: PLAYSTATION 4-BUTTON MATH CORE CONTROLLER & BLUEPRINT BAR -->
     <footer class="fixed bottom-2 inset-x-2 sm:bottom-3 sm:inset-x-4 flex flex-col lg:flex-row items-center justify-between gap-2 pointer-events-none z-20">
         
-        <!-- Sandbox Building Blueprint Bar -->
+        <!-- Defense Blueprint Bar -->
         <div class="cyber-panel rounded-2xl p-2 flex items-center gap-1.5 sm:gap-2 pointer-events-auto max-w-full overflow-x-auto">
             <div class="hidden sm:flex flex-col items-center px-2 text-[10px] text-slate-400 font-bold border-l border-slate-700/80">
                 <span>البناء الهندسي</span>
-                <span class="math-font text-cyan-300">[Q / E] أو [LB/RB]</span>
+                <span class="math-font text-cyan-300">[L1 / R1]</span>
             </div>
 
-            <!-- Building Slots injected via JS -->
+            <!-- Building Slots -->
             <div id="buildBarContainer" class="flex items-center gap-1.5"></div>
 
-            <!-- Build Action Trigger Button -->
+            <!-- Build Trigger -->
             <button id="placeBuildBtn" class="cyber-btn rounded-xl px-3 py-2 bg-emerald-500/20 border border-emerald-400/60 text-emerald-300 font-bold text-xs flex flex-col items-center justify-center shrink-0">
                 <div class="flex items-center gap-1">
                     <i class="fa-solid fa-hammer"></i>
                     <span>بناء</span>
                 </div>
-                <span class="math-font text-[10px] text-emerald-200/80">[F / كليك يمين / LT]</span>
+                <span class="math-font text-[10px] text-emerald-200/80">[L2 / F / كليك يمين]</span>
             </button>
         </div>
 
-        <!-- THE PLAYER'S MATH CORE (X VALUE + 4 CONTROLLER FACE BUTTONS DUAL PS/XBOX) -->
+        <!-- THE PLAYSTATION MATH CORE (X VALUE + 4 DUALSHOCK/DUALSENSE BUTTONS) -->
         <div class="cyber-panel rounded-2xl p-2.5 sm:px-4 sm:py-2.5 flex items-center gap-3 sm:gap-5 pointer-events-auto border-cyan-400/60">
-            <!-- Current X Value Display -->
+            <!-- Current X Display -->
             <div class="flex items-center gap-2.5 pl-3 border-l border-slate-700/80">
                 <div class="relative flex flex-col items-center justify-center bg-slate-900/90 border-2 border-cyan-400 rounded-2xl px-4 py-1.5 min-w-[92px] shadow-[0_0_20px_rgba(0,243,255,0.25)]">
                     <span class="text-[10px] text-cyan-300/80 font-bold">قيمة النواة</span>
@@ -138,47 +154,47 @@
                     </div>
                 </div>
 
-                <!-- Manual Pulse / EMP Trigger -->
-                <button id="empPulseBtn" class="cyber-btn rounded-xl px-3 py-2 bg-amber-500/20 border border-amber-400/60 text-amber-300 flex flex-col items-center justify-center" title="إطلاق نبضة المعادلة على الوحوش المطابقة">
+                <!-- Manual Pulse Trigger -->
+                <button id="empPulseBtn" class="cyber-btn rounded-xl px-3 py-2 bg-amber-500/20 border border-amber-400/60 text-amber-300 flex flex-col items-center justify-center" title="إطلاق نبضة المعادلة">
                     <i class="fa-solid fa-bolt-lightning text-base"></i>
-                    <span class="text-[10px] font-bold mt-0.5">صاعقة [Space/RT]</span>
+                    <span class="text-[10px] font-bold mt-0.5">صاعقة [R2/Space]</span>
                 </button>
             </div>
 
-            <!-- 4 Math Core Operations (Dual: PS ✕, ◯, ▢, △ / Xbox A, B, X, Y / Keys 1, 2, 3, 4) -->
+            <!-- PURE PLAYSTATION 4 FACE BUTTONS -->
             <div class="flex items-center gap-1.5 sm:gap-2">
-                <!-- Button 0: PS ✕ / Xbox A (1) -->
-                <button id="mathBtn0" onclick="applyMathButton(0)" class="cyber-btn rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-emerald-500/20 border border-emerald-400/70 hover:bg-emerald-500/30 flex flex-col items-center min-w-[62px] sm:min-w-[76px]">
-                    <div class="flex items-center gap-1 text-[10px] text-emerald-300 font-bold">
-                        <span class="w-4 h-4 rounded-full bg-emerald-500 text-slate-950 flex items-center justify-center math-font font-black text-[10px]">✕/A</span>
-                        <span class="math-font opacity-75">[1]</span>
+                <!-- Button 0: ✕ (Cross) -->
+                <button id="psMathBtn0" onclick="applyMathButton(0)" class="cyber-btn ps-btn-cross rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex flex-col items-center min-w-[62px] sm:min-w-[76px]">
+                    <div class="flex items-center gap-1 text-[11px] text-cyan-300 font-black">
+                        <span class="text-base text-cyan-400">✕</span>
+                        <span class="math-font opacity-60 text-[10px]">[1]</span>
                     </div>
                     <span id="mathBtnLabel0" class="math-font text-sm sm:text-base font-black text-white mt-0.5">+1</span>
                 </button>
 
-                <!-- Button 1: PS ◯ / Xbox B (2) -->
-                <button id="mathBtn1" onclick="applyMathButton(1)" class="cyber-btn rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-rose-500/20 border border-rose-400/70 hover:bg-rose-500/30 flex flex-col items-center min-w-[62px] sm:min-w-[76px]">
-                    <div class="flex items-center gap-1 text-[10px] text-rose-300 font-bold">
-                        <span class="w-4 h-4 rounded-full bg-rose-500 text-slate-950 flex items-center justify-center math-font font-black text-[10px]">◯/B</span>
-                        <span class="math-font opacity-75">[2]</span>
+                <!-- Button 1: ◯ (Circle) -->
+                <button id="psMathBtn1" onclick="applyMathButton(1)" class="cyber-btn ps-btn-circle rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex flex-col items-center min-w-[62px] sm:min-w-[76px]">
+                    <div class="flex items-center gap-1 text-[11px] text-rose-300 font-black">
+                        <span class="text-base text-rose-400">◯</span>
+                        <span class="math-font opacity-60 text-[10px]">[2]</span>
                     </div>
                     <span id="mathBtnLabel1" class="math-font text-sm sm:text-base font-black text-white mt-0.5">-1</span>
                 </button>
 
-                <!-- Button 2: PS ▢ / Xbox X (3) -->
-                <button id="mathBtn2" onclick="applyMathButton(2)" class="cyber-btn rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-sky-500/20 border border-sky-400/70 hover:bg-sky-500/30 flex flex-col items-center min-w-[62px] sm:min-w-[76px]">
-                    <div class="flex items-center gap-1 text-[10px] text-sky-300 font-bold">
-                        <span class="w-4 h-4 rounded-full bg-sky-400 text-slate-950 flex items-center justify-center math-font font-black text-[10px]">▢/X</span>
-                        <span class="math-font opacity-75">[3]</span>
+                <!-- Button 2: ▢ (Square) -->
+                <button id="psMathBtn2" onclick="applyMathButton(2)" class="cyber-btn ps-btn-square rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex flex-col items-center min-w-[62px] sm:min-w-[76px]">
+                    <div class="flex items-center gap-1 text-[11px] text-purple-300 font-black">
+                        <span class="text-base text-purple-400">▢</span>
+                        <span class="math-font opacity-60 text-[10px]">[3]</span>
                     </div>
                     <span id="mathBtnLabel2" class="math-font text-sm sm:text-base font-black text-white mt-0.5">×2</span>
                 </button>
 
-                <!-- Button 3: PS △ / Xbox Y (4) -->
-                <button id="mathBtn3" onclick="applyMathButton(3)" class="cyber-btn rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 bg-amber-500/20 border border-amber-400/70 hover:bg-amber-500/30 flex flex-col items-center min-w-[62px] sm:min-w-[76px]">
-                    <div class="flex items-center gap-1 text-[10px] text-amber-300 font-bold">
-                        <span class="w-4 h-4 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center math-font font-black text-[10px]">△/Y</span>
-                        <span class="math-font opacity-75">[4]</span>
+                <!-- Button 3: △ (Triangle) -->
+                <button id="psMathBtn3" onclick="applyMathButton(3)" class="cyber-btn ps-btn-triangle rounded-xl px-2.5 py-1.5 sm:px-3.5 sm:py-2 flex flex-col items-center min-w-[62px] sm:min-w-[76px]">
+                    <div class="flex items-center gap-1 text-[11px] text-emerald-300 font-black">
+                        <span class="text-base text-emerald-400">△</span>
+                        <span class="math-font opacity-60 text-[10px]">[4]</span>
                     </div>
                     <span id="mathBtnLabel3" class="math-font text-sm sm:text-base font-black text-white mt-0.5">X=0</span>
                 </button>
@@ -186,7 +202,7 @@
         </div>
     </footer>
 
-    <!-- LIVE OPEN-SOURCE SANDBOX MODDER DRAWER -->
+    <!-- LIVE SANDBOX MODDER DRAWER -->
     <aside id="modderDrawer" class="fixed top-16 left-3 bottom-20 w-[92vw] sm:w-[420px] cyber-panel rounded-3xl p-4 sm:p-5 z-30 flex flex-col justify-between transition-all duration-300 -translate-x-[120%] opacity-0 pointer-events-none overflow-hidden">
         <div class="flex items-center justify-between border-b border-slate-700/80 pb-3">
             <div class="flex items-center gap-2.5">
@@ -194,8 +210,8 @@
                     <i class="fa-solid fa-code-branch"></i>
                 </div>
                 <div>
-                    <h2 class="font-black text-base text-white">محرر قوانين اللعبة (Sandbox Modder)</h2>
-                    <p class="text-[11px] text-slate-400">عدّل الأزرار، الفيزياء، والمعادلات مباشرة أثناء اللعب!</p>
+                    <h2 class="font-black text-base text-white">محرر قوانين اللعبة (PlayStation Modder)</h2>
+                    <p class="text-[11px] text-slate-400">عدّل أزرار PlayStation، الفيزياء، والمعادلات مباشرة!</p>
                 </div>
             </div>
             <button id="closeModderBtn" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center">
@@ -203,30 +219,28 @@
             </button>
         </div>
 
-        <!-- Scrollable Mod Settings -->
+        <!-- Scrollable Settings -->
         <div class="flex-1 overflow-y-auto py-3 space-y-4 pr-1 text-xs">
-            
-            <!-- 1. Customize 4 Math Core Buttons -->
+            <!-- 1. Customize 4 PlayStation Buttons -->
             <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-3 space-y-2.5">
                 <div class="font-bold text-cyan-300 flex items-center justify-between">
-                    <span>🎮 تخصيص أزرار النواة الرياضية (✕, ◯, ▢, △)</span>
-                    <span class="text-[10px] text-slate-400">اختر أي عملية لكل زر</span>
+                    <span>🎮 تخصيص أزرار PlayStation (✕, ◯, ▢, △)</span>
                 </div>
                 <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="text-[11px] text-emerald-400 font-bold block mb-1">زر ✕ / A [1]:</label>
+                        <label class="text-[11px] text-cyan-400 font-black block mb-1">زر ✕ (Cross):</label>
                         <select id="modBtn0Select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-white math-font"></select>
                     </div>
                     <div>
-                        <label class="text-[11px] text-rose-400 font-bold block mb-1">زر ◯ / B [2]:</label>
+                        <label class="text-[11px] text-rose-400 font-black block mb-1">زر ◯ (Circle):</label>
                         <select id="modBtn1Select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-white math-font"></select>
                     </div>
                     <div>
-                        <label class="text-[11px] text-sky-400 font-bold block mb-1">زر ▢ / X [3]:</label>
+                        <label class="text-[11px] text-purple-400 font-black block mb-1">زر ▢ (Square):</label>
                         <select id="modBtn2Select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-white math-font"></select>
                     </div>
                     <div>
-                        <label class="text-[11px] text-amber-400 font-bold block mb-1">زر △ / Y [4]:</label>
+                        <label class="text-[11px] text-emerald-400 font-black block mb-1">زر △ (Triangle):</label>
                         <select id="modBtn3Select" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-white math-font"></select>
                     </div>
                 </div>
@@ -234,188 +248,159 @@
 
             <!-- 2. Math Difficulty Mode -->
             <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-3 space-y-2">
-                <label class="font-bold text-amber-300 block">📐 نوع المعادلات على الوحوش:</label>
+                <label class="font-bold text-amber-300 block">📐 نوع التحديات الرياضية:</label>
                 <select id="modMathMode" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-bold">
-                    <option value="numbers">1. أرقام مباشرة (طابق الرقم فقط: 4، 7، 12)</option>
-                    <option value="arithmetic" selected>2. حساب ذهني سريع (جمع وطرح وضرب بسيط)</option>
-                    <option value="algebra">3. معادلات جبرية (مثال: 2x = 10 أو x + 3 = 8)</option>
-                    <option value="chaos">4. طور الفوضى الرياضية (جذور، أسس، ومعادلات)</option>
+                    <option value="algebra" selected>1. معادلات جبرية (مثال: 2x = 10 أو x + 4 = 9)</option>
+                    <option value="arithmetic">2. حساب ذهني سريع (جمع وطرح وضرب)</option>
+                    <option value="numbers">3. أرقام مباشرة (طابق الرقم فقط)</option>
+                    <option value="chaos">4. طور الفوضى الرياضية (جذور وأسس ومعادلات)</option>
                 </select>
             </div>
 
-            <!-- 3. Sandbox Sliders -->
+            <!-- 3. Sliders -->
             <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-3 space-y-3">
-                <div class="font-bold text-purple-300">⚡ تعديل الفيزياء وقوانين العالم:</div>
-
+                <div class="font-bold text-purple-300">⚡ تعديل الفيزياء:</div>
                 <div>
                     <div class="flex justify-between text-[11px] mb-1">
                         <span>سرعة حركة المركبة</span>
-                        <span id="valPlayerSpeed" class="math-font text-cyan-300">5.5</span>
+                        <span id="valPlayerSpeed" class="math-font text-cyan-300">6.0</span>
                     </div>
-                    <input id="sliderPlayerSpeed" type="range" min="3" max="12" step="0.5" value="5.5" class="w-full accent-cyan-400">
+                    <input id="sliderPlayerSpeed" type="range" min="3" max="12" step="0.5" value="6.0" class="w-full accent-cyan-400">
                 </div>
-
                 <div>
                     <div class="flex justify-between text-[11px] mb-1">
-                        <span>مدى الصاعقة الرياضية التلقائية</span>
-                        <span id="valBeamRange" class="math-font text-cyan-300">420px</span>
+                        <span>مدى الصاعقة التلقائية</span>
+                        <span id="valBeamRange" class="math-font text-cyan-300">450px</span>
                     </div>
-                    <input id="sliderBeamRange" type="range" min="200" max="900" step="20" value="420" class="w-full accent-cyan-400">
-                </div>
-
-                <div>
-                    <div class="flex justify-between text-[11px] mb-1">
-                        <span>سرعة هجوم الأبراج الهندسية</span>
-                        <span id="valTurretRate" class="math-font text-cyan-300">1.0x</span>
-                    </div>
-                    <input id="sliderTurretRate" type="range" min="0.5" max="4" step="0.25" value="1.0" class="w-full accent-cyan-400">
-                </div>
-
-                <div>
-                    <div class="flex justify-between text-[11px] mb-1">
-                        <span>سرعة تدفق الوحوش</span>
-                        <span id="valSpawnRate" class="math-font text-cyan-300">1.0x</span>
-                    </div>
-                    <input id="sliderSpawnRate" type="range" min="0.2" max="3" step="0.2" value="1.0" class="w-full accent-cyan-400">
+                    <input id="sliderBeamRange" type="range" min="200" max="900" step="20" value="450" class="w-full accent-cyan-400">
                 </div>
             </div>
 
-            <!-- 4. Sandbox Cheats -->
+            <!-- 4. Cheats -->
             <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-3 space-y-2">
-                <div class="font-bold text-emerald-300">🛠️ أدوات الساندبوكس الفورية (Sandbox Cheats):</div>
+                <div class="font-bold text-emerald-300">🛠️ أدوات الساندبوكس:</div>
                 <div class="grid grid-cols-2 gap-2">
                     <button id="btnToggleInfiniteMatter" class="cyber-btn rounded-xl p-2 bg-slate-800 border border-slate-600 text-slate-200 font-bold flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-infinity text-cyan-400"></i>
-                        <span>موارد لا نهائية</span>
+                        <span>بلورات لا نهائية</span>
                     </button>
                     <button id="btnToggleGodMode" class="cyber-btn rounded-xl p-2 bg-slate-800 border border-slate-600 text-slate-200 font-bold flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-shield-halved text-amber-400"></i>
-                        <span>مناعة (God Mode)</span>
+                        <span>مناعة تامة</span>
                     </button>
                     <button id="btnAutoBuildFortress" class="cyber-btn rounded-xl p-2 bg-emerald-950/80 border border-emerald-500/50 text-emerald-300 font-bold flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-chess-rook"></i>
-                        <span>بناء قلعة رياضية</span>
+                        <span>بناء قلعة هندسية</span>
                     </button>
                     <button id="btnSpawnBoss" class="cyber-btn rounded-xl p-2 bg-rose-950/80 border border-rose-500/50 text-rose-300 font-bold flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-skull"></i>
-                        <span>استدعاء زعيم معادلات</span>
+                        <span>استدعاء زعيم</span>
                     </button>
                 </div>
-            </div>
-
-            <!-- 5. Raw JSON Config Editor -->
-            <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-3 space-y-2">
-                <div class="flex items-center justify-between">
-                    <span class="font-bold text-slate-300">📄 كود إعدادات اللعبة (JSON Mod):</span>
-                    <button id="btnApplyJsonMod" class="px-2.5 py-1 rounded-lg bg-cyan-500/20 border border-cyan-400 text-cyan-300 font-bold text-[11px] hover:bg-cyan-500/30">
-                        تطبيق الكود
-                    </button>
-                </div>
-                <textarea id="jsonModTextarea" rows="4" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2 text-[11px] text-emerald-300 math-font focus:outline-none focus:border-cyan-400"></textarea>
             </div>
         </div>
 
-        <!-- Reset Defaults Footer -->
+        <!-- Footer -->
         <div class="pt-2 border-t border-slate-800 flex items-center justify-between">
             <button id="btnResetMods" class="text-xs text-slate-400 hover:text-rose-400 font-bold flex items-center gap-1">
                 <i class="fa-solid fa-rotate-left"></i>
-                <span>استعادة القوانين الافتراضية</span>
+                <span>استعادة الإعدادات الأصلية</span>
             </button>
-            <span class="text-[11px] text-slate-500 math-font">Open-Source Sandbox v1.0</span>
+            <span class="text-[11px] text-slate-500 math-font">PlayStation Edition</span>
         </div>
     </aside>
 
-    <!-- HOW TO PLAY / CONTROLLER GUIDE MODAL -->
+    <!-- PLAYSTATION CONTROLLER GUIDE MODAL -->
     <div id="helpModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-40 flex items-center justify-center p-4">
         <div class="cyber-panel rounded-3xl max-w-2xl w-full p-5 sm:p-7 border-cyan-400/60 space-y-5 max-h-[90vh] overflow-y-auto">
             <div class="flex items-center justify-between border-b border-slate-800 pb-4">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-2xl bg-cyan-500/20 border border-cyan-400 flex items-center justify-center text-cyan-300 text-2xl shadow-[0_0_20px_rgba(0,243,255,0.3)]">
-                        <i class="fa-solid fa-atom"></i>
+                        <i class="fa-brands fa-playstation"></i>
                     </div>
                     <div>
-                        <h1 class="text-xl sm:text-2xl font-black text-white glow-text-cyan">نواة الرياضيات: البقاء بالمعادلات</h1>
-                        <p class="text-xs sm:text-sm text-cyan-300 font-bold">MathCore: Sandbox Survivor • Gamepad & Open Modding</p>
+                        <h1 class="text-xl sm:text-2xl font-black text-white glow-text-cyan">دليل يد تحكم PlayStation</h1>
+                        <p class="text-xs sm:text-sm text-cyan-300 font-bold">نواة الرياضيات: البقاء بالمعادلات (PlayStation Edition)</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Core Concept -->
+            <!-- 3 Core Steps -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs sm:text-sm">
-                <div class="bg-slate-900/80 border border-emerald-500/30 rounded-2xl p-3.5 space-y-1.5">
-                    <div class="text-emerald-400 font-black flex items-center gap-1.5">
-                        <i class="fa-solid fa-bolt"></i>
-                        <span>1. طابق قيمة X للنجاة!</span>
+                <div class="bg-slate-900/80 border border-cyan-500/30 rounded-2xl p-3.5 space-y-1.5">
+                    <div class="text-cyan-400 font-black flex items-center gap-1.5">
+                        <i class="fa-solid fa-crosshairs"></i>
+                        <span>1. اتبع بوصلة الهدف</span>
                     </div>
                     <p class="text-slate-300 leading-relaxed text-xs">
-                        كل وحش يحمل معادلة (مثلاً <span class="math-font text-amber-300">3 + 2</span>). عدّل قيمة <span class="math-font text-cyan-300">X</span> لديك لتصبح <span class="math-font text-emerald-300">5</span> عبر الأزرار الأربعة، وستنطلق صاعقة نيون تلقائية تدمره فوراً!
+                        السهم الذهبي حول مركبتك يوجهك دائماً لأقرب وحش ويبيّن معادلته وزر PlayStation المقترح لحله فوراً.
                     </p>
                 </div>
 
-                <div class="bg-slate-900/80 border border-cyan-500/30 rounded-2xl p-3.5 space-y-1.5">
-                    <div class="text-cyan-400 font-black flex items-center gap-1.5">
-                        <i class="fa-solid fa-cubes"></i>
-                        <span>2. ابنِ أبراجاً رياضية</span>
+                <div class="bg-slate-900/80 border border-emerald-500/30 rounded-2xl p-3.5 space-y-1.5">
+                    <div class="text-emerald-400 font-black flex items-center gap-1.5">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>2. صاعقة النيون والـ Combo</span>
                     </div>
                     <p class="text-slate-300 leading-relaxed text-xs">
-                        اجمع بلورات الطاقة وابنِ أبراج الأعداد الزوجية (<span class="math-font">2n</span>)، وأبراج الأعداد الفردية (<span class="math-font">2n+1</span>)، ووشائع القواسم (<span class="math-font">3n</span>).
+                        بمجرد أن تصبح <span class="math-font text-cyan-300">X = الحل</span>، تتدمر الوحوش بصاعقة نيون وتطير نقاط الطاقة تلقائياً لمركبتك وترفع عداد الـ Combo!
                     </p>
                 </div>
 
                 <div class="bg-slate-900/80 border border-purple-500/30 rounded-2xl p-3.5 space-y-1.5">
                     <div class="text-purple-400 font-black flex items-center gap-1.5">
-                        <i class="fa-solid fa-sliders"></i>
-                        <span>3. عدّل قوانين اللعبة</span>
+                        <i class="fa-solid fa-chess-rook"></i>
+                        <span>3. دفاعات الأبراج</span>
                     </div>
                     <p class="text-slate-300 leading-relaxed text-xs">
-                        افتح محرر الساندبوكس في أي لحظة لتغيير العمليات الحسابية للأزرار، أو تفعيل الموارد اللانهائية، أو تعديل سرعة اللعبة.
+                        بدّل بين الأبراج بـ <span class="math-font text-amber-300">[L1 / R1]</span> وابنِها بـ <span class="math-font text-purple-300">[L2]</span> للدفاع التلقائي.
                     </p>
                 </div>
             </div>
 
-            <!-- Controls Table -->
+            <!-- PlayStation Controls Table -->
             <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4">
-                <h3 class="font-bold text-amber-300 text-sm mb-3 flex items-center gap-2">
-                    <i class="fa-solid fa-gamepad"></i>
-                    <span>خريطة التحكم الكاملة (PlayStation / Xbox / Keyboard)</span>
+                <h3 class="font-bold text-cyan-300 text-sm mb-3 flex items-center gap-2">
+                    <i class="fa-brands fa-playstation text-cyan-400"></i>
+                    <span>أزرار PlayStation DualSense / DualShock</span>
                 </h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
                     <div class="flex items-center justify-between bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800/80">
-                        <span class="text-slate-300 font-bold">الحركة في العالم</span>
-                        <span class="math-font text-cyan-300 font-bold">Left Stick / WASD / الأسهم</span>
+                        <span class="text-slate-300 font-bold">الحركة والمناورة</span>
+                        <span class="math-font text-cyan-300 font-bold">Left Stick / WASD</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800/80">
-                        <span class="text-slate-300 font-bold">تغيير قيمة X (الأزرار الـ 4)</span>
-                        <span class="math-font text-emerald-300 font-bold">✕, ◯, ▢, △ (A, B, X, Y) / [1, 2, 3, 4]</span>
+                        <span class="text-slate-300 font-bold">أزرار الرياضيات الـ 4</span>
+                        <span class="math-font text-cyan-300 font-black">✕ (+1) • ◯ (-1) • ▢ (×2) • △ (X=0)</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800/80">
-                        <span class="text-slate-300 font-bold">إطلاق الصاعقة / طلقات الدفع</span>
-                        <span class="math-font text-amber-300 font-bold">RT / Space / كليك يسار</span>
+                        <span class="text-slate-300 font-bold">صاعقة كهرومغناطيسية + بلازما</span>
+                        <span class="math-font text-amber-300 font-bold">R2 / Space / كليك يسار</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800/80">
-                        <span class="text-slate-300 font-bold">بناء البرج المختار في الشبكة</span>
-                        <span class="math-font text-purple-300 font-bold">LT / [F] / كليك يمين</span>
+                        <span class="text-slate-300 font-bold">بناء البرج الهندسي</span>
+                        <span class="math-font text-purple-300 font-bold">L2 / [F] / كليك يمين</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800/80">
-                        <span class="text-slate-300 font-bold">تبديل نوع المبنى الهندسي</span>
-                        <span class="math-font text-sky-300 font-bold">LB, RB / [Q, E]</span>
+                        <span class="text-slate-300 font-bold">تبديل نوع البرج</span>
+                        <span class="math-font text-emerald-300 font-bold">L1 / R1 / [Q, E]</span>
                     </div>
                     <div class="flex items-center justify-between bg-slate-950/80 px-3 py-2 rounded-xl border border-slate-800/80">
-                        <span class="text-slate-300 font-bold">زيادة/إنقاص X سريعاً</span>
-                        <span class="math-font text-rose-300 font-bold">D-Pad Up/Down / عجلة الفأرة</span>
+                        <span class="text-slate-300 font-bold">تعديل X تدريجياً</span>
+                        <span class="math-font text-rose-300 font-bold">D-Pad Up / Down</span>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 pt-2">
                 <button id="startPlayingBtn" class="cyber-btn w-full sm:w-auto px-8 py-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-emerald-500 text-slate-950 font-black text-base shadow-[0_0_25px_rgba(0,243,255,0.4)]">
-                    انطلق إلى النواة! (ابدأ اللعب)
+                    انطلق! (ابدأ اللعب الآن)
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Modular Game Scripts -->
+    <!-- Scripts -->
     <script src="js/config.js"></script>
     <script src="js/audio.js"></script>
     <script src="js/entities.js"></script>

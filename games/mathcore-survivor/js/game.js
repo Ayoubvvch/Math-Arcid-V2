@@ -16,7 +16,7 @@ window.updateGame = function() {
     const p = window.GameState.player;
     const gpState = window.pollGamepad();
 
-    // 1. Movement: WASD / Arrows + Gamepad Left Stick
+    // 1. Movement: Left Stick / WASD with Inertia
     let mx = gpState.moveX;
     let my = gpState.moveY;
     if (window.InputState.keys['KeyW'] || window.InputState.keys['ArrowUp']) my -= 1;
@@ -30,23 +30,43 @@ window.updateGame = function() {
         my /= mag;
     }
 
-    p.vx = p.vx * 0.8 + mx * window.SandboxConfig.playerSpeed * 0.2;
-    p.vy = p.vy * 0.8 + my * window.SandboxConfig.playerSpeed * 0.2;
-    p.x = Math.max(40, Math.min(window.WORLD_SIZE - 40, p.x + p.vx));
-    p.y = Math.max(40, Math.min(window.WORLD_SIZE - 40, p.y + p.vy));
+    p.vx = p.vx * 0.82 + mx * window.SandboxConfig.playerSpeed * 0.18;
+    p.vy = p.vy * 0.82 + my * window.SandboxConfig.playerSpeed * 0.18;
+    p.x = Math.max(50, Math.min(window.WORLD_SIZE - 50, p.x + p.vx));
+    p.y = Math.max(50, Math.min(window.WORLD_SIZE - 50, p.y + p.vy));
 
-    // Smooth Camera Follow
+    // Thruster Particle Trail
+    if (mag > 0.1 && Math.random() < 0.4) {
+        window.GameState.particles.push({
+            x: p.x - Math.cos(p.aimAngle) * 14,
+            y: p.y - Math.sin(p.aimAngle) * 14,
+            vx: -p.vx * 0.5 + (Math.random() - 0.5),
+            vy: -p.vy * 0.5 + (Math.random() - 0.5),
+            radius: Math.random() * 2.5 + 1.0,
+            color: '#00f3ff',
+            alpha: 0.7,
+            decay: 0.05
+        });
+    }
+
+    // Camera follow
     window.GameState.camera.x += (p.x - window.GameState.camera.x) * 0.12;
     window.GameState.camera.y += (p.y - window.GameState.camera.y) * 0.12;
 
     // Screen Shake Decay
-    if (window.GameState.screenShake > 0) window.GameState.screenShake *= 0.85;
+    if (window.GameState.screenShake > 0) window.GameState.screenShake *= 0.84;
     if (window.GameState.screenShake < 0.2) window.GameState.screenShake = 0;
 
     // Pulse Wave
     if (p.pulseWaveAlpha > 0) {
         p.pulseWaveRadius += 14;
         p.pulseWaveAlpha -= 0.04;
+    }
+
+    // Combo streak decay
+    if (window.GameState.combo > 0 && Date.now() - window.GameState.lastKillTime > 3200) {
+        window.GameState.combo = 0;
+        window.updateScoreHUD();
     }
 
     // 2. Automatic Math Resonance Detection
@@ -58,7 +78,7 @@ window.updateGame = function() {
         if (matchingEnemiesOnScreen.length > 0) {
             banner.classList.remove('opacity-0', 'scale-90');
             banner.classList.add('opacity-100', 'scale-100');
-            if (window.GameState.time - p.lastAutoZap > 14) {
+            if (window.GameState.time - p.lastAutoZap > 12) {
                 p.lastAutoZap = window.GameState.time;
                 window.triggerMathResonanceCheck(false);
             }
@@ -68,29 +88,29 @@ window.updateGame = function() {
         }
     }
 
-    // 3. Kinetic Blaster (Mouse Left Click or Gamepad RT)
+    // 3. Kinetic Blaster (Left Click or Gamepad R2)
     if ((window.InputState.mouseDownLeft || gpState.firing) && window.GameState.time - p.lastKineticShot > 10) {
         p.lastKineticShot = window.GameState.time;
         window.GameState.projectiles.push({
             x: p.x + Math.cos(p.aimAngle) * 24,
             y: p.y + Math.sin(p.aimAngle) * 24,
-            vx: Math.cos(p.aimAngle) * 11,
-            vy: Math.sin(p.aimAngle) * 11,
+            vx: Math.cos(p.aimAngle) * 12,
+            vy: Math.sin(p.aimAngle) * 12,
             color: '#00f3ff',
-            damage: 9,
-            life: 55
+            damage: 10,
+            life: 50
         });
         window.SoundEngine.kineticShot();
     }
 
     // 4. Enemy Spawning
-    const spawnInterval = Math.max(35, Math.floor(135 / window.SandboxConfig.enemySpawnMultiplier) - window.GameState.wave * 4);
-    if (window.GameState.time - lastSpawnTick > spawnInterval && window.GameState.enemies.length < 38) {
+    const spawnInterval = Math.max(30, Math.floor(130 / window.SandboxConfig.enemySpawnMultiplier) - window.GameState.wave * 4);
+    if (window.GameState.time - lastSpawnTick > spawnInterval && window.GameState.enemies.length < 32) {
         lastSpawnTick = window.GameState.time;
         window.spawnEnemy(false);
     }
 
-    // 5. Update Sandbox Structures
+    // 5. Update Structures
     for (let i = window.GameState.structures.length - 1; i >= 0; i--) {
         const s = window.GameState.structures[i];
         if (s.cooldown > 0) s.cooldown -= window.SandboxConfig.turretFireRateMultiplier;
@@ -98,14 +118,12 @@ window.updateGame = function() {
         if (s.id === 'sine_healer') {
             if (s.cooldown <= 0) {
                 s.cooldown = 60;
-                s.pulse = 1.0;
-                if (Math.hypot(p.x - s.x, p.y - s.y) <= 240 && p.hp < p.maxHp) {
+                if (Math.hypot(p.x - s.x, p.y - s.y) <= 220 && p.hp < p.maxHp) {
                     p.hp = Math.min(p.maxHp, p.hp + 6);
                     window.updateHpHUD();
                     window.addFloatingText(p.x, p.y - 25, '+6 ♥', '#00ff88', 14);
                 }
             }
-            if (s.pulse > 0) s.pulse -= 0.03;
         } else if (s.id !== 'matrix_wall' && s.cooldown <= 0) {
             const targetIdx = window.GameState.enemies.findIndex(e => {
                 const d = Math.hypot(e.x - s.x, e.y - s.y);
@@ -118,9 +136,9 @@ window.updateGame = function() {
 
             if (targetIdx !== -1) {
                 const target = window.GameState.enemies[targetIdx];
-                s.cooldown = 52;
+                s.cooldown = 50;
                 window.createLightningBeam(s.x, s.y, target.x, target.y, s.color, 12);
-                target.hp -= 24;
+                target.hp -= 26;
                 target.hitFlash = 5;
                 window.SoundEngine.kineticShot();
                 if (target.hp <= 0) {
@@ -146,8 +164,8 @@ window.updateGame = function() {
             if (Math.hypot(proj.x - e.x, proj.y - e.y) <= e.radius + 6) {
                 e.hp -= proj.damage;
                 e.hitFlash = 4;
-                e.x += proj.vx * 0.6;
-                e.y += proj.vy * 0.6;
+                e.x += proj.vx * 0.5;
+                e.y += proj.vy * 0.5;
                 window.spawnParticles(proj.x, proj.y, '#00f3ff', 4);
                 window.GameState.projectiles.splice(i, 1);
                 if (e.hp <= 0) {
@@ -194,15 +212,15 @@ window.updateGame = function() {
         const distP = Math.hypot(e.x - p.x, e.y - p.y);
         if (distP < e.radius + p.radius) {
             const pushAngle = Math.atan2(e.y - p.y, e.x - p.x);
-            e.x += Math.cos(pushAngle) * 28;
-            e.y += Math.sin(pushAngle) * 28;
+            e.x += Math.cos(pushAngle) * 30;
+            e.y += Math.sin(pushAngle) * 30;
 
             if (!window.SandboxConfig.godMode) {
-                p.hp -= e.isBoss ? 14 : 7;
+                p.hp -= e.isBoss ? 15 : 8;
                 window.GameState.screenShake = 8;
                 window.SoundEngine.hurt();
                 window.updateHpHUD();
-                window.addFloatingText(p.x, p.y - 25, `-7 درع`, '#ff007f', 15);
+                window.addFloatingText(p.x, p.y - 25, `-8 درع`, '#ff007f', 15);
                 if (window.triggerGamepadHaptic) {
                     window.triggerGamepadHaptic(150, 0.8, 0.8);
                 }
@@ -212,36 +230,13 @@ window.updateGame = function() {
                     p.x = window.GameState.baseCore.x;
                     p.y = window.GameState.baseCore.y + 80;
                     window.updateHpHUD();
-                    window.addFloatingText(p.x, p.y - 40, '🔄 تمت إعادة شحن الدرع في النواة!', '#00f3ff', 18);
+                    window.addFloatingText(p.x, p.y - 40, '🔄 تمت إعادة شحن درع المركبة!', '#00f3ff', 18);
                 }
             }
         }
     }
 
-    // 8. Collectible Gems
-    for (let i = window.GameState.gems.length - 1; i >= 0; i--) {
-        const g = window.GameState.gems[i];
-        const d = Math.hypot(p.x - g.x, p.y - g.y);
-        if (d < 190) {
-            g.x += ((p.x - g.x) / d) * 7.5;
-            g.y += ((p.y - g.y) / d) * 7.5;
-        }
-        if (d < p.radius + g.radius + 6) {
-            if (g.type === 'heal') {
-                p.hp = Math.min(p.maxHp, p.hp + 12);
-                window.updateHpHUD();
-                window.addFloatingText(p.x, p.y - 25, '+12 درع', '#00ff88', 14);
-            } else {
-                window.GameState.matter += g.value;
-                window.updateMatterHUD();
-                window.addFloatingText(g.x, g.y - 15, `+${g.value} 💎`, '#00f3ff', 13);
-            }
-            window.SoundEngine.pickup();
-            window.GameState.gems.splice(i, 1);
-        }
-    }
-
-    // 9. Effects
+    // 8. Update Beams & Dissolve Particles
     for (let i = window.GameState.lightningBeams.length - 1; i >= 0; i--) {
         window.GameState.lightningBeams[i].life--;
         if (window.GameState.lightningBeams[i].life <= 0) window.GameState.lightningBeams.splice(i, 1);
@@ -257,10 +252,11 @@ window.updateGame = function() {
         if (pt.alpha <= 0) window.GameState.particles.splice(i, 1);
     }
 
+    // 9. Fast Decay Floating Texts (ZERO LINGERING ON SCREEN)
     for (let i = window.GameState.floatingTexts.length - 1; i >= 0; i--) {
         const ft = window.GameState.floatingTexts[i];
         ft.y += ft.vy;
-        ft.alpha -= 0.022;
+        ft.alpha -= 0.035; // Fades completely within ~28 frames
         if (ft.alpha <= 0) window.GameState.floatingTexts.splice(i, 1);
     }
 };
@@ -275,6 +271,10 @@ window.addEventListener('DOMContentLoaded', () => {
 
     window.renderBuildBarUI();
     window.initSandboxModderUI();
+    window.updateWaveHUD();
+    window.updateScoreHUD();
+    window.updateMatterHUD();
+    window.updateHpHUD();
 
     // Spawn 4 initial enemies
     for (let i = 0; i < 4; i++) window.spawnEnemy(false);

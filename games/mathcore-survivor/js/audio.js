@@ -1,12 +1,12 @@
 /**
- * MathCore: Sandbox Survivor - Web Audio API Synthesizer
+ * MathCore: Sandbox Survivor - PlayStation Melodic Web Audio Engine
  */
 
 window.SoundEngine = {
     ctx: null,
     muted: false,
     init() {
-        if (!this.ctx) {
+        if (!this.ctx && typeof window !== 'undefined') {
             const AudioCtx = window.AudioContext || window.webkitAudioContext;
             if (AudioCtx) this.ctx = new AudioCtx();
         }
@@ -14,7 +14,7 @@ window.SoundEngine = {
             this.ctx.resume();
         }
     },
-    playTone(freq, type = 'sine', duration = 0.12, vol = 0.12, slideFreq = null) {
+    playTone(freq, type = 'sine', duration = 0.12, vol = 0.15, slideFreq = null) {
         if (this.muted) return;
         try {
             this.init();
@@ -34,26 +34,39 @@ window.SoundEngine = {
             osc.stop(this.ctx.currentTime + duration);
         } catch (e) {}
     },
-    mathClick(val) {
-        // Pitch scales slightly with X value for satisfying feedback
-        const base = 280 + Math.min(Math.abs(val) * 18, 520);
-        this.playTone(base, 'triangle', 0.09, 0.14, base * 1.25);
+    // Distinct melodic note for each PlayStation button
+    playPsButton(btnIndex) {
+        const notes = [523.25, 659.25, 783.99, 987.77]; // C5 (✕), E5 (◯), G5 (▢), B5 (△)
+        const freq = notes[btnIndex % 4];
+        this.playTone(freq, 'triangle', 0.1, 0.18, freq * 1.05);
     },
     mathZap() {
-        this.playTone(620, 'sawtooth', 0.22, 0.16, 140);
-        setTimeout(() => this.playTone(880, 'sine', 0.18, 0.14, 1320), 40);
+        this.playTone(720, 'sawtooth', 0.18, 0.18, 160);
+        setTimeout(() => this.playTone(987, 'sine', 0.15, 0.15, 1400), 30);
+    },
+    comboChime(comboLevel) {
+        const base = 440 * Math.pow(1.15, Math.min(comboLevel, 8));
+        this.playTone(base, 'sine', 0.15, 0.14, base * 1.5);
+    },
+    waveClearFanfare() {
+        const chord = [523.25, 659.25, 783.99, 1046.5];
+        chord.forEach((f, i) => {
+            setTimeout(() => this.playTone(f, 'triangle', 0.25, 0.15), i * 80);
+        });
+    },
+    bossAlarm() {
+        this.playTone(220, 'sawtooth', 0.35, 0.2, 110);
     },
     kineticShot() {
-        this.playTone(340, 'square', 0.07, 0.06, 110);
+        this.playTone(320, 'square', 0.06, 0.05, 90);
     },
     buildTower() {
-        this.playTone(260, 'sine', 0.15, 0.15, 520);
-        setTimeout(() => this.playTone(520, 'triangle', 0.18, 0.15, 780), 70);
+        this.playTone(330, 'sine', 0.12, 0.15, 660);
     },
     pickup() {
-        this.playTone(700, 'sine', 0.08, 0.08, 1050);
+        this.playTone(880, 'sine', 0.08, 0.08, 1320);
     },
     hurt() {
-        this.playTone(150, 'sawtooth', 0.25, 0.18, 55);
+        this.playTone(130, 'sawtooth', 0.22, 0.2, 45);
     }
 };

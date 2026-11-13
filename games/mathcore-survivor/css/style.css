@@ -1,9 +1,9 @@
 :root {
-    --neon-cyan: #00f3ff;
-    --neon-pink: #ff007f;
-    --neon-green: #00ff88;
-    --neon-amber: #ffb800;
-    --neon-purple: #b537f2;
+    --ps-blue: #00f3ff;
+    --ps-pink: #ff007f;
+    --ps-purple: #b537f2;
+    --ps-green: #00ff88;
+    --ps-amber: #ffb800;
     --bg-deep: #060814;
 }
 
@@ -37,11 +37,11 @@ body, html {
     cursor: crosshair;
 }
 
-/* Glassmorphism & Neon Cyber UI */
+/* Glassmorphic Cyber Panels */
 .cyber-panel {
-    background: rgba(10, 15, 32, 0.82);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: rgba(10, 15, 32, 0.85);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
     border: 1px solid rgba(0, 243, 255, 0.28);
     box-shadow: 0 0 25px rgba(0, 243, 255, 0.12), inset 0 0 15px rgba(0, 243, 255, 0.05);
 }
@@ -54,37 +54,66 @@ body, html {
 
 .cyber-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 18px rgba(0, 243, 255, 0.4);
+    box-shadow: 0 0 20px rgba(0, 243, 255, 0.4);
 }
 
 .cyber-btn:active, .cyber-btn.pressed {
     transform: scale(0.92);
-    filter: brightness(1.3);
+    filter: brightness(1.35);
+}
+
+/* Official PlayStation Buttons (✕, ◯, ▢, △) */
+.ps-btn-cross {
+    background: rgba(0, 243, 255, 0.12);
+    border: 1.5px solid var(--ps-blue);
+    box-shadow: 0 0 15px rgba(0, 243, 255, 0.25);
+}
+.ps-btn-cross:hover {
+    background: rgba(0, 243, 255, 0.25);
+    box-shadow: 0 0 22px rgba(0, 243, 255, 0.5);
+}
+
+.ps-btn-circle {
+    background: rgba(255, 0, 127, 0.12);
+    border: 1.5px solid var(--ps-pink);
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.25);
+}
+.ps-btn-circle:hover {
+    background: rgba(255, 0, 127, 0.25);
+    box-shadow: 0 0 22px rgba(255, 0, 127, 0.5);
+}
+
+.ps-btn-square {
+    background: rgba(181, 55, 242, 0.12);
+    border: 1.5px solid var(--ps-purple);
+    box-shadow: 0 0 15px rgba(181, 55, 242, 0.25);
+}
+.ps-btn-square:hover {
+    background: rgba(181, 55, 242, 0.25);
+    box-shadow: 0 0 22px rgba(181, 55, 242, 0.5);
+}
+
+.ps-btn-triangle {
+    background: rgba(0, 255, 136, 0.12);
+    border: 1.5px solid var(--ps-green);
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.25);
+}
+.ps-btn-triangle:hover {
+    background: rgba(0, 255, 136, 0.25);
+    box-shadow: 0 0 22px rgba(0, 255, 136, 0.5);
 }
 
 .glow-text-cyan {
     text-shadow: 0 0 10px rgba(0, 243, 255, 0.8), 0 0 20px rgba(0, 243, 255, 0.4);
 }
-
 .glow-text-pink {
     text-shadow: 0 0 10px rgba(255, 0, 127, 0.8), 0 0 20px rgba(255, 0, 127, 0.4);
 }
-
 .glow-text-amber {
     text-shadow: 0 0 10px rgba(255, 184, 0, 0.8), 0 0 20px rgba(255, 184, 0, 0.4);
 }
 
-/* Dual Gamepad Badges (PlayStation ✕, ◯, ▢, △ + Xbox A, B, X, Y) */
-.gp-tag {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 900;
-    font-family: 'JetBrains Mono', monospace;
-    line-height: 1;
-}
-
-/* Custom Scrollbar for Modder Panel */
+/* Modder Scrollbar */
 ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -95,13 +124,4 @@ body, html {
 ::-webkit-scrollbar-thumb {
     background: rgba(0, 243, 255, 0.4);
     border-radius: 9999px;
-}
-
-@keyframes pulse-border {
-    0%, 100% { border-color: rgba(0, 243, 255, 0.35); }
-    50% { border-color: rgba(0, 243, 255, 0.9); }
-}
-
-.pulse-active {
-    animation: pulse-border 1.5s infinite;
 }

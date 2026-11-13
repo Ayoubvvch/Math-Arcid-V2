@@ -1,22 +1,22 @@
 /**
- * MathCore: Sandbox Survivor - 2D Neon Vector Renderer
+ * MathCore: Sandbox Survivor - 2D Neon Vector Renderer with PlayStation Aesthetics & Tactical HUD
  */
 
 window.drawGame = function(ctx, canvas) {
     ctx.save();
 
-    // Deep Cyber Space Background
+    // 1. Deep OLED Cyber Background
     ctx.fillStyle = '#060814';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Apply Camera & Screen Shake
+    // Apply Smooth Camera Follow & Screen Shake
     const shakeX = (Math.random() - 0.5) * window.GameState.screenShake;
     const shakeY = (Math.random() - 0.5) * window.GameState.screenShake;
     const camOffsetX = canvas.width / 2 - window.GameState.camera.x + shakeX;
     const camOffsetY = canvas.height / 2 - window.GameState.camera.y + shakeY;
     ctx.translate(camOffsetX, camOffsetY);
 
-    // 1. Draw Parallax Cyber Stars
+    // 2. Parallax Cyber Stars
     for (const st of window.GameState.stars) {
         ctx.fillStyle = st.color;
         ctx.globalAlpha = st.alpha;
@@ -26,9 +26,9 @@ window.drawGame = function(ctx, canvas) {
     }
     ctx.globalAlpha = 1;
 
-    // 2. Draw Interactive Sandbox Cartesian Grid
+    // 3. Mathematical Coordinate Grid (Cartesian Plane)
     ctx.lineWidth = 1;
-    ctx.strokeStyle = 'rgba(0, 243, 255, 0.065)';
+    ctx.strokeStyle = 'rgba(0, 243, 255, 0.06)';
     const startX = Math.max(0, Math.floor((window.GameState.camera.x - canvas.width / 2) / window.GRID_SIZE) * window.GRID_SIZE);
     const endX = Math.min(window.WORLD_SIZE, window.GameState.camera.x + canvas.width / 2 + window.GRID_SIZE);
     const startY = Math.max(0, Math.floor((window.GameState.camera.y - canvas.height / 2) / window.GRID_SIZE) * window.GRID_SIZE);
@@ -45,26 +45,26 @@ window.drawGame = function(ctx, canvas) {
     }
     ctx.stroke();
 
-    // World Boundary Border
-    ctx.strokeStyle = 'rgba(255, 0, 127, 0.45)';
+    // World Boundary
+    ctx.strokeStyle = 'rgba(255, 0, 127, 0.5)';
     ctx.lineWidth = 4;
     ctx.strokeRect(0, 0, window.WORLD_SIZE, window.WORLD_SIZE);
 
-    // 3. Draw Blueprint Build Preview Cell
+    // 4. Defense Turret Blueprint Placement Reticle
     const buildCell = window.getTargetBuildCell();
     const activeBlueprint = window.BUILDINGS[window.GameState.selectedBuildIndex];
     if (activeBlueprint) {
         ctx.save();
         ctx.strokeStyle = activeBlueprint.color;
-        ctx.fillStyle = `${activeBlueprint.color}18`;
+        ctx.fillStyle = `${activeBlueprint.color}15`;
         ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 5]);
+        ctx.setLineDash([6, 6]);
         ctx.strokeRect(buildCell.gx - window.GRID_SIZE / 2 + 3, buildCell.gy - window.GRID_SIZE / 2 + 3, window.GRID_SIZE - 6, window.GRID_SIZE - 6);
         ctx.fillRect(buildCell.gx - window.GRID_SIZE / 2 + 3, buildCell.gy - window.GRID_SIZE / 2 + 3, window.GRID_SIZE - 6, window.GRID_SIZE - 6);
         ctx.restore();
     }
 
-    // 4. Central Base Core (النواة المركزية)
+    // 5. Central Base Core (النواة الأم)
     const base = window.GameState.baseCore;
     ctx.save();
     ctx.translate(base.x, base.y);
@@ -74,17 +74,17 @@ window.drawGame = function(ctx, canvas) {
     ctx.arc(0, 0, base.radius, 0, Math.PI * 2);
     ctx.stroke();
 
-    ctx.rotate(window.GameState.time * 0.01);
+    ctx.rotate(window.GameState.time * 0.012);
     ctx.strokeStyle = 'rgba(0, 243, 255, 0.4)';
     ctx.strokeRect(-base.radius * 0.7, -base.radius * 0.7, base.radius * 1.4, base.radius * 1.4);
     ctx.restore();
 
     ctx.fillStyle = '#00f3ff';
-    ctx.font = 'bold 13px Cairo, sans-serif';
+    ctx.font = 'bold 12px Cairo, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('النواة الهندسية الأم', base.x, base.y + base.radius + 20);
+    ctx.fillText('النواة الهندسية الأم', base.x, base.y + base.radius + 18);
 
-    // 5. Draw Sandbox Structures (Turrets & Walls)
+    // 6. Draw Built Structures
     for (const s of window.GameState.structures) {
         ctx.save();
         ctx.translate(s.x, s.y);
@@ -92,7 +92,7 @@ window.drawGame = function(ctx, canvas) {
         if (s.id === 'sine_healer') {
             ctx.beginPath();
             ctx.arc(0, 0, 220, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(0, 255, 136, 0.14)';
+            ctx.strokeStyle = 'rgba(0, 255, 136, 0.12)';
             ctx.lineWidth = 1.5;
             ctx.stroke();
         }
@@ -101,7 +101,7 @@ window.drawGame = function(ctx, canvas) {
         ctx.strokeStyle = s.color;
         ctx.lineWidth = 2.5;
         ctx.shadowColor = s.color;
-        ctx.shadowBlur = 12;
+        ctx.shadowBlur = 10;
 
         ctx.beginPath();
         if (ctx.roundRect) {
@@ -128,22 +128,35 @@ window.drawGame = function(ctx, canvas) {
         ctx.restore();
     }
 
-    // 6. Collectible Gems & Health Orbs
-    for (const g of window.GameState.gems) {
+    // 7. Draw Smooth Flying Energy Sparks (NO STATIC CLUTTER)
+    const p = window.GameState.player;
+    for (let i = window.GameState.sparkOrbs.length - 1; i >= 0; i--) {
+        const sp = window.GameState.sparkOrbs[i];
+        // Move towards player craft
+        const dx = p.x - sp.x;
+        const dy = p.y - sp.y;
+        const dist = Math.hypot(dx, dy);
+
+        if (dist < p.radius + 6) {
+            window.GameState.sparkOrbs.splice(i, 1);
+            continue;
+        }
+
+        sp.x += (dx / dist) * sp.speed;
+        sp.y += (dy / dist) * sp.speed;
+        sp.speed = Math.min(18, sp.speed + 0.4);
+
         ctx.save();
-        ctx.translate(g.x, g.y);
-        const col = g.type === 'heal' ? '#00ff88' : '#00f3ff';
-        ctx.fillStyle = col;
-        ctx.shadowColor = col;
-        ctx.shadowBlur = 10;
+        ctx.fillStyle = sp.color;
+        ctx.shadowColor = sp.color;
+        ctx.shadowBlur = 8;
         ctx.beginPath();
-        ctx.arc(0, 0, g.radius, 0, Math.PI * 2);
+        ctx.arc(sp.x, sp.y, sp.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
     }
 
-    // 7. Player Math Resonance Range Ring
-    const p = window.GameState.player;
+    // 8. Player Resonance Ring & Pulse
     ctx.save();
     ctx.beginPath();
     ctx.arc(p.x, p.y, window.SandboxConfig.beamRange, 0, Math.PI * 2);
@@ -153,7 +166,6 @@ window.drawGame = function(ctx, canvas) {
     ctx.stroke();
     ctx.restore();
 
-    // Expanding Pulse Wave
     if (p.pulseWaveAlpha > 0) {
         ctx.save();
         ctx.beginPath();
@@ -164,7 +176,7 @@ window.drawGame = function(ctx, canvas) {
         ctx.restore();
     }
 
-    // 8. Kinetic Projectiles
+    // 9. Kinetic Projectiles
     for (const proj of window.GameState.projectiles) {
         ctx.save();
         ctx.fillStyle = proj.color;
@@ -176,13 +188,18 @@ window.drawGame = function(ctx, canvas) {
         ctx.restore();
     }
 
-    // 9. Enemies with Math Expressions
+    // 10. Draw Enemies with Equations
+    let closestEnemy = null;
+    let minEnemyDist = Infinity;
+
     for (const e of window.GameState.enemies) {
+        const dist = Math.hypot(e.x - p.x, e.y - p.y);
+        if (dist < minEnemyDist) {
+            minEnemyDist = dist;
+            closestEnemy = e;
+        }
+
         const isMatching = e.answer === p.coreX;
-        const isOneStepAway = window.AVAILABLE_MATH_OPS.some(op => {
-            if (!window.SandboxConfig.buttonOps.includes(op.id)) return false;
-            return op.fn(p.coreX) === e.answer;
-        });
 
         ctx.save();
         ctx.translate(e.x, e.y);
@@ -194,24 +211,18 @@ window.drawGame = function(ctx, canvas) {
             ctx.strokeStyle = '#00ff88';
             ctx.lineWidth = 3;
             ctx.shadowColor = '#00ff88';
-            ctx.shadowBlur = 15;
-            ctx.stroke();
-        } else if (isOneStepAway) {
-            ctx.beginPath();
-            ctx.arc(0, 0, e.radius + 7, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(255, 184, 0, 0.45)';
-            ctx.lineWidth = 1.5;
+            ctx.shadowBlur = 16;
             ctx.stroke();
         }
 
-        // Geometric Polygon Body
+        // Polygon Body
         ctx.save();
         ctx.rotate(e.rotation);
         ctx.fillStyle = e.hitFlash > 0 ? '#ffffff' : '#0b1026';
         ctx.strokeStyle = isMatching ? '#00ff88' : e.color;
         ctx.lineWidth = e.isBoss ? 4 : 2.5;
         ctx.shadowColor = isMatching ? '#00ff88' : e.color;
-        ctx.shadowBlur = 14;
+        ctx.shadowBlur = 12;
 
         ctx.beginPath();
         for (let s = 0; s < e.sides; s++) {
@@ -253,7 +264,9 @@ window.drawGame = function(ctx, canvas) {
         ctx.restore();
     }
 
-    // 10. Neon Lightning Beams
+    window.GameState.closestEnemy = closestEnemy;
+
+    // 11. Neon Lightning Beams
     for (const b of window.GameState.lightningBeams) {
         ctx.save();
         ctx.strokeStyle = b.color;
@@ -270,21 +283,79 @@ window.drawGame = function(ctx, canvas) {
         ctx.restore();
     }
 
-    // 11. The Player (Math Core Craft)
+    // 12. Tactical Mathematical Compass (Points to closest enemy)
+    if (closestEnemy) {
+        const angleToTarget = Math.atan2(closestEnemy.y - p.y, closestEnemy.x - p.x);
+        const compassRadius = p.radius + 38;
+        const cx = p.x + Math.cos(angleToTarget) * compassRadius;
+        const cy = p.y + Math.sin(angleToTarget) * compassRadius;
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(angleToTarget);
+
+        // Compass Arrow
+        ctx.fillStyle = '#ffb800';
+        ctx.shadowColor = '#ffb800';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        ctx.moveTo(10, 0);
+        ctx.lineTo(-6, -6);
+        ctx.lineTo(-2, 0);
+        ctx.lineTo(-6, 6);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // Suggested Next PlayStation Button Hint under the player
+        const suggestedOp = window.findSuggestedPsButton(p.coreX, closestEnemy.answer);
+        if (suggestedOp && p.coreX !== closestEnemy.answer) {
+            const psInfo = window.PS_ICONS[suggestedOp.psKey] || window.PS_ICONS.cross;
+            ctx.save();
+            ctx.fillStyle = 'rgba(10, 15, 32, 0.85)';
+            ctx.strokeStyle = psInfo.border;
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(p.x - 48, p.y + p.radius + 14, 96, 22, 6);
+            else ctx.rect(p.x - 48, p.y + p.radius + 14, 96, 22);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = psInfo.color;
+            ctx.font = '800 11px "JetBrains Mono"';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(`${psInfo.symbol} (${suggestedOp.label}) ➔ ${closestEnemy.answer}`, p.x, p.y + p.radius + 25);
+            ctx.restore();
+        }
+    }
+
+    // 13. The Player (Craft with Orbiting PlayStation Symbols)
     ctx.save();
     ctx.translate(p.x, p.y);
 
-    // Outer Rotating Ring
-    ctx.save();
-    ctx.rotate(-window.GameState.time * 0.03);
-    ctx.strokeStyle = '#00f3ff';
-    ctx.lineWidth = 2.5;
-    ctx.shadowColor = '#00f3ff';
-    ctx.shadowBlur = 16;
-    ctx.beginPath();
-    ctx.arc(0, 0, p.radius, 0, Math.PI * 1.5);
-    ctx.stroke();
-    ctx.restore();
+    // Outer Orbiting PlayStation Symbols Ring
+    const orbitAngle = window.GameState.time * 0.025;
+    const orbitR = p.radius + 12;
+    const psGlyphs = [
+        { symbol: '✕', color: '#00f3ff', angle: orbitAngle },
+        { symbol: '◯', color: '#ff007f', angle: orbitAngle + Math.PI / 2 },
+        { symbol: '▢', color: '#b537f2', angle: orbitAngle + Math.PI },
+        { symbol: '△', color: '#00ff88', angle: orbitAngle + Math.PI * 1.5 }
+    ];
+
+    ctx.font = '900 11px "JetBrains Mono"';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const g of psGlyphs) {
+        const gx = Math.cos(g.angle) * orbitR;
+        const gy = Math.sin(g.angle) * orbitR;
+        ctx.fillStyle = g.color;
+        ctx.shadowColor = g.color;
+        ctx.shadowBlur = 8;
+        ctx.fillText(g.symbol, gx, gy);
+    }
+    ctx.shadowBlur = 0;
 
     // Aim Pointer
     ctx.save();
@@ -298,36 +369,22 @@ window.drawGame = function(ctx, canvas) {
     ctx.fill();
     ctx.restore();
 
-    // Inner Core Circle
+    // Inner Core
     ctx.fillStyle = '#09132c';
-    ctx.strokeStyle = '#00ff88';
-    ctx.lineWidth = 2;
+    ctx.strokeStyle = '#00f3ff';
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.arc(0, 0, p.radius - 5, 0, Math.PI * 2);
+    ctx.arc(0, 0, p.radius - 4, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    // X Value
+    // Player X Value Display
     ctx.fillStyle = '#ffffff';
     ctx.font = '800 13px "JetBrains Mono"';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
     ctx.fillText(`X=${p.coreX}`, 0, 0);
     ctx.restore();
 
-    // 12. Particles & Floating Texts
-    for (const pt of window.GameState.particles) {
-        ctx.save();
-        ctx.globalAlpha = Math.max(0, pt.alpha);
-        ctx.fillStyle = pt.color;
-        ctx.shadowColor = pt.color;
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-    }
-
+    // 14. Fast-dissolving Floating Texts (NEVER LINGER)
     for (const ft of window.GameState.floatingTexts) {
         ctx.save();
         ctx.globalAlpha = Math.max(0, ft.alpha);
