@@ -28,5 +28,36 @@
     "accentColor": "#00f3ff",
     "status": "ready",
     "featured": true
+  },
+  {
+    "id": "math-battle",
+    "title": "Math Battle: Calculus Showdown",
+    "slug": "math-battle",
+    "category": "Calculus & Analysis",
+    "difficulty": "Advanced",
+    "difficultyLevel": 4,
+    "version": "2.0.0",
+    "description": "PlayStation-exclusive mathematical calculus combat arcade. Pilot the d/dx operator to differentiate polynomial bosses, trigonometric waves, and exponential eigenfunction swarms down to zero annihilation.",
+    "mathConcepts": [
+      "Power Rule: d/dx(xⁿ) = n·xⁿ⁻¹",
+      "Trigonometric Cycle: sin → cos → -sin → -cos → 0",
+      "Exponential Invariant: d/dx(eˣ) = eˣ",
+      "Constant Derivative: d/dx(1) = 0 Annihilation"
+    ],
+    "controls": [
+      "✕ (Cross): Triple Dash (Chain Rule)",
+      "▢ (Square): Calculus Beam Weapon",
+      "◯ (Circle): Leibniz Supernova Bomb",
+      "△ (Triangle): Euler Slow-Mo Time Dilation",
+      "L1 / R1: Switch Match Roster (x³, x⁴, sin, exp)",
+      "L2 / R2: Air-Brake / Continuous Beam Fire",
+      "Left & Right Sticks: 360° Vector Flight & Aiming"
+    ],
+    "path": "games/math-battle/index.html",
+    "badge": "Calculus",
+    "icon": "∫",
+    "accentColor": "#b537f2",
+    "status": "ready",
+    "featured": true
   }
 ]
