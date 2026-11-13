@@ -1,0 +1,93 @@
+# ⚡ MATH ARCADE (Hub & Playground)
+
+> **The Modular Open-Source Hub for Mathematical Games & Visual Simulators**  
+> Play live right in your browser: **[https://ayoubvvch.github.io/math-arcade/](https://ayoubvvch.github.io/math-arcade/)**
+
+---
+
+## 🌟 Overview
+**Math Arcade** is a zero-bloat, modular platform designed to host high-performance interactive mathematical games, calculus battles, and geometric physics simulations. 
+
+It is architected specifically for infinite extensibility: new games can be dropped into their own subdirectories and automatically discovered by the central Hub via `games.json` without requiring compilation, bundling, or rebuild steps.
+
+---
+
+## 🏗️ Architecture & Project Structure
+
+```text
+math-arcade/
+├── index.html              # The Central Hub Homepage (Search, Filters, Game Cards, Modals)
+├── games.json              # Single source of truth registry for all games & metadata
+├── css/
+│   ├── common.css          # Shared design tokens, typography, dark/OLED aesthetics
+│   └── hub.css             # Hub layout, animations, responsive cards, glassmorphic UI
+├── js/
+│   └── hub.js              # Dynamic loader, fuzzy search, category filter & audio hooks
+├── shared/                 # Universal shared utilities for games
+│   ├── math-engine.js      # Vector2D, Calculus operators, Coordinate systems
+│   ├── canvas-kit.js       # HiDPI auto-scaling, Zero-GC particle pool, Cartesian grid
+│   └── retro-audio.js      # Zero-asset Web Audio API pure synthesizer
+├── games/                  # Dedicated directory for self-contained games
+│   ├── math-battle/        # Flagship calculus marble duel simulator
+│   └── README.md           # Game development standard specification
+└── .github/workflows/
+    └── pages.yml           # Automated GitHub Pages CI/CD deployment
+```
+
+---
+
+## 🚀 Key Engineering Highlights
+
+- **⚡ Zero Build Dependencies**: Built 100% on pure modern Web Standards (HTML5, Vanilla ES Modules, CSS3). No `node_modules`, no Webpack/Vite overhead, zero configuration.
+- **📱 60-120 FPS on Any Hardware**: Optimized for low-end mobile devices and OLED screens with zero-GC object pooling and lightweight canvas rendering.
+- **🔊 Zero-Asset Synthesized Audio**: Real-time sound effects generated directly via the browser's `AudioContext` — 0 MB audio downloads.
+- **🔍 Real-Time Fuzzy Search & Filter**: Instantly search by title, mathematical concept (e.g., `d/dx`, `Taylor`, `Matrix`), category, or difficulty level.
+- **🌐 GitHub Pages Ready**: Deploys automatically with native HTTPS and zero server maintenance.
+
+---
+
+## 🛠️ How to Add a New Game in 3 Minutes
+
+1. **Create the Game Directory**:
+   ```bash
+   mkdir -p games/my-new-game/
+   ```
+   Add your `index.html`, `style.css`, and JavaScript files inside this folder.
+
+2. **Register in `games.json`**:
+   Add a new entry to the `games.json` array:
+   ```json
+   {
+     "id": "my-new-game",
+     "title": "Fourier Transform Sandbox",
+     "slug": "fourier-sandbox",
+     "category": "Analysis",
+     "difficulty": "Advanced",
+     "difficultyLevel": 3,
+     "description": "Deconstruct arbitrary waveforms into sinusoidal frequency harmonics.",
+     "mathConcepts": ["Fourier Series", "Harmonics", "Orthogonality"],
+     "controls": ["Draw with mouse to synthesize waves"],
+     "path": "games/my-new-game/index.html",
+     "status": "ready"
+   }
+   ```
+
+3. **Optionally Import Shared Utilities**:
+   ```javascript
+   import { Vector2D, Calculus } from '../../shared/math-engine.js';
+   import { CanvasKit, ParticlePool } from '../../shared/canvas-kit.js';
+   import { sound } from '../../shared/retro-audio.js';
+   ```
+
+4. **Commit & Push**:
+   ```bash
+   git add .
+   git commit -m "feat: Add Fourier Transform Sandbox"
+   git push origin main
+   ```
+   The Hub updates immediately!
+
+---
+
+## 📜 License
+MIT License • Created by [Ayoub (eulerx0)](https://github.com/Ayoubvvch).

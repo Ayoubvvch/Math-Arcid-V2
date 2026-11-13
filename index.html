@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Math Arcade | Open-Source Mathematical Games & Visual Simulators</title>
+  <meta name="description" content="High-performance, visual mathematical games and calculus simulators. Zero-bloat, open-source arcade built for curious minds, students, and mathematicians." />
+  <meta name="theme-color" content="#07090e" />
+
+  <!-- OpenGraph / Social Meta -->
+  <meta property="og:title" content="Math Arcade | Mathematical Games & Simulators" />
+  <meta property="og:description" content="Explore zero-gravity calculus battles, harmonic oscillators, and matrix arenas in pure vanilla web technologies." />
+  <meta property="og:type" content="website" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/common.css" />
+  <link rel="stylesheet" href="css/hub.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <div class="hub-container">
+    <!-- Top Navigation Header -->
+    <header class="hub-header">
+      <div class="brand-wrapper">
+        <div class="brand-logo" aria-hidden="true">∫∂</div>
+        <div>
+          <h1 class="brand-title">MATH ARCADE <span class="brand-badge">HUB v1.0</span></h1>
+        </div>
+      </div>
+
+      <nav class="header-actions">
+        <button id="sound-toggle" class="btn-ghost" title="Toggle Synthesized Audio">
+          🔊 Audio Active
+        </button>
+        <button id="btn-add-game-guide" class="btn-ghost" title="Learn how to add new games">
+          ➕ Add a Game
+        </button>
+        <a href="https://github.com/Ayoubvvch/math-arcade" target="_blank" rel="noopener noreferrer" class="btn-ghost">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+      <div class="hero-tag">
+        <span style="color:var(--accent-emerald);">●</span> Zero-Lag Pure Canvas & Web Standards
+      </div>
+      <h2 class="hero-title">
+        The Autonomous <span>Mathematical</span> Playground
+      </h2>
+      <p class="hero-desc">
+        A modular home for interactive math battles, calculus visualizations, and mathematical physics simulations. Built for 60+ FPS performance on every device.
+      </p>
+    </section>
+
+    <!-- Search & Filter Controls -->
+    <section class="filter-bar">
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <input type="text" id="search-input" class="search-input" placeholder="Search math games by title, concept (e.g. d/dx, Matrix), or category... [Press '/']" autocomplete="off" />
+        </div>
+      </div>
+
+      <div class="filter-categories">
+        <div id="category-pills" style="display:contents;">
+          <!-- Dynamically populated categories -->
+        </div>
+        <span id="stats-counter" class="stats-counter">Loading games...</span>
+      </div>
+    </section>
+
+    <!-- Main Game Catalog Grid -->
+    <main>
+      <section id="games-grid" class="games-grid" aria-label="Math Games List">
+        <!-- Rendered dynamically by hub.js -->
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="hub-footer">
+      <div>
+        Created by <a href="https://github.com/Ayoubvvch" target="_blank" rel="noopener noreferrer"><strong>Ayoub (eulerx0)</strong></a> • Autonomous Math Engineering
+      </div>
+      <div>
+        Open Source under MIT License • Hosted on GitHub Pages
+      </div>
+    </footer>
+  </div>
+
+  <!-- Game Details Modal -->
+  <div id="game-modal" class="modal-overlay" aria-hidden="true" role="dialog">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-game-title" class="modal-title">Game Title</h3>
+        <button class="modal-close" onclick="document.getElementById('game-modal').classList.remove('active')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="modal-game-desc">Detailed mathematical description.</p>
+
+        <div class="modal-section">
+          <h4 class="modal-section-title">Core Mathematical Concepts</h4>
+          <ul id="modal-game-concepts" class="modal-list"></ul>
+        </div>
+
+        <div class="modal-section">
+          <h4 class="modal-section-title">Controls & Mechanics</h4>
+          <ul id="modal-game-controls" class="modal-list"></ul>
+        </div>
+
+        <div id="modal-game-action" style="margin-top: 1.5rem;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contributor / Add Game Guide Modal -->
+  <div id="guide-modal" class="modal-overlay" aria-hidden="true" role="dialog">
+    <div class="modal-box" style="max-width: 680px;">
+      <div class="modal-header">
+        <h3 class="modal-title">🚀 How to Add a New Math Game</h3>
+        <button class="modal-close" onclick="document.getElementById('guide-modal').classList.remove('active')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>This repository is engineered to be <strong>infinitely extensible</strong> with zero build configurations:</p>
+        
+        <div class="modal-section">
+          <h4 class="modal-section-title">Step 1: Create Game Directory</h4>
+          <p>Create a dedicated folder inside <code>games/&lt;your-game-slug&gt;/</code> containing:</p>
+          <ul class="modal-list">
+            <li><code>index.html</code> (Entry point / game canvas)</li>
+            <li><code>style.css</code> (Game specific styles)</li>
+            <li><code>js/</code> (Modular ES6 game code, or standalone script)</li>
+          </ul>
+        </div>
+
+        <div class="modal-section">
+          <h4 class="modal-section-title">Step 2: Register in games.json</h4>
+          <p>Add an entry into <code>games.json</code> with the game's metadata:</p>
+          <pre style="background:rgba(0,0,0,0.5); padding:0.75rem; border-radius:6px; font-family:var(--font-mono); font-size:0.75rem; color:var(--accent-cyan); overflow-x:auto;">
+{
+  "id": "my-game",
+  "title": "My Calculus Game",
+  "slug": "my-game",
+  "category": "Calculus",
+  "difficulty": "Intermediate",
+  "difficultyLevel": 2,
+  "description": "Short description...",
+  "mathConcepts": ["Concept 1", "Concept 2"],
+  "controls": ["Key A: Action 1"],
+  "path": "games/my-game/index.html",
+  "status": "ready"
+}</pre>
+        </div>
+
+        <div class="modal-section">
+          <h4 class="modal-section-title">Step 3: Leverage Shared Utilities</h4>
+          <p>Import from <code>../../shared/</code>:</p>
+          <ul class="modal-list">
+            <li><code>math-engine.js</code> for Vector2D and differentiation operators</li>
+            <li><code>canvas-kit.js</code> for Retina HiDPI and zero-GC particle pools</li>
+            <li><code>retro-audio.js</code> for synthesized audio feedback without MP3 assets</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/hub.js"></script>
+</body>
+</html>
