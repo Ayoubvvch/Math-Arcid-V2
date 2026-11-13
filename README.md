@@ -24,6 +24,7 @@ math-arcade/
 ├── js/
 │   └── hub.js              # Dynamic loader, fuzzy search, category filter & audio hooks
 ├── shared/                 # Universal shared utilities for games
+│   ├── gamepad.js          # PlayStation (✕, ◯, ▢, △) & Xbox gamepad input with dual haptics
 │   ├── math-engine.js      # Vector2D, Calculus operators, Coordinate systems
 │   ├── canvas-kit.js       # HiDPI auto-scaling, Zero-GC particle pool, Cartesian grid
 │   └── retro-audio.js      # Zero-asset Web Audio API pure synthesizer
@@ -39,6 +40,7 @@ math-arcade/
 ## 🚀 Key Engineering Highlights
 
 - **⚡ Zero Build Dependencies**: Built 100% on pure modern Web Standards (HTML5, Vanilla ES Modules, CSS3). No `node_modules`, no Webpack/Vite overhead, zero configuration.
+- **🎮 Universal Gamepad Engine**: Full out-of-the-box support for PlayStation (DualSense/DualShock ✕, ◯, ▢, △), Xbox (A, B, X, Y), Nintendo, and standard controllers with analog deadzones and haptic dual-rumble.
 - **📱 60-120 FPS on Any Hardware**: Optimized for low-end mobile devices and OLED screens with zero-GC object pooling and lightweight canvas rendering.
 - **🔊 Zero-Asset Synthesized Audio**: Real-time sound effects generated directly via the browser's `AudioContext` — 0 MB audio downloads.
 - **🔍 Real-Time Fuzzy Search & Filter**: Instantly search by title, mathematical concept (e.g., `d/dx`, `Taylor`, `Matrix`), category, or difficulty level.

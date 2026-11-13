@@ -27,7 +27,7 @@
       <div class="brand-wrapper">
         <div class="brand-logo" aria-hidden="true">∫∂</div>
         <div>
-          <h1 class="brand-title">MATH ARCADE <span class="brand-badge">HUB v1.0</span></h1>
+          <h1 class="brand-title">MATH ARCADE <span class="brand-badge">HUB v1.0</span> <span id="gamepad-status-badge" class="brand-badge" style="display:none; color:var(--accent-emerald); border-color:rgba(16,185,129,0.3); background:rgba(16,185,129,0.1);">🎮 GAMEPAD</span></h1>
         </div>
       </div>
 
@@ -158,9 +158,10 @@
         </div>
 
         <div class="modal-section">
-          <h4 class="modal-section-title">Step 3: Leverage Shared Utilities</h4>
+          <h4 class="modal-section-title">Step 3: Leverage Shared Utilities & Gamepad</h4>
           <p>Import from <code>../../shared/</code>:</p>
           <ul class="modal-list">
+            <li><code>gamepad.js</code> for PlayStation (✕, ◯, ▢, △) & Xbox gamepad input with dual haptics</li>
             <li><code>math-engine.js</code> for Vector2D and differentiation operators</li>
             <li><code>canvas-kit.js</code> for Retina HiDPI and zero-GC particle pools</li>
             <li><code>retro-audio.js</code> for synthesized audio feedback without MP3 assets</li>
@@ -169,6 +170,25 @@
       </div>
     </div>
   </div>
+
+  <!-- Floating Gamepad Legend HUD -->
+  <aside id="gamepad-hud" class="gamepad-hud" aria-live="polite">
+    <span class="gamepad-pill" style="color:var(--text-main); font-weight:700;">
+      🎮 <span id="gp-name">Gamepad</span>
+    </span>
+    <span class="gamepad-pill">
+      <span class="gp-btn-icon gp-btn-cross">✕</span> Select
+    </span>
+    <span class="gamepad-pill">
+      <span class="gp-btn-icon gp-btn-circle">◯</span> Back
+    </span>
+    <span class="gamepad-pill">
+      <span class="gp-btn-icon gp-btn-triangle">△</span> Search
+    </span>
+    <span class="gamepad-pill">
+      <span class="gp-btn-icon gp-btn-square">▢</span> Add Game
+    </span>
+  </aside>
 
   <!-- Scripts -->
   <script type="module" src="js/hub.js"></script>
