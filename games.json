@@ -123,5 +123,37 @@
     "accentColor": "#22d3ee",
     "status": "ready",
     "featured": true
+  },
+  {
+    "id": "complex-plane-duel",
+    "title": "Complex Plane: Argand Orbit Duel",
+    "slug": "complex-plane-duel",
+    "category": "Complex Analysis & Geometry",
+    "difficulty": "Master (2BAC)",
+    "difficultyLevel": 5,
+    "version": "1.0.0",
+    "description": "High-octane PlayStation orbital combat in the Argand plane. Harness Euler rotation phase shifts (z ↦ z·e^(iθ)), project n-th roots of unity barrier polygons (zⁿ = 1), and trigger homothety shockwaves against Cauchy poles and Mandelbrot singularities.",
+    "mathConcepts": [
+      "Complex Affix & Modulus (z = x + iy, |z| = √(x²+y²))",
+      "Euler Polar Rotation (z ↦ z·e^(iθ), arg(z) Phase Shift)",
+      "Roots of Unity Polygon Shields (zⁿ = 1 for n=3, 4, 6, 8)",
+      "Complex Conjugation (z ↦ z̄ Reflection)",
+      "Homothety Dilation (z ↦ k·z Metric Shockwave)"
+    ],
+    "controls": [
+      "✕ (Cross): Euler Rotation Dash (z·e^(iπ/3) Phase Warp)",
+      "▢ (Square): Orthogonal Affix Beams (Re / Im Pulses)",
+      "◯ (Circle): Roots of Unity Barrier Shield (zⁿ = 1)",
+      "△ (Triangle): Homothety Metric Shockwave (z ↦ k·z)",
+      "L1 / R1: Cycle Roots Symmetry Order (n=3, 4, 6, 8)",
+      "L2: Complex Conjugate Flip (z ↦ z̄ Reflection)",
+      "Left & Right Sticks: 360° Argand Flight & Phase Targeting"
+    ],
+    "path": "games/complex-plane-duel/index.html",
+    "badge": "Complex",
+    "icon": "ℂ",
+    "accentColor": "#ffd700",
+    "status": "ready",
+    "featured": true
   }
 ]
