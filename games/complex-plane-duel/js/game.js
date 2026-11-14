@@ -1,448 +1,422 @@
 /**
- * Complex Plane Duel: Argand Orbit Survivor
- * Master Game Loop & Complex Dynamics Coordinator
+ * Sequence Strider (عدّاء المتتاليات) - Main 60FPS Game Loop & Sequence Override Orchestrator
  */
 
-import { Complex } from './complex-math.js';
-import {
-  ARGAND_ARENA,
-  PLAYER_CONFIG,
-  ROOTS_OF_UNITY_PRESETS,
-  toScreenX,
-  toScreenY
-} from './config.js';
-import { audio } from './audio.js';
-import { ControlsManager } from './controls.js';
-import { createPlayer, ObjectPools } from './entities.js';
-import { ArgandRenderer } from './renderer.js';
+(function() {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d', { alpha: false });
 
-export class ComplexPlaneGame {
-  constructor() {
-    this.canvas = document.getElementById('gameCanvas');
-    this.ctx = this.canvas.getContext('2d', { alpha: false });
+  let state = window.createInitialStriderState('all');
+  window.sequenceGame = state;
 
-    this.pools = new ObjectPools();
-    this.controls = new ControlsManager(this.canvas);
-    this.renderer = new ArgandRenderer(this.canvas, this.ctx);
+  let viewW = window.innerWidth;
+  let viewH = window.innerHeight;
+  let lastTs = performance.now();
+  let hudCache = {};
 
-    this.gameState = 'COUNTDOWN';
-    this.countdownTimer = 3.0;
-    this.wave = 1;
-    this.maxWaves = 4;
-    this.isRunning = true;
-    this.isPlayerControlled = true;
-
-    this.player = createPlayer();
-    this.enemies = [];
-    this.nextEnemyId = 1;
-    this.screenShake = 0;
-
-    this.lastTime = performance.now();
-
-    this.initDOM();
-    this.startWave(this.wave);
-
-    this.loop = this.loop.bind(this);
-    requestAnimationFrame(this.loop);
+  function resizeCanvas() {
+    viewW = window.innerWidth;
+    viewH = window.innerHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    canvas.width = Math.round(viewW * dpr);
+    canvas.height = Math.round(viewH * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
 
-  initDOM() {
-    const btnStart = document.getElementById('btnStart');
-    if (btnStart) {
-      btnStart.addEventListener('click', () => {
-        this.isRunning = !this.isRunning;
-        btnStart.textContent = this.isRunning ? '⏸ PAUSE BATTLE' : '▶ RESUME BATTLE';
-      });
-    }
+  const FILTER_MODES = [
+    { key: 'all', hud: 'المحاور: 51–64', pause: 'محور الأسئلة: الكل (51–64)' },
+    { key: 'sectionA', hud: 'القسم أ: 51–57', pause: 'محور الأسئلة: الجبري والمثلثي والأسي (51–57)' },
+    { key: 'sectionB', hud: 'القسم ب: 58–64', pause: 'محور الأسئلة: الهندسة والتحويلات (58–64)' }
+  ];
 
-    const btnRestart = document.getElementById('btnRestart');
-    if (btnRestart) {
-      btnRestart.addEventListener('click', () => {
-        audio.init();
-        this.wave = 1;
-        this.player = createPlayer();
-        this.pools.reset();
-        this.startWave(this.wave);
-        this.isRunning = true;
-        if (btnStart) btnStart.textContent = '⏸ PAUSE BATTLE';
-      });
-    }
-
-    const btnAudio = document.getElementById('btnAudio');
-    if (btnAudio) {
-      btnAudio.addEventListener('click', () => {
-        const enabled = audio.toggle();
-        btnAudio.textContent = enabled ? '🔊 AUDIO: ON' : '🔇 AUDIO: MUTED';
-      });
-    }
-
-    const btnRoots = document.getElementById('btnRootsOrder');
-    if (btnRoots) {
-      btnRoots.addEventListener('click', () => {
-        this.cycleRootsOrder(1);
-      });
-    }
-  }
-
-  cycleRootsOrder(dir = 1) {
-    const total = ROOTS_OF_UNITY_PRESETS.length;
-    this.player.rootsIndex = (this.player.rootsIndex + dir + total) % total;
-    const preset = ROOTS_OF_UNITY_PRESETS[this.player.rootsIndex];
-    audio.play('roots_barrier', 0, 1.2);
-    this.pools.spawnPopup(`ROOTS ORDER: n=${preset.n} (${preset.glyph})`, toScreenX(this.player.pos.re), toScreenY(this.player.pos.im) - 30, preset.color);
-    const btnRoots = document.getElementById('btnRootsOrder');
-    if (btnRoots) btnRoots.textContent = `ROOTS: n=${preset.n} ${preset.glyph}`;
-  }
-
-  startWave(waveNum) {
-    this.wave = waveNum;
-    this.gameState = 'COUNTDOWN';
-    this.countdownTimer = 3.0;
-    this.enemies = [];
-
-    const enemyCount = 4 + waveNum * 2;
-    for (let i = 0; i < enemyCount; i++) {
-      const ang = (i * 2 * Math.PI) / enemyCount;
-      const r = 2.5 + Math.random() * 2.2;
-      const pos = Complex.fromPolar(r, ang);
-      const spd = 0.8 + waveNum * 0.25;
-
-      let type = 'spore';
-      let label = 'z²';
-      let color = '#ff007f';
-      let hp = 30 + waveNum * 10;
-      let radius = 22;
-
-      if (waveNum === 2) {
-        type = 'cauchy';
-        label = '1/z';
-        color = '#c026d3';
-        hp = 45;
-        radius = 24;
-      } else if (waveNum === 3) {
-        type = 'moebius';
-        label = 'eᶻ';
-        color = '#ffd700';
-        hp = 60;
-        radius = 26;
-      } else if (waveNum >= 4) {
-        type = 'sovereign';
-        label = 'z⁴=1';
-        color = '#ff0055';
-        hp = 110;
-        radius = 32;
-      }
-
-      this.enemies.push({
-        id: this.nextEnemyId++,
-        type,
-        label,
-        color,
-        pos,
-        vel: new Complex((Math.random() - 0.5) * spd, (Math.random() - 0.5) * spd),
-        hp,
-        maxHp: hp,
-        radius,
-        angSpeed: (Math.random() - 0.5) * 1.5
-      });
-    }
-  }
-
-  triggerEulerRotate() {
-    if (this.player.dashCharges <= 0) return;
-    this.player.dashCharges--;
-    this.player.isDashing = true;
-    this.player.dashTimer = PLAYER_CONFIG.dashDuration;
-    this.player.invulnerableTimer = PLAYER_CONFIG.invulnerableDuration;
-
-    // Euler rotation: z' = z * e^(i * pi/3) (60 degree phase shift orbit!)
-    const oldPos = this.player.pos;
-    this.player.pos = this.player.pos.rotate(Math.PI / 3);
-
-    // Particle arc connecting old and new positions
-    for (let k = 0; k < 18; k++) {
-      const interp = oldPos.rotate((Math.PI / 3) * (k / 18));
-      this.pools.spawnParticle(toScreenX(interp.re), toScreenY(interp.im), '#00f0ff', 2.8, 30);
-    }
-
-    audio.play('euler_rotate', this.player.pos.re / 6.0);
-    audio.triggerRumble(0.3, 0.6, 140);
-    this.pools.spawnPopup('z ↦ z·e^(iπ/3)', toScreenX(this.player.pos.re), toScreenY(this.player.pos.im) - 30, '#00f0ff');
-  }
-
-  triggerAffixBeam() {
-    if (this.player.beamCooldown > 0) return;
-    this.player.beamCooldown = PLAYER_CONFIG.beamCooldown;
-
-    const spd = 16.0;
-    const vel = new Complex(Math.cos(this.player.facingAng) * spd, Math.sin(this.player.facingAng) * spd);
-
-    // Spawn dual orthogonal pulses (Real & Imaginary)
-    this.pools.spawnBeam(this.player.pos, vel, true);
-
-    audio.play('affix_beam', this.player.pos.re / 6.0);
-    audio.triggerRumble(0.12, 0.25, 70);
-  }
-
-  triggerRootsBarrier() {
-    if (this.player.barrierActive || this.player.barrierCooldown > 0) return;
-    this.player.barrierActive = true;
-    this.player.barrierTimer = PLAYER_CONFIG.barrierDuration;
-    this.player.barrierCooldown = PLAYER_CONFIG.barrierCooldown;
-
-    const preset = ROOTS_OF_UNITY_PRESETS[this.player.rootsIndex];
-    audio.play('roots_barrier', 0, 1.0);
-    audio.triggerRumble(0.5, 0.8, 220);
-    this.pools.spawnShockwave(toScreenX(this.player.pos.re), toScreenY(this.player.pos.im), 180, preset.color);
-    this.pools.spawnPopup(`z^${preset.n} = 1 BARRIER`, toScreenX(this.player.pos.re), toScreenY(this.player.pos.im) - 40, preset.color);
-  }
-
-  triggerHomothetyBlast() {
-    if (this.player.homothetyEnergy < 100) return;
-    this.player.homothetyEnergy = 0;
-    this.screenShake = 22;
-
-    audio.play('homothety_blast', 0, 1.0);
-    audio.triggerRumble(0.8, 1.0, 360);
-
-    this.pools.spawnShockwave(toScreenX(this.player.pos.re), toScreenY(this.player.pos.im), 380, '#b537f2');
-    this.pools.spawnPopup('💥 HOMOTHETY METRIC SHOCK', toScreenX(this.player.pos.re), toScreenY(this.player.pos.im) - 45, '#ffd700');
-
-    // Shatter and push all enemy singularities
-    this.enemies.forEach(e => {
-      const d = this.player.pos.sub(e.pos).modulus();
-      if (d <= 5.0) {
-        e.hp -= 50;
-        e.pos = e.pos.scale(1.4); // Homothety metric dilation
-        this.pools.spawnParticle(toScreenX(e.pos.re), toScreenY(e.pos.im), '#b537f2', 4, 40);
-      }
-    });
-    this.cleanupDeadEnemies();
-  }
-
-  triggerConjugateFlip() {
-    // z -> z_bar (flip imaginary component)
-    this.player.pos = this.player.pos.conjugate();
-    this.player.vel = this.player.vel.conjugate();
-    audio.play('conjugate_flip', this.player.pos.re / 6.0);
-    audio.triggerRumble(0.25, 0.5, 120);
-    this.pools.spawnPopup('z ↦ z̄ [CONJUGATE]', toScreenX(this.player.pos.re), toScreenY(this.player.pos.im) - 25, '#ffd700');
-  }
-
-  cleanupDeadEnemies() {
-    const dead = this.enemies.filter(e => e.hp <= 0);
-    dead.forEach(e => {
-      this.player.score += 150;
-      this.player.eliminations++;
-      if (this.player.homothetyEnergy < 100) {
-        this.player.homothetyEnergy = Math.min(100, this.player.homothetyEnergy + 12);
-      }
-      audio.play('pole_crush', e.pos.re / 6.0);
-      audio.triggerRumble(0.3, 0.6, 150);
-      for (let k = 0; k < 25; k++) {
-        this.pools.spawnParticle(toScreenX(e.pos.re), toScreenY(e.pos.im), e.color, 3.5, 45);
-      }
-      this.pools.spawnPopup('+150 | POLE CLEARED', toScreenX(e.pos.re), toScreenY(e.pos.im), '#00ff88');
-    });
-    this.enemies = this.enemies.filter(e => e.hp > 0);
-
-    if (this.enemies.length === 0) {
-      if (this.wave < this.maxWaves) {
-        this.startWave(this.wave + 1);
-      } else {
-        this.gameState = 'VICTORY';
-        audio.play('victory');
-        audio.triggerRumble(0.7, 1.0, 500);
-      }
-    }
-  }
-
-  updatePlayerPhysics(dt) {
-    const p = this.player;
-
-    if (p.invulnerableTimer > 0) p.invulnerableTimer -= dt;
-    if (p.beamCooldown > 0) p.beamCooldown -= dt;
-
-    // Dash recharge
-    if (p.dashCharges < p.maxDashCharges) {
-      p.dashRechargeTimer += dt;
-      if (p.dashRechargeTimer >= 0.8) {
-        p.dashCharges++;
-        p.dashRechargeTimer = 0;
-      }
-    }
-
-    if (p.isDashing) {
-      p.dashTimer -= dt;
-      if (p.dashTimer <= 0) p.isDashing = false;
-    }
-
-    // Roots Barrier Timers
-    p.rootsPhase += dt * 1.8; // Rotate satellite polygon continuously
-    if (p.barrierActive) {
-      p.barrierTimer -= dt;
-      if (p.barrierTimer <= 0) p.barrierActive = false;
-    }
-    if (p.barrierCooldown > 0) p.barrierCooldown -= dt;
-
-    // Controls
-    this.controls.poll(p.pos.re, p.pos.im);
-    p.facingAng = this.controls.facingAng;
-
-    if (this.controls.consume('eulerRotate')) this.triggerEulerRotate();
-    if (this.controls.consume('affixBeam')) this.triggerAffixBeam();
-    if (this.controls.consume('rootsBarrier')) this.triggerRootsBarrier();
-    if (this.controls.consume('homothetyBlast')) this.triggerHomothetyBlast();
-    if (this.controls.consume('conjugateFlip')) this.triggerConjugateFlip();
-    if (this.controls.consume('cycleRootsPrev')) this.cycleRootsOrder(-1);
-    if (this.controls.consume('cycleRootsNext')) this.cycleRootsOrder(1);
-
-    // Movement
-    if (!p.isDashing) {
-      const spd = PLAYER_CONFIG.baseSpeed;
-      const targetVx = this.controls.moveX * spd;
-      const targetVy = this.controls.moveY * spd;
-      p.vel.re += (targetVx - p.vel.re) * Math.min(1.0, 8.0 * dt);
-      p.vel.im += (targetVy - p.vel.im) * Math.min(1.0, 8.0 * dt);
-    }
-
-    p.pos = p.pos.add(p.vel.scale(dt));
-
-    // Clamp within Argand domain [-5.5, 5.5]
-    p.pos.re = Math.max(-5.5, Math.min(5.5, p.pos.re));
-    p.pos.im = Math.max(-5.5, Math.min(5.5, p.pos.im));
-
-    // Trail
-    p.trail.unshift({ x: toScreenX(p.pos.re), y: toScreenY(p.pos.im) });
-    if (p.trail.length > 14) p.trail.pop();
-  }
-
-  updateEnemies(dt) {
-    this.enemies.forEach(e => {
-      // Rotate trajectory in complex orbit
-      e.pos = e.pos.add(e.vel.scale(dt));
-
-      // Wall bounce
-      if (e.pos.re < ARGAND_ARENA.reMin + 0.6 || e.pos.re > ARGAND_ARENA.reMax - 0.6) {
-        e.vel.re = -e.vel.re;
-      }
-      if (e.pos.im < ARGAND_ARENA.imMin + 0.6 || e.pos.im > ARGAND_ARENA.imMax - 0.6) {
-        e.vel.im = -e.vel.im;
-      }
-
-      // Orbital gravitational drift towards player
-      const diff = this.player.pos.sub(e.pos);
-      const dist = diff.modulus();
-      if (dist > 0.4) {
-        const pull = 0.6 / (dist + 0.5);
-        e.vel.re += (diff.re / dist) * pull * dt;
-        e.vel.im += (diff.im / dist) * pull * dt;
-      }
+  function updateFilterUI() {
+    const cur = FILTER_MODES.find(f => f.key === state.topicFilter) || FILTER_MODES[0];
+    document.getElementById('filterChipLabel').textContent = cur.hud;
+    document.getElementById('btnCycleFilterPause').textContent = cur.pause;
+    document.querySelectorAll('#introFilterGrid .filter-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.filter === state.topicFilter);
     });
   }
 
-  updateCollisions() {
-    const p = this.player;
+  window.cycleSeqFilter = function(dir = 1) {
+    const idx = FILTER_MODES.findIndex(f => f.key === state.topicFilter);
+    const nextIdx = (idx + dir + FILTER_MODES.length) % FILTER_MODES.length;
+    state.topicFilter = FILTER_MODES[nextIdx].key;
+    updateFilterUI();
+    window.SeqAudio?.playUiTick?.();
+  };
 
-    // 1. Beams vs Enemies
-    this.pools.beams.forEach(b => {
-      if (!b.active) return;
-      for (const e of this.enemies) {
-        const d = b.pos.sub(e.pos).modulus();
-        if (d < (e.radius / 35)) {
-          b.active = false;
-          e.hp -= 20;
-          this.pools.spawnParticle(toScreenX(e.pos.re), toScreenY(e.pos.im), e.color, 2.5, 20);
-          audio.triggerRumble(0.15, 0.3, 60);
-          break;
+  function setBidiSafeMath(el, text) {
+    if (!el) return;
+    el.textContent = '';
+    const str = String(text || '');
+    const mathRe = /(?:[+\-](?=[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])|[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])(?:[ +\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→↔⇒⇔·×÷±≈'′∘^_:,.\\]*[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])*/g;
+    let last = 0;
+    let m;
+    while ((m = mathRe.exec(str)) !== null) {
+      let sIdx = m.index;
+      let eIdx = m.index + m[0].length;
+      while (eIdx > sIdx) {
+        const sub = str.slice(sIdx, eIdx);
+        const op = (sub.match(/\(/g) || []).length;
+        const cl = (sub.match(/\)/g) || []).length;
+        if ((sub.endsWith('(') && op > cl) || (sub.endsWith(')') && cl > op) || /\s$/.test(sub)) eIdx--;
+        else break;
+      }
+      while (sIdx < eIdx) {
+        const sub = str.slice(sIdx, eIdx);
+        const op = (sub.match(/\(/g) || []).length;
+        const cl = (sub.match(/\)/g) || []).length;
+        if ((sub.startsWith('(') && op > cl) || (sub.startsWith(')') && cl > op) || /^\s/.test(sub)) sIdx++;
+        else break;
+      }
+      const tok = str.slice(sIdx, eIdx);
+      if (!tok || /^[()\[\]\s]+$/.test(tok)) continue;
+      if (sIdx > last) el.appendChild(document.createTextNode(str.slice(last, sIdx)));
+      const bdi = document.createElement('bdi');
+      bdi.dir = 'ltr';
+      bdi.className = 'math-ltr';
+      bdi.textContent = tok;
+      el.appendChild(bdi);
+      last = eIdx;
+    }
+    if (last < str.length) el.appendChild(document.createTextNode(str.slice(last)));
+  }
+  window.setSeqBidiSafeMath = setBidiSafeMath;
+
+  window.startStriderFromIntro = function() {
+    window.SeqAudio?.init?.();
+    window.SeqAudio?.playUiTick?.();
+    document.getElementById('introModal')?.classList.add('hidden');
+    state.mode = 'play';
+    window.lockStriderInputBriefly(220);
+    window.setSectorBanner(state, 'الربع الأول Q1 — حلّق في مستوى أرغاند واخترق الأختام الأربعة [▢ / E]', 4.5);
+  };
+
+  window.triggerNearestSeqGate = function(s) {
+    const tgt = window.findNearestSeqInteract(s);
+    if (tgt) {
+      window.openSeqOverrideModal(s, tgt);
+      return true;
+    }
+    window.addSeqFloatText(s, s.player.x, s.player.y - 26, 'اقترب من ختم أرغاند أو كيان عقدي مشلول!', '#fbbf24', 1.1);
+    return false;
+  };
+
+  window.openSeqOverrideModal = function(s, targetInfo) {
+    if (s.mode !== 'play') return;
+    s.mode = 'override';
+    window.lockStriderInputBriefly(220);
+
+    const secTopics = targetInfo.kind === 'gate' ? targetInfo.gate.topics : null;
+    const q = window.pickSequenceChallenge(s.topicFilter, secTopics, s.recentQuestionIds);
+    s.recentQuestionIds.push(q.id);
+    if (s.recentQuestionIds.length > 14) s.recentQuestionIds.shift();
+
+    s.activeOverride = { targetInfo, question: q, hintOpen: false };
+
+    const srcTag = document.getElementById('seqSourceTag');
+    const topTag = document.getElementById('seqTopicTag');
+    const promptEl = document.getElementById('seqPrompt');
+    const graphWrap = document.getElementById('seqGraphWrap');
+    const graphCanvas = document.getElementById('seqGraphCanvas');
+    const hintBox = document.getElementById('seqHintBox');
+
+    srcTag.textContent = targetInfo.kind === 'gate'
+      ? `اختراق ختم أرغاند — ${targetInfo.gate.sectorName}`
+      : `تفكيك النواة — ${targetInfo.drone.label}`;
+    topTag.textContent = `البند ${q.topic}: ${window.SEQ_TOPICS[q.topic] || ''}`;
+    setBidiSafeMath(promptEl, q.prompt);
+
+    if (q.graphSpec) {
+      graphWrap.classList.remove('hidden');
+      window.drawSequenceGraph(graphCanvas, q.graphSpec);
+    } else {
+      graphWrap.classList.add('hidden');
+    }
+
+    setBidiSafeMath(hintBox, q.hint);
+    hintBox.classList.add('hidden');
+
+    for (let i = 0; i < 4; i++) {
+      const btn = document.getElementById(`seqOpt${i}`);
+      btn.classList.remove('opt-correct', 'opt-wrong');
+      btn.disabled = false;
+      setBidiSafeMath(btn.querySelector('.opt-text'), q.options[i] || '');
+    }
+
+    const bypassBtn = document.getElementById('btnOverdriveBypass');
+    const canBypass = s.player.energy >= 60;
+    bypassBtn.disabled = !canBypass;
+    bypassBtn.textContent = canBypass
+      ? '⚡ [L2 / F] شحن أولير الفائق: تجاوز الختم (-60% طاقة)'
+      : '⚡ [L2 / F] تحتاج 60% طاقة أولير للتجاوز التلقائي';
+
+    document.getElementById('overrideModal')?.classList.remove('hidden');
+    window.SeqAudio?.playUiTick?.();
+  };
+
+  window.toggleSeqHint = function() {
+    if (!state.activeOverride) return;
+    state.activeOverride.hintOpen = !state.activeOverride.hintOpen;
+    document.getElementById('seqHintBox')?.classList.toggle('hidden', !state.activeOverride.hintOpen);
+    window.SeqAudio?.playUiTick?.();
+  };
+
+  window.submitSeqOption = function(idx) {
+    if (state.mode !== 'override' || !state.activeOverride) return;
+    const r = state.activeOverride;
+    const btn = document.getElementById(`seqOpt${idx}`);
+    if (!btn || btn.disabled) return;
+
+    state.stats.questionsAnswered++;
+    if (idx === r.question.correctIndex) {
+      state.stats.questionsCorrect++;
+      btn.classList.add('opt-correct');
+      resolveSeqOverride(false);
+    } else {
+      btn.classList.add('opt-wrong');
+      btn.disabled = true;
+      state.player.hp = Math.max(0, state.player.hp - 15);
+      state.damageFlash = 1.0;
+      state.screenShake = Math.max(state.screenShake, 10);
+      window.SeqAudio?.playDamage?.();
+      window.triggerStriderHaptic?.(100, 0.65, 0.8);
+      if (state.player.hp <= 0) {
+        closeOverrideCleanly();
+        window.finishSequenceGame(state, false);
+      }
+    }
+  };
+
+  window.triggerSeqOverdriveBypass = function() {
+    if (state.mode !== 'override' || !state.activeOverride) return;
+    if (state.player.energy < 60) return;
+    state.player.energy -= 60;
+    state.stats.bypasses++;
+    window.SeqAudio?.playOverdrive?.();
+    window.triggerStriderHaptic?.(140, 0.75, 0.9);
+    resolveSeqOverride(true);
+  };
+
+  function closeOverrideCleanly() {
+    document.getElementById('overrideModal')?.classList.add('hidden');
+    state.activeOverride = null;
+    if (state.mode === 'override') state.mode = 'play';
+    window.lockStriderInputBriefly(220);
+  }
+
+  function resolveSeqOverride(wasBypass) {
+    const info = state.activeOverride?.targetInfo;
+    closeOverrideCleanly();
+    if (!info) return;
+
+    if (info.kind === 'gate') {
+      const g = info.gate;
+      if (!g.broken) {
+        g.broken = true;
+        state.stats.brokenGates++;
+        state.stats.score += wasBypass ? 350 : 650;
+        window.SeqAudio?.playGateBreak?.();
+        window.spawnSeqParticles(state, g.x, g.y, 26, g.color, 260);
+        window.addSeqFloatText(state, g.x, g.y - 34, `تم اختراق البوابة (${state.stats.brokenGates}/4)!`, '#fbbf24', 1.8);
+
+        if (!wasBypass) {
+          state.player.energy = Math.min(state.player.maxEnergy, state.player.energy + 35);
+          state.player.hp = Math.min(state.player.maxHp, state.player.hp + 15);
+        }
+
+        if (state.stats.brokenGates >= 4) {
+          window.spawnFixedPointBoss(state);
+        } else {
+          window.setSectorBanner(state, `بقي ${4 - state.stats.brokenGates} بوابات — واصل التقدم لليمين`, 3.5);
         }
       }
-    });
-
-    // 2. Roots of Unity Barrier vs Enemies
-    if (p.barrierActive) {
-      const preset = ROOTS_OF_UNITY_PRESETS[p.rootsIndex];
-      const roots = Complex.getRootsOfUnity(preset.n, PLAYER_CONFIG.shieldRadius / 35, p.rootsPhase);
-
-      this.enemies.forEach(e => {
-        roots.forEach(rt => {
-          const satPos = p.pos.add(rt.z);
-          const d = satPos.sub(e.pos).modulus();
-          if (d < (e.radius / 35) + 0.4) {
-            e.hp -= 40;
-            e.vel = e.pos.sub(p.pos).scale(2.0); // Deflect enemy away!
-            this.pools.spawnShockwave(toScreenX(satPos.re), toScreenY(satPos.im), 40, preset.color);
-            audio.triggerRumble(0.3, 0.6, 120);
-          }
-        });
-      });
+    } else if (info.kind === 'execute' && info.drone) {
+      window.damageSeqDrone(state, info.drone, 9999, true);
     }
-
-    // 3. Player vs Enemies
-    this.enemies.forEach(e => {
-      const d = p.pos.sub(e.pos).modulus();
-      if (d < (p.radius + e.radius) / 35) {
-        if (p.isDashing) {
-          e.hp -= 35;
-          this.pools.spawnParticle(toScreenX(e.pos.re), toScreenY(e.pos.im), '#00f0ff', 3, 30);
-        } else if (p.invulnerableTimer <= 0) {
-          p.hp = Math.max(0, p.hp - 15);
-          p.invulnerableTimer = 0.5;
-          this.screenShake = 12;
-          audio.play('gameover', 0, 1.5);
-          audio.triggerRumble(0.5, 0.8, 200);
-          this.pools.spawnPopup('-15 HP', toScreenX(p.pos.re), toScreenY(p.pos.im) - 20, '#ff0055');
-
-          if (p.hp <= 0) {
-            this.gameState = 'GAMEOVER';
-            audio.play('gameover');
-            audio.triggerRumble(0.8, 1.0, 500);
-          }
-        }
-      }
-    });
-
-    this.cleanupDeadEnemies();
   }
 
-  loop(timestamp) {
-    const rawDt = Math.min(0.08, (timestamp - this.lastTime) / 1000);
-    this.lastTime = timestamp;
+  window.openStriderPause = function() {
+    if (state.mode === 'end' || state.mode === 'intro') return;
+    if (state.mode === 'override') closeOverrideCleanly();
+    state.mode = 'pause';
+    updateFilterUI();
+    document.getElementById('pauseModal')?.classList.remove('hidden');
+    window.StriderInput.pauseFocusIdx = 0;
+    window.applyStriderPauseFocus();
+    window.lockStriderInputBriefly(200);
+    window.SeqAudio?.playUiTick?.();
+  };
 
-    if (this.isRunning) {
-      if (this.screenShake > 0) {
-        this.screenShake = Math.max(0, this.screenShake - rawDt * 30);
-      }
+  window.closeStriderPause = function() {
+    document.getElementById('pauseModal')?.classList.add('hidden');
+    if (state.mode === 'pause') state.mode = 'play';
+    window.lockStriderInputBriefly(200);
+    window.SeqAudio?.playUiTick?.();
+  };
 
-      if (this.gameState === 'COUNTDOWN') {
-        this.countdownTimer -= rawDt;
-        if (this.countdownTimer <= 0) {
-          this.gameState = 'PLAYING';
-        }
-      } else if (this.gameState === 'PLAYING') {
-        this.updatePlayerPhysics(rawDt);
-        this.updateEnemies(rawDt);
-        this.updateCollisions();
-      }
+  window.finishSequenceGame = function(s, victory) {
+    s.mode = 'end';
+    document.getElementById('overrideModal')?.classList.add('hidden');
+    document.getElementById('pauseModal')?.classList.add('hidden');
 
-      this.pools.update(rawDt);
+    const title = document.getElementById('endTitle');
+    const sub = document.getElementById('endSubtitle');
+
+    if (victory) {
+      title.innerHTML = 'تقارب ناجح — <span>دمّرْتَ النقطة الصامدة L!</span>';
+      sub.textContent = 'أتقنت كل محاور المتتاليات العددية (39–50): الترجع، الحدود، التآلفية والمتخاطة، مبرهنة الدركيين، والنقطة الصامدة!';
+    } else {
+      title.innerHTML = 'تباعد حرج نحو <span>+∞ / الخروج عن [m, M]</span>';
+      sub.textContent = 'انهار درعك قبل تحرير كل البوابات. استعمل القفز الثنائي ودرع الترجع [△] واخترق المسار مجدداً!';
     }
 
-    this.renderer.render(
-      this.gameState,
-      this.player,
-      this.enemies,
-      this.pools,
-      this.countdownTimer,
-      this.wave,
-      this.screenShake,
-      this.controls.touchJoystick
-    );
+    const acc = s.stats.questionsAnswered > 0
+      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
+      : 100;
 
-    requestAnimationFrame(this.loop);
+    document.getElementById('endGates').textContent = `${s.stats.brokenGates} / 4`;
+    document.getElementById('endScore').textContent = String(s.stats.score);
+    document.getElementById('endAccuracy').textContent = `${acc}%`;
+    document.getElementById('endBypasses').textContent = String(s.stats.bypasses);
+
+    document.getElementById('endModal')?.classList.remove('hidden');
+    window.StriderInput.endFocusIdx = 0;
+    window.applyStriderEndFocus();
+    window.lockStriderInputBriefly(250);
+  };
+
+  window.resetStriderGame = function() {
+    const keepFilter = state.topicFilter;
+    document.getElementById('endModal')?.classList.add('hidden');
+    document.getElementById('pauseModal')?.classList.add('hidden');
+    document.getElementById('overrideModal')?.classList.add('hidden');
+    document.getElementById('introModal')?.classList.add('hidden');
+
+    state = window.createInitialStriderState(keepFilter);
+    state.mode = 'play';
+    window.sequenceGame = state;
+    hudCache = {};
+    window.lockStriderInputBriefly(220);
+    window.setSectorBanner(state, 'جولة جديدة — اخترق البوابات الأربع', 3.5);
+  };
+
+  // Wire UI Buttons
+  document.getElementById('btnStartStrider')?.addEventListener('click', window.startStriderFromIntro);
+  document.getElementById('filterChip')?.addEventListener('click', () => window.cycleSeqFilter(1));
+  document.getElementById('btnCycleFilterPause')?.addEventListener('click', () => window.cycleSeqFilter(1));
+
+  document.querySelectorAll('#introFilterGrid .filter-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      state.topicFilter = btn.dataset.filter || 'all';
+      updateFilterUI();
+      window.SeqAudio?.playUiTick?.();
+    });
+  });
+
+  document.getElementById('btnAudioToggle')?.addEventListener('click', () => {
+    window.SeqAudio?.init?.();
+    const muted = window.SeqAudio?.toggleMute?.();
+    document.getElementById('btnAudioToggle').textContent = muted ? '🔇' : '🔊';
+    document.getElementById('btnToggleSoundPause').textContent = muted ? 'الصوت: مكتوم' : 'الصوت: مفعل';
+  });
+  document.getElementById('btnToggleSoundPause')?.addEventListener('click', () => document.getElementById('btnAudioToggle')?.click());
+  document.getElementById('btnHelpToggle')?.addEventListener('click', () => {
+    state.mode = 'intro';
+    document.getElementById('pauseModal')?.classList.add('hidden');
+    document.getElementById('introModal')?.classList.remove('hidden');
+    updateFilterUI();
+  });
+  document.getElementById('btnPauseToggle')?.addEventListener('click', () => {
+    if (state.mode === 'pause') window.closeStriderPause();
+    else window.openStriderPause();
+  });
+  document.getElementById('btnResumeGame')?.addEventListener('click', window.closeStriderPause);
+  document.getElementById('btnRestartPause')?.addEventListener('click', window.resetStriderGame);
+  document.getElementById('btnRetryEnd')?.addEventListener('click', window.resetStriderGame);
+
+  for (let i = 0; i < 4; i++) {
+    document.getElementById(`seqOpt${i}`)?.addEventListener('click', () => window.submitSeqOption(i));
   }
-}
+  document.getElementById('btnToggleHint')?.addEventListener('click', window.toggleSeqHint);
+  document.getElementById('btnOverdriveBypass')?.addEventListener('click', window.triggerSeqOverdriveBypass);
 
-window.addEventListener('DOMContentLoaded', () => {
-  window.complexPlaneGame = new ComplexPlaneGame();
-});
+  document.getElementById('actJump')?.addEventListener('click', () => state.mode === 'play' && window.performJump(state));
+  document.getElementById('actDash')?.addEventListener('click', () => state.mode === 'play' && window.performStriderDash(state, window.getStriderMoveVec().x));
+  document.getElementById('actOverride')?.addEventListener('click', () => state.mode === 'play' && window.triggerNearestSeqGate(state));
+  document.getElementById('actAegis')?.addEventListener('click', () => state.mode === 'play' && window.performAegisShield(state));
+  document.getElementById('actPulse')?.addEventListener('click', () => state.mode === 'play' && window.performPulseShot(state));
+  document.getElementById('actOverdrive')?.addEventListener('click', () => state.mode === 'play' && window.performOverdriveWorld(state));
+
+  function syncHUD() {
+    const p = state.player;
+    const hpStr = `${Math.ceil(p.hp)}/${p.maxHp}`;
+    if (hudCache.hp !== hpStr) {
+      hudCache.hp = hpStr;
+      document.getElementById('hpValue').textContent = hpStr;
+      document.getElementById('hpFill').style.width = `${Math.max(0, (p.hp / p.maxHp) * 100)}%`;
+    }
+
+    const enStr = `${Math.round(p.energy)}%`;
+    if (hudCache.en !== enStr) {
+      hudCache.en = enStr;
+      document.getElementById('energyValue').textContent = enStr;
+      document.getElementById('energyFill').style.width = `${Math.max(0, (p.energy / p.maxEnergy) * 100)}%`;
+    }
+
+    const gStr = state.bossSpawned ? 'BOSS موافر' : `${state.stats.brokenGates} / 4`;
+    if (hudCache.gates !== gStr) {
+      hudCache.gates = gStr;
+      document.getElementById('gatesValue').textContent = gStr;
+    }
+
+    const scStr = String(state.stats.score);
+    if (hudCache.score !== scStr) {
+      hudCache.score = scStr;
+      document.getElementById('scoreValue').textContent = scStr;
+    }
+
+    const cShow = state.stats.combo >= 2;
+    if (hudCache.cShow !== cShow || hudCache.cVal !== state.stats.combo) {
+      hudCache.cShow = cShow;
+      hudCache.cVal = state.stats.combo;
+      document.getElementById('comboBadge')?.classList.toggle('hidden', !cShow);
+      if (cShow) document.getElementById('comboCount').textContent = String(state.stats.combo);
+    }
+
+    const bannerEl = document.getElementById('sectorBanner');
+    if (bannerEl) {
+      const showB = state.bannerTimer > 0 && state.mode === 'play';
+      bannerEl.classList.toggle('visible', showB);
+      if (showB && hudCache.banner !== state.bannerText) {
+        hudCache.banner = state.bannerText;
+        bannerEl.textContent = state.bannerText;
+      }
+    }
+
+    const nearInt = state.mode === 'play' ? window.findNearestSeqInteract(state) : null;
+    document.getElementById('actOverride')?.classList.toggle('highlight-ready', !!nearInt);
+    document.getElementById('actDash')?.classList.toggle('cooldown', p.dashCooldown > 0);
+    document.getElementById('actAegis')?.classList.toggle('cooldown', p.aegisCooldown > 0);
+    document.getElementById('actOverdrive')?.classList.toggle('cooldown', p.overdriveCooldown > 0 || p.energy < 40);
+  }
+
+  window.initStriderControls(() => state);
+  updateFilterUI();
+
+  function tick(ts) {
+    const rawDt = Math.min(0.05, Math.max(0.001, (ts - lastTs) / 1000));
+    lastTs = ts;
+
+    const { moveVec, aimVec } = window.pollStriderInputs(state);
+    window.updateStriderWorld(state, rawDt, moveVec, aimVec);
+    window.renderStriderFrame(ctx, viewW, viewH, state);
+    syncHUD();
+
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+})();

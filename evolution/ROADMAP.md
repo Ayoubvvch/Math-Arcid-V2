@@ -1,88 +1,44 @@
-# Math Arcade: Autonomous Grand Roadmap (Project Miracle)
+# Math-Arcid-V2: Autonomous Grand Roadmap (Unleashed Monster Edition)
 
-## 1. Core Engineering Philosophy
-* **Zero Bloat, Zero Dependencies**: 100% pure web standards (Vanilla ES Modules, HTML5 Canvas, Web Audio API, Gamepad API). No NPM build steps, no webpack, no bundle bloat.
-* **PlayStation Exclusivity**: All interactive controls are strictly engineered for PlayStation DualSense / DualShock (`✕ Cross`, `◯ Circle`, `▢ Square`, `△ Triangle`, L1/R1, L2/R2, D-Pad, Left/Right Stick) with haptic rumble.
-* **Moroccan 2BAC PC/SM Pedagogical Rigor**: Every game is an intuitive, visual, and mathematically rigorous sandbox modeling actual mathematical concepts with zero deduction compromises.
-* **Autonomous Self-Healing & Evolution**: The project evolves autonomously twice daily (Phase Alpha: Creation; Phase Omega: Hardening) while maintaining a strict quality gate.
-
----
-
-## 2. The Four Horizons: 12 Planned Masterpiece Games
-
-```mermaid
-flowchart TD
-    subgraph Horizon1["Horizon 1: Moroccan 2BAC PC Core Analysis"]
-        H1_1["1. MathCore: Survivor<br/>(Algebra & Parity) [LIVE]"]
-        H1_2["2. Math Battle<br/>(d/dx Differential Calculus) [LIVE]"]
-        H1_3["3. Complex Plane Duel<br/>(الأعداد العقدية - Argand Plane)"]
-        H1_4["4. Integral Area Slicer<br/>(التكامل ومجاميع ريمان)"]
-        H1_5["5. Trig Fourier Survivor<br/>(الدوال المثلثية والتذبذبات)"]
-    end
-
-    subgraph Horizon2["Horizon 2: Spatial Geometry & Linear Algebra"]
-        H2_1["6. Vector Space Odyssey<br/>(الهندسة الفضائية والتحويلات)"]
-        H2_2["7. Limit Chaser<br/>(المتتاليات وحساب النهايات)"]
-    end
-
-    subgraph Horizon3["Horizon 3: Stochasticity & Discrete Mathematics"]
-        H3_1["8. Markov Roulette<br/>(الاحتمالات وسلاسل ماركوف)"]
-        H3_2["9. Prime Vault<br/>(الحسابيات ونظرية الأعداد)"]
-    end
-
-    subgraph Horizon4["Horizon 4: Non-Euclidean Geometry & Chaos Theory"]
-        H4_1["10. Chaos Mandelbrot<br/>(الديناميكا العقدية والكسيريات)"]
-        H4_2["11. Hyperbolic Drift<br/>(قرص بوانكاريه والهندسة اللاإقليدية)"]
-        H4_3["12. ODE Phase Drift<br/>(المعادلات التفاضلية ومخططات الطور)"]
-    end
-
-    H1_1 --> H1_2 --> H1_3 --> H1_4 --> H1_5
-    H1_5 --> H2_1 --> H2_2
-    H2_2 --> H3_1 --> H3_2
-    H3_2 --> H4_1 --> H4_2 --> H4_3
-```
+## 1. Core Engineering & Creative Charter
+* **Repository**: `https://github.com/Ayoubvvch/Math-Arcid-V2`
+* **Live Deployment**: `https://ayoubvvch.github.io/Math-Arcid-V2/`
+* **Zero-Garbage Gold Standard (`evolution/GOLD_STANDARD.md`)**:
+  - Every game is a **Full-Screen 100vw × 100dvh 60FPS** experience (`<html lang="ar" dir="rtl">`) with `setBidiSafeMath` bidirectional formula isolation.
+  - Mandatory 6-Module Architecture (`js/curriculum.js`, `js/world.js`, `js/renderer.js`, `js/controls.js`, `js/audio.js`, `js/game.js`) with **≥ 2,800 lines of code** per game.
+  - Complete Moroccan 2BAC PC curriculum coverage with **≥ 24 National Exam questions**, interactive HTML5 Canvas graphs (`graphSpec`), 4 Sector Gates/Seals, Stagger/Execute mechanics, and a Sector Boss Core.
+  - 100% PlayStation DualSense / DualShock support (`✕`, `◯`, `▢`, `△`, `L1/R1`, `L2/R2`, `Options`, D-Pad, Twin Sticks) across gameplay and all modals.
+  - Bespoke SVG tile artwork in `js/hub.js` (`buildTileArtwork`).
 
 ---
 
-## 3. Horizon 1 Detailed Specifications
+## 2. The Complete Moroccan 2BAC PC Masterpiece Catalog (10 Games)
 
-### Game 1: MathCore Survivor (LIVE)
-* **Mathematical Core**: Linear equations ($ax = b$), parity invariants ($2k, 2k+1$), divisibility rules ($3k$), Cartesian kinematics.
-* **PlayStation Mapping**: Left Stick flight, `✕, ◯, ▢, △` operations, R2 EMP shockwave, L2 parity turrets.
-
-### Game 2: Math Battle: Calculus Showdown (LIVE)
-* **Mathematical Core**: Power rule ($\frac{d}{dx} x^n = n x^{n-1}$), trigonometric cycles ($\sin \to \cos \to -\sin \to -\cos \to 0$), exponential invariant ($\frac{d}{dx} e^x = e^x$), constant annihilation ($\frac{d}{dx}(1) = 0$).
-* **HUD**: Live derivation lifecycle bar with active stage tracker.
-
-### Game 3: Complex Plane Duel (Next Focus)
-* **Mathematical Core**:
-  * Complex affixes in the Argand-Cauchy plane ($z = x + iy$).
-  * Modulus and argument ($|z| = \sqrt{x^2 + y^2}$, $\theta = \arg(z)$).
-  * Geometrical transformations: Translation ($z' = z + b$), Rotation by angle $\theta$ ($z' = e^{i\theta} z$), Homothety ($z' = k z$).
-  * Roots of unity ($z^n = 1$) spawning symmetric shield formations!
-* **Mechanics**: Player commands a complex core craft that rotates and expands laser barriers by applying complex multiplications.
-
-### Game 4: Integral Area Slicer
-* **Mathematical Core**: Definite integrals $\int_a^b f(x) dx$, upper and lower Darboux-Riemann sums, the Fundamental Theorem of Calculus.
-* **Mechanics**: Players dynamically slice curves into rectangular Riemann partitions; tighter partition widths ($\Delta x \to 0$) unleash amplified resonance beams.
-
-### Game 5: Trig Fourier Survivor
-* **Mathematical Core**: Harmonic oscillations, phase shift $\phi$, frequency modulation, Fourier harmonic series synthesis ($f(t) = \sum a_n \sin(n \omega t)$).
+| # | Game ID | Title (Arabic / English) | Genre | 2BAC PC Topics | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | `mathcore-survivor` | **MathCore: PlayStation Survivor** | Tactical 2D Parity Arena | Algebra & Divisibility | **LIVE (Genesis)** |
+| 2 | `math-battle` | **Math Battle: Calculus Showdown** | Differential Operator Boss Arena | Power/Trig/Exp Derivatives | **LIVE (Genesis)** |
+| 3 | `asymptote-asylum` | **Asymptote Asylum — مصحّة المشتقة** | 2D Survival Horror & Chainsaw Action | **Topics 23–38** (الاشتقاق ودراسة الدوال) | **LIVE (Gold Standard)** |
+| 4 | `sequence-strider` | **Sequence Strider — عدّاء المتتاليات** | 2D Cyber Momentum Platformer | **Topics 39–50** (المتتاليات العددية) | **LIVE (Gold Standard)** |
+| 5 | `complex-plane-duel` | **Argand Citadel — قلعة أرغاند العقدية** | 2D Orbital Sector Raid & Geometry | **Topics 51–64** (الأعداد العقدية ℂ) | **LIVE (Gold Standard v2.0)** |
+| 6 | `limit-abyss` | **Limit Abyss — هاوية النهايات والاتصال** | 2D Deep-Trench Subnautic Survival | **Topics 1–22** (النهايات والاتصال و TVI و $f^{-1}$) | **NEXT SPRINT (Cycle 005)** |
+| 7 | `logarithm-reactor` | **Logarithm Reactor — مفاعل اللوغاريتم والأسي** | 2D Bio-Cyber Metroidvania Lab | **Topics 65–78** ($\ln x$ و $e^x$ والمعادلات) | **PLANNED (Cycle 007)** |
+| 8 | `integral-forge` | **Integral Forge — محرقة التكامل والمعادلات** | 2D Heavy Mech Siege & Area Slicer | **Topics 79–90** (الأصلية، التكامل والمعادلات التفاضلية) | **PLANNED (Cycle 009)** |
+| 9 | `vector-odyssey` | **Vector Odyssey — أوديسا الفضاء المتجهي** | 2.5D Starfighter Trench & Sphere Raid | **Topics 91–102** (الهندسة الفضائية والفلكة $\mathbb{R}^3$) | **PLANNED (Cycle 011)** |
+| 10 | `quantum-casino` | **Quantum Casino — كازينو الاحتمالات الكمومي** | 2D Tactical Heist & Bullet-Time Roguelite | **Topics 103–114** (التعداد والاحتمالات وقانون برنولي) | **PLANNED (Cycle 013)** |
 
 ---
 
-## 4. The Daily Evolution Protocol (Morning & Evening)
+## 3. Twice-Daily Autonomous Evolution Protocol (Alpha & Omega)
 
-1. **Morning Run (05:00 UTC) - Phase Alpha (Creation & Feature Build)**:
-   * Selects next game or major feature from the active Sprint.
-   * Scaffolds modular directories (`css/`, `js/`, `README.md`, `index.html`).
-   * Implements mathematical engine and PlayStation controller bindings.
-   * Validates syntax and registers into `games.json`.
-   * Pushes to GitHub and verifies live deployment.
+1. **Morning Run (05:00 UTC) — Phase Alpha (Gold-Standard Game Construction)**:
+   - Reads `evolution/GOLD_STANDARD.md`, `evolution/STATE.json`, and `evolution/SPRINT.md`.
+   - Studies `games/asymptote-asylum/`, `games/sequence-strider/`, and `games/complex-plane-duel/` as reference implementations.
+   - Builds the target game with all 6 modules (`≥ 2,800 LOC`), Arabic RTL + `setBidiSafeMath`, 4 Sectors, ≥ 24 questions with `graphSpec`, and custom SVG tile in `js/hub.js`.
+   - Runs `bash evolution/scripts/verify.sh` (all 7 gates must pass).
+   - Commits and pushes to `origin main` on `Ayoubvvch/Math-Arcid-V2`.
 
-2. **Evening Run (17:00 UTC) - Phase Omega (Hardening & Quality Assurance)**:
-   * Deep performance audit (120 FPS target, memory leaks, touch event handling).
-   * Refines mathematical accuracy, adds pedagogical tips and formula HUDs.
-   * Tunes audio synthesis and dual-rumble haptic pulses.
-   * Compacts logs and updates `STATE.json` and `SPRINT.md`.
-   * Sends a high-level briefing to the Owner on Telegram.
+2. **Evening Run (17:00 UTC) — Phase Omega (Deep Gameplay, Physics, Boss & Pedagogical Hardening)**:
+   - Audits the most recently launched game and existing catalog in `Math-Arcid-V2`.
+   - Expands question banks, adds new interactive `graphSpec` visualizations, refines enemy AI / boss patterns / particle FX / DualSense haptics, and verifies locked 60FPS performance.
+   - Runs `bash evolution/scripts/verify.sh`, commits, pushes, and sends an Arabic engineering report to Owner Ayoub (`8959256425`).

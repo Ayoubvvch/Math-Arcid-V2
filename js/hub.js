@@ -102,6 +102,32 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'complex-plane-duel') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="cpGlow" cx="50%" cy="48%" r="55%">
+            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.34" />
+            <stop offset="100%" stop-color="#040714" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#040714" />
+        <circle cx="160" cy="96" r="88" fill="url(#cpGlow)" />
+        <line x1="40" y1="96" x2="280" y2="96" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="1.5" />
+        <line x1="160" y1="18" x2="160" y2="168" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="1.5" />
+        <circle cx="160" cy="96" r="54" fill="none" stroke="#38bdf8" stroke-opacity="0.65" stroke-width="2" />
+        <polygon points="214,96 187,49 133,49 106,96 133,143 187,143" fill="none" stroke="#34d399" stroke-dasharray="5 4" stroke-width="1.6" />
+        <line x1="160" y1="96" x2="207" y2="69" stroke="#fbbf24" stroke-width="2.6" />
+        <line x1="160" y1="96" x2="207" y2="123" stroke="#f43f5e" stroke-dasharray="4 4" stroke-width="1.8" />
+        <circle cx="207" cy="69" r="5.5" fill="#fbbf24" />
+        <circle cx="207" cy="123" r="4.5" fill="#f43f5e" />
+        <text x="234" y="66" text-anchor="middle" fill="#fde68a" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">M(z)</text>
+        <text x="234" y="130" text-anchor="middle" fill="#fda4af" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">M̄(z̄)</text>
+        <text x="160" y="184" text-anchor="middle" fill="#fef3c7" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">z = r·e^{iθ} ∈ ℂ (51..64)</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />

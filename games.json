@@ -126,33 +126,32 @@
   },
   {
     "id": "complex-plane-duel",
-    "title": "Complex Plane: Argand Orbit Duel",
+    "title": "Argand Citadel — قلعة أرغاند العقدية",
     "slug": "complex-plane-duel",
-    "category": "Complex Analysis & Geometry",
+    "category": "Complexes ℂ",
     "difficulty": "Master (2BAC)",
     "difficultyLevel": 5,
-    "version": "1.0.0",
-    "description": "High-octane PlayStation orbital combat in the Argand plane. Harness Euler rotation phase shifts (z ↦ z·e^(iθ)), project n-th roots of unity barrier polygons (zⁿ = 1), and trigger homothety shockwaves against Cauchy poles and Mandelbrot singularities.",
+    "version": "2.0.0",
+    "description": "معركة مدارية وهندسية 2D بسرعة 60FPS في مستوى أرغاند-كوشي! قُد مقاتلة اللحق العقدي M(z) عبر الأرباع الأربعة، حطّم الأختام الهندسية عبر الشكل الجبري والمثلثي والأسي وصيغتي أولير وموافر والتحويلات العقدية (51–64)، ودمّر نواة موافر عند المركز O(0,0).",
     "mathConcepts": [
-      "Complex Affix & Modulus (z = x + iy, |z| = √(x²+y²))",
-      "Euler Polar Rotation (z ↦ z·e^(iθ), arg(z) Phase Shift)",
-      "Roots of Unity Polygon Shields (zⁿ = 1 for n=3, 4, 6, 8)",
-      "Complex Conjugation (z ↦ z̄ Reflection)",
-      "Homothety Dilation (z ↦ k·z Metric Shockwave)"
+      "الشكل الجبري، المرافق z̄، المعيار ومجموعات النقط (51–53)",
+      "العمدة والشكل المثلثي، الترميز الأسي وصيغتا أولير وموافر والإخطاط (54–57)",
+      "قياس الزوايا الموجهة، الاستقامية والتعامد وطبيعة المثلثات (58–61)",
+      "المعادلات في ℂ، جذور الوحدة zⁿ=1، الإزاحة، التحاكي والدوران (62–64)"
     ],
     "controls": [
-      "✕ (Cross): Euler Rotation Dash (z·e^(iπ/3) Phase Warp)",
-      "▢ (Square): Orthogonal Affix Beams (Re / Im Pulses)",
-      "◯ (Circle): Roots of Unity Barrier Shield (zⁿ = 1)",
-      "△ (Triangle): Homothety Metric Shockwave (z ↦ k·z)",
-      "L1 / R1: Cycle Roots Symmetry Order (n=3, 4, 6, 8)",
-      "L2: Complex Conjugate Flip (z ↦ z̄ Reflection)",
-      "Left & Right Sticks: 360° Argand Flight & Phase Targeting"
+      "Left Stick / WASD: تحليق 360° في المستوى العقدي أرغاند",
+      "✕ (Cross / Space): اندفاع دوران أولير المداري (z · e^{iπ/3})",
+      "◯ (Circle / Shift): انعكاس المرافق العقدي السريع (z ↦ z̄)",
+      "▢ (Square / E): اختراق ختم أرغاند بالتمثيل الهندسي العقدي",
+      "△ (Triangle / Q): تفعيل درع مضلع جذور الوحدة (z⁶ = 1)",
+      "R2 / J / كليك: إطلاق شعاع اللحق العقدي الموجه",
+      "L2 / F: موجة التحاكي الانفجارية z' - ω = k(z - ω)"
     ],
     "path": "games/complex-plane-duel/index.html",
-    "badge": "Complex",
+    "badge": "Complexes ℂ",
     "icon": "ℂ",
-    "accentColor": "#ffd700",
+    "accentColor": "#fbbf24",
     "status": "ready",
     "featured": true
   }

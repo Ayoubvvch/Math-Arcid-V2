@@ -3,29 +3,20 @@
 
 ---
 
-### [Cycle 004] 2026-11-14 05:00 UTC | Milestone: Game 3 - Complex Plane Duel (Argand Orbit Survivor)
-* **Phase**: Phase Alpha (Creation & Mathematical Game Construction)
-* **Target**: `games/complex-plane-duel/` & Platform Hub
+### [Cycle 004-V2] 2026-11-14 10:35 UTC | Milestone: Math-Arcid-V2 Genesis, Gold-Standard Charter & Argand Citadel v2.0 Overhaul
+* **Phase**: V2 Fork & Gold-Standard Architectural Upgrade
+* **Target**: `Math-Arcid-V2` Repository, `evolution/` Engine & `games/complex-plane-duel/`
 * **Changes Delivered**:
-  - Architected and launched Game 3: **Complex Plane: Argand Orbit Duel** (`games/complex-plane-duel/`).
-  - Built pure mathematical complex engine `Complex` in `js/complex-math.js`:
-    - Full Cartesian affix representation $z = x + iy$, modulus $|z| = \sqrt{x^2+y^2}$, phase argument $\arg(z) \in (-\pi, \pi]$.
-    - Euler rotation $z \mapsto z \cdot e^{i\theta}$ preserving modulus.
-    - Roots of unity solver generating $n$-th conjugate shield vertices ($z^n = 1$ for $n=3, 4, 6, 8$).
-    - Complex conjugation $\bar{z} = x - iy$ and homothety dilation $z \mapsto k z$.
-  - Implemented 100% PlayStation DualSense controls:
-    - `✕ (Cross)`: Euler Rotation Dash ($z \cdot e^{i \frac{\pi}{3}}$ phase warp)
-    - `▢ (Square)`: Orthogonal Affix Laser Beams ($\text{Re} / \text{Im}$)
-    - `◯ (Circle)`: Roots of Unity Barrier Shield ($z^n = 1$ rotating polygon)
-    - `△ (Triangle)`: Homothety Metric Shockwave ($z \mapsto k z$)
-    - `L1 / R1`: Cycle roots symmetry order ($n=3, 4, 6, 8$)
-    - `L2`: Complex Conjugate Flip ($z \mapsto \bar{z}$)
-  - Designed Argand Canvas Renderer:
-    - Real ($\text{Re}$) and Imaginary ($\text{Im}$) Cartesian axes with origin $O$.
-    - Concentric modulus circles ($r=1, 2, 3, 4, 5$) and polar ray angles ($\frac{\pi}{4}, \frac{\pi}{2}, \dots$).
-    - Real-time Complex Affix HUD gauge: `$z = 2.40 + 1.80i$`, `$|z| = 3.00$`, `$\arg(z) = +37^\circ$`.
-  - Registered into `games.json` with golden accent `#ffd700` and icon `ℂ`.
-* **Verification**: Quality gate `verify.sh` passed 100% green.
+  - Cloned `math-arcade` into independent autonomous repository **Math-Arcid-V2** (`/home/ubuntu/Math-Arcid-V2` -> `Ayoubvvch/Math-Arcid-V2`), leaving `math-arcade` (V1) 100% untouched for Owner Ayoub's manual development.
+  - Established `evolution/GOLD_STANDARD.md` (الدستور المعماري الصارم للوحش) and upgraded `evolution/scripts/verify.sh` into a **7-Stage Ironclad Quality Gate** enforcing:
+    1. Full-screen 100vw × 100dvh 60FPS canvas (banning 540×960 portrait boxes).
+    2. Arabic RTL (`<html lang="ar" dir="rtl">`) + `setBidiSafeMath` formula protection.
+    3. Mandatory 6-Module Architecture (`curriculum.js`, `world.js`, `renderer.js`, `controls.js`, `audio.js`, `game.js`).
+    4. Minimum **2,500 lines of code** floor per curriculum game.
+    5. Minimum **20 rigorous 2BAC PC questions** with `hint` and interactive `graphSpec` canvas plotting.
+    6. Bespoke multi-layered SVG artwork in `js/hub.js` for every game.
+  - Completely rebuilt `games/complex-plane-duel/` into **قلعة أرغاند — Complex Plane Citadel v2.0** (3,591 LOC, Topics 51–64: الأعداد العقدية) with 4 Quadrant Seals (`Q1..Q4`), 26 National Exam questions, 9 interactive Argand `graphSpec` diagrams, Roots-of-Unity polygon barrier, Conjugate reflection, Homothety blast, Moivre Origin Boss, and custom Hub SVG tile.
+* **Verification**: 7-Stage Ironclad Quality Gate (`verify.sh`) passed 100%.
 * **Author**: Autonomous AGY Core ("My Homie").
 
 ---

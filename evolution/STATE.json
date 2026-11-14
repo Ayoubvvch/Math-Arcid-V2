@@ -1,21 +1,22 @@
 {
-  "project": "Math Arcade",
-  "version": "2.2.0",
-  "repository": "https://github.com/Ayoubvvch/math-arcade",
-  "deployment": "https://ayoubvvch.github.io/math-arcade/",
+  "project": "Math-Arcid-V2",
+  "version": "2.4.0",
+  "repository": "https://github.com/Ayoubvvch/Math-Arcid-V2",
+  "deployment": "https://ayoubvvch.github.io/Math-Arcid-V2/",
   "owner": "Ayoub (eulerx0)",
   "chatId": "8959256425",
-  "evolutionMode": "Autonomous Twice-Daily (Alpha/Omega) with Absolute Creative Sovereignty",
+  "evolutionMode": "Autonomous Twice-Daily (Alpha/Omega) — Ironclad 7-Stage Gold Standard",
+  "goldStandardCharter": "/home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md",
   "schedule": {
-    "morningPhase": "05:00 UTC - Phase Alpha (Game Construction, Mechanics & Art)",
-    "eveningPhase": "17:00 UTC - Phase Omega (Hardening, 60fps Tuning & Audio Polish)"
+    "morningPhase": "05:00 UTC - Phase Alpha (6-Module Gold Standard Game Construction >= 2,800 LOC)",
+    "eveningPhase": "17:00 UTC - Phase Omega (Deep Gameplay, Boss Patterns, Question Bank Expansion & 60FPS Audit)"
   },
   "metrics": {
     "totalCyclesCompleted": 4,
-    "lastCycleTimestamp": "2026-11-14T05:00:00Z",
-    "lastCyclePhase": "Phase Alpha: Complex Plane Duel Launch & 5-Game Milestone",
+    "lastCycleTimestamp": "2026-11-14T10:35:00Z",
+    "lastCyclePhase": "V2 Genesis & Gold-Standard Overhaul of Argand Citadel (Topics 51-64)",
     "totalGamesLive": 5,
-    "verificationStatus": "PASSED_100_PERCENT"
+    "verificationStatus": "PASSED_7_STAGE_IRONCLAD_GATE"
   },
   "liveGames": [
     {
@@ -38,36 +39,35 @@
       "id": "asymptote-asylum",
       "slug": "asymptote-asylum",
       "title": "Asymptote Asylum — مصحّة المشتقة",
-      "category": "Horror Calculus",
+      "category": "Horror Calculus (Topics 23-38)",
       "version": "1.0.0",
-      "status": "STABLE_PS5_OPTIMIZED"
+      "linesOfCode": 4166,
+      "status": "GOLD_STANDARD_VERIFIED"
     },
     {
       "id": "sequence-strider",
       "slug": "sequence-strider",
       "title": "Sequence Strider — عدّاء المتتاليات",
-      "category": "Suites",
+      "category": "Suites (Topics 39-50)",
       "version": "1.0.0",
-      "status": "STABLE_PS5_OPTIMIZED"
+      "linesOfCode": 3331,
+      "status": "GOLD_STANDARD_VERIFIED"
     },
     {
       "id": "complex-plane-duel",
       "slug": "complex-plane-duel",
-      "title": "Complex Plane: Argand Orbit Duel",
-      "category": "Complex Analysis & Geometry",
-      "version": "1.0.0",
-      "status": "LIVE_NEW"
+      "title": "Argand Citadel — قلعة أرغاند العقدية",
+      "category": "Complexes ℂ (Topics 51-64)",
+      "version": "2.0.0",
+      "linesOfCode": 3591,
+      "status": "GOLD_STANDARD_VERIFIED"
     }
   ],
   "currentSprint": {
-    "id": "SPRINT_01",
-    "name": "PS5 Era Genesis & High-Octane Mathematical Game Design",
-    "creativeCharter": "Total Creative Sovereignty (Fun & Thrill First: Roguelites, Horror, Platformers, Shooters with True Math Core)",
-    "startDate": "2026-11-14",
-    "endDate": "2026-11-20",
-    "activeTargetGame": "complex-plane-duel",
-    "gameplayConcept": "High-Speed Argand Orbital Action Combat (Euler Rotation Shields & Affix Beams)",
-    "nextPlannedExperiment": "integral-area-slicer (Riemann Sums Area Slicer)",
-    "qualityFocus": "100% PlayStation DualSense Support, 60-120 FPS GPU Composited Layers, Web Audio Haptics"
+    "id": "SPRINT_02",
+    "name": "Math-Arcid-V2 Gold Standard Unleashed",
+    "nextCycleNumber": 5,
+    "nextOmegaMilestone": "Expand Argand Citadel question bank to 32 questions (cubic polynomials in C & composite transformations) + multi-phase Moivre Boss laser spokes",
+    "nextAlphaMilestone": "Build Game 6: Limit Abyss (هاوية النهايات والاتصال — Topics 1-22) with 6-module RTL architecture (>= 3,200 LOC), 4 Abyssal Sectors, 28 TVI/Limit/Inverse questions with graphSpec, and bespoke Hub SVG"
   }
 }
