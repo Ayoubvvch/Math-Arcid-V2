@@ -1,44 +1,206 @@
 /**
- * Math Arcade - Hub Controller
- * Dynamic catalog rendering, Gamepad API navigation, real-time filtering, audio feedback, and modal controllers.
+ * Math Arcade - PlayStation 5 Style Console Hub Controller
+ * Cinematic boot sequence, zero-scroll horizontal game launcher,
+ * smooth DualSense / Xbox / Keyboard navigation with zero dropped inputs.
  */
 
 import { sound } from '../shared/retro-audio.js';
 import { gamepad } from '../shared/gamepad.js';
 
-class ArcadeHub {
+function getGameArtworkSVG(game) {
+  const accent = game.accentColor || '#00e5ff';
+
+  if (game.id === 'mathcore-survivor') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="mcGlow" cx="50%" cy="50%" r="55%">
+            <stop offset="0%" stop-color="#00f3ff" stop-opacity="0.32" />
+            <stop offset="100%" stop-color="#060914" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#070c1a" />
+        <circle cx="160" cy="100" r="85" fill="url(#mcGlow)" />
+        <circle cx="160" cy="100" r="56" fill="none" stroke="#00f3ff" stroke-opacity="0.28" stroke-dasharray="6 6" stroke-width="1.5" />
+        <circle cx="160" cy="100" r="28" fill="#09152e" stroke="#00f3ff" stroke-width="2.5" />
+        <text x="160" y="106" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-weight="800" font-size="16">X=n</text>
+        <path d="M72 58 L134 88 M248 142 L186 112" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-opacity="0.85" />
+        <polygon points="72,44 86,68 58,68" fill="none" stroke="#ff007f" stroke-width="2.2" />
+        <rect x="234" y="128" width="26" height="26" rx="4" fill="none" stroke="#ffb800" stroke-width="2.2" />
+        <text x="247" y="54" text-anchor="middle" fill="#00e5ff" font-family="JetBrains Mono, monospace" font-weight="800" font-size="14">✕ ◯ ▢ △</text>
+      </svg>
+    `;
+  }
+
+  if (game.id === 'math-battle') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="mbGlow" cx="55%" cy="48%" r="55%">
+            <stop offset="0%" stop-color="#b537f2" stop-opacity="0.34" />
+            <stop offset="100%" stop-color="#070914" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#090714" />
+        <circle cx="165" cy="98" r="88" fill="url(#mbGlow)" />
+        <line x1="40" y1="100" x2="280" y2="100" stroke="#ffffff" stroke-opacity="0.14" stroke-width="1" />
+        <line x1="160" y1="24" x2="160" y2="176" stroke="#ffffff" stroke-opacity="0.14" stroke-width="1" />
+        <path d="M46 155 Q 115 30, 175 100 T 274 45" fill="none" stroke="#ff5500" stroke-width="2.5" stroke-opacity="0.85" />
+        <circle cx="105" cy="122" r="19" fill="#001524" stroke="#00f0ff" stroke-width="2.5" />
+        <text x="105" y="127" text-anchor="middle" fill="#00f0ff" font-family="Cambria Math, Georgia, serif" font-style="italic" font-weight="700" font-size="14">d/dx</text>
+        <circle cx="222" cy="76" r="24" fill="#1b071e" stroke="#ff5500" stroke-width="2.5" />
+        <text x="222" y="83" text-anchor="middle" fill="#ff5500" font-family="Cambria Math, Georgia, serif" font-style="italic" font-weight="700" font-size="20">x³</text>
+        <text x="255" y="152" text-anchor="middle" fill="#10b981" font-family="JetBrains Mono, monospace" font-weight="800" font-size="13">→ 0</text>
+      </svg>
+    `;
+  }
+
+  return `
+    <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="320" height="200" fill="#070c18" />
+      <circle cx="160" cy="100" r="46" fill="none" stroke="${accent}" stroke-opacity="0.45" stroke-width="2" />
+      <text x="160" y="114" text-anchor="middle" fill="#ffffff" font-family="Cambria Math, serif" font-size="48" font-weight="700">${game.icon || '∫'}</text>
+    </svg>
+  `;
+}
+
+function formatControlEntry(text) {
+  const idx = text.indexOf(':');
+  if (idx === -1) return { key: 'INPUT', desc: text };
+  return {
+    key: text.slice(0, idx).trim(),
+    desc: text.slice(idx + 1).trim(),
+  };
+}
+
+class ArcadeConsoleHub {
   constructor() {
     this.games = [];
+    this.filteredGames = [];
     this.activeCategory = 'All';
     this.searchQuery = '';
+    this.selectedIndex = 0;
 
-    // DOM Elements
-    this.grid = document.getElementById('games-grid');
-    this.searchInput = document.getElementById('search-input');
-    this.categoryContainer = document.getElementById('category-pills');
+    // Navigation state: 'rail' | 'actions' | 'modal'
+    this.navZone = 'rail';
+    this.actionIndex = 0;
+    this.modalFocusIndex = 0;
+    this.bootDismissed = false;
+    this.isLaunching = false;
+
+    // Gamepad repeat timing (kept separate from face button presses so buttons NEVER get dropped!)
+    this.nextDirRepeatAt = 0;
+    this.lastDirVector = null;
+
+    // DOM Cache
+    this.bootOverlay = document.getElementById('ps5-boot');
+    this.consoleShell = document.getElementById('console-shell');
+    this.launchCurtain = document.getElementById('launch-curtain');
+    this.launchIcon = document.getElementById('launch-icon');
+    this.launchLabel = document.getElementById('launch-label');
+
+    this.rail = document.getElementById('games-rail');
+    this.consoleMain = document.querySelector('.console-main');
+    this.categoryTabs = document.getElementById('category-tabs');
+    this.railStatusText = document.getElementById('rail-filter-status');
     this.statsCounter = document.getElementById('stats-counter');
-    this.modalOverlay = document.getElementById('game-modal');
-    this.guideModal = document.getElementById('guide-modal');
-    this.soundToggleBtn = document.getElementById('sound-toggle');
-    this.gamepadBadge = document.getElementById('gamepad-status-badge');
-    this.gamepadHud = document.getElementById('gamepad-hud');
-    this.gpName = document.getElementById('gp-name');
 
-    // Gamepad Navigation State
-    this.focusableElements = [];
-    this.focusedIndex = -1;
-    this.gamepadNavCooldown = 0;
+    this.showcase = document.getElementById('ps5-showcase');
+    this.showcaseCategory = document.getElementById('showcase-category');
+    this.showcaseDiff = document.getElementById('showcase-difficulty');
+    this.showcaseVersion = document.getElementById('showcase-version');
+    this.showcaseStatus = document.getElementById('showcase-status');
+    this.showcaseTitle = document.getElementById('showcase-title');
+    this.showcaseDesc = document.getElementById('showcase-desc');
+    this.showcaseConcepts = document.getElementById('showcase-concepts');
+    this.showcaseControls = document.getElementById('showcase-controls');
+    this.blueprintArtBadge = document.getElementById('blueprint-art-badge');
+    this.ambientPrimary = document.getElementById('ambient-glow-primary');
+
+    this.btnPlaySelected = document.getElementById('btn-play-selected');
+    this.btnInfoSelected = document.getElementById('btn-info-selected');
+
+    this.searchModal = document.getElementById('search-modal');
+    this.gameModal = document.getElementById('game-modal');
+    this.guideModal = document.getElementById('guide-modal');
+    this.searchInput = document.getElementById('search-input');
+
+    this.controllerPill = document.getElementById('controller-pill');
+    this.controllerLabel = document.getElementById('controller-label');
+    this.soundToggleBtn = document.getElementById('sound-toggle');
+    this.soundIcon = document.getElementById('sound-icon');
+    this.soundLabel = document.getElementById('sound-label');
+    this.clockEl = document.getElementById('console-clock');
 
     this.init();
   }
 
   async init() {
+    this.startClock();
+    this.setupBootSequence();
     this.bindEvents();
     this.initGamepad();
     await this.loadGames();
     this.renderCategories();
-    this.render();
+    this.applyFilters();
     this.startLoop();
+  }
+
+  setupBootSequence() {
+    const params = new URLSearchParams(window.location.search);
+    const returningFromGame = params.get('from') === 'game' || (document.referrer && document.referrer.includes('/games/'));
+
+    if (returningFromGame && this.bootOverlay) {
+      // Fast console wake when coming back from a game (no waiting annoyance!)
+      this.bootDismissed = true;
+      this.bootOverlay.classList.add('boot-hidden');
+      requestAnimationFrame(() => {
+        this.consoleShell?.classList.add('ready');
+      });
+      if (params.has('from')) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
+      return;
+    }
+
+    // Grand cinematic boot reveal (auto completes at 1.4s, skippable anytime)
+    const finishBoot = () => this.dismissBoot();
+    this.bootTimer = setTimeout(finishBoot, 1400);
+
+    this.bootOverlay?.addEventListener('click', () => {
+      sound.init();
+      sound.playConsoleBoot();
+      this.dismissBoot();
+    }, { once: true });
+  }
+
+  dismissBoot() {
+    if (this.bootDismissed) return;
+    this.bootDismissed = true;
+    clearTimeout(this.bootTimer);
+
+    if (this.bootOverlay) {
+      this.bootOverlay.classList.add('boot-exit');
+      setTimeout(() => {
+        this.bootOverlay?.classList.add('boot-hidden');
+      }, 460);
+    }
+
+    requestAnimationFrame(() => {
+      this.consoleShell?.classList.add('ready');
+    });
+  }
+
+  startClock() {
+    const update = () => {
+      if (!this.clockEl) return;
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2, '0');
+      const mm = String(now.getMinutes()).padStart(2, '0');
+      this.clockEl.textContent = `${hh}:${mm}`;
+    };
+    update();
+    setInterval(update, 15000);
   }
 
   async loadGames() {
@@ -53,70 +215,186 @@ class ArcadeHub {
   }
 
   bindEvents() {
-    // Search input
-    if (this.searchInput) {
-      this.searchInput.addEventListener('input', (e) => {
-        this.searchQuery = e.target.value.toLowerCase().trim();
-        this.render();
-      });
-    }
+    // Unlock Web Audio cleanly on first pointer/key interaction
+    const unlockAudio = () => {
+      sound.init();
+      window.removeEventListener('pointerdown', unlockAudio);
+      window.removeEventListener('keydown', unlockAudio);
+    };
+    window.addEventListener('pointerdown', unlockAudio, { passive: true });
+    window.addEventListener('keydown', unlockAudio, { passive: true });
 
-    // Keyboard shortcuts
-    window.addEventListener('keydown', (e) => {
-      if (e.key === '/' && document.activeElement !== this.searchInput) {
-        e.preventDefault();
-        this.searchInput?.focus();
-      }
-      if (e.key === 'Escape') {
-        this.closeModals();
-      }
+    // Top bar triggers
+    document.getElementById('btn-search-trigger')?.addEventListener('click', () => {
+      sound.playClick();
+      this.openSearchModal();
     });
 
-    // Modal background clicks
-    this.modalOverlay?.addEventListener('click', (e) => {
-      if (e.target === this.modalOverlay) this.closeModals();
-    });
-    this.guideModal?.addEventListener('click', (e) => {
-      if (e.target === this.guideModal) this.closeModals();
-    });
-
-    // Contributor guide button
     document.getElementById('btn-add-game-guide')?.addEventListener('click', () => {
       sound.playClick();
       this.openGuideModal();
     });
 
-    // Sound toggle
     this.soundToggleBtn?.addEventListener('click', () => {
-      const isMuted = sound.toggleMute();
-      this.soundToggleBtn.innerHTML = isMuted ? '🔇 Audio Muted' : '🔊 Audio Active';
-      if (!isMuted) sound.playClick();
+      this.toggleAudio();
+    });
+
+    // Showcase CTA buttons
+    this.btnPlaySelected?.addEventListener('click', () => {
+      this.launchSelectedGame();
+    });
+
+    this.btnInfoSelected?.addEventListener('click', () => {
+      const game = this.filteredGames[this.selectedIndex];
+      if (game) {
+        sound.playClick();
+        this.openGameModal(game);
+      }
+    });
+
+    // Search input live filter
+    this.searchInput?.addEventListener('input', (e) => {
+      this.searchQuery = e.target.value.toLowerCase().trim();
+      this.applyFilters();
+    });
+
+    document.getElementById('btn-clear-search')?.addEventListener('click', () => {
+      sound.playClick();
+      this.searchQuery = '';
+      if (this.searchInput) this.searchInput.value = '';
+      this.applyFilters();
+    });
+
+    document.querySelectorAll('.quick-tag-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        sound.playNavTick();
+        const q = btn.getAttribute('data-query') || '';
+        this.searchQuery = q;
+        if (this.searchInput) this.searchInput.value = q;
+        this.applyFilters();
+        this.closeModals();
+      });
+    });
+
+    // Modal close buttons & backdrop clicks
+    document.getElementById('btn-close-search')?.addEventListener('click', () => this.closeModals());
+    document.getElementById('btn-close-game-modal')?.addEventListener('click', () => this.closeModals());
+    document.getElementById('btn-close-guide-modal')?.addEventListener('click', () => this.closeModals());
+    document.getElementById('btn-guide-done')?.addEventListener('click', () => this.closeModals());
+
+    [this.searchModal, this.gameModal, this.guideModal].forEach((overlay) => {
+      overlay?.addEventListener('click', (e) => {
+        if (e.target === overlay) this.closeModals();
+      });
+    });
+
+    // Full Keyboard PS5-style Controls
+    window.addEventListener('keydown', (e) => {
+      if (!this.bootDismissed) {
+        if (['Enter', 'Space', 'Escape', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+          e.preventDefault();
+          sound.playConsoleBoot();
+          this.dismissBoot();
+        }
+        return;
+      }
+
+      const isTyping = document.activeElement === this.searchInput;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        if (this.getActiveModal()) {
+          this.closeModals();
+        } else if (this.searchQuery) {
+          this.searchQuery = '';
+          if (this.searchInput) this.searchInput.value = '';
+          this.applyFilters();
+        }
+        return;
+      }
+
+      if (isTyping) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          this.closeModals();
+        }
+        return;
+      }
+
+      if (e.key === '/') {
+        e.preventDefault();
+        this.openSearchModal();
+        return;
+      }
+
+      if (e.key === 'm' || e.key === 'M') {
+        this.toggleAudio();
+        return;
+      }
+
+      if (e.key === 'i' || e.key === 'I') {
+        const g = this.filteredGames[this.selectedIndex];
+        if (g) this.openGameModal(g);
+        return;
+      }
+
+      if (e.key === 'g' || e.key === 'G') {
+        this.openGuideModal();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        this.cycleCategories(e.shiftKey ? -1 : 1);
+        return;
+      }
+
+      if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+        e.preventDefault();
+        this.handleDirection('right');
+      } else if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+        e.preventDefault();
+        this.handleDirection('left');
+      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
+        e.preventDefault();
+        this.handleDirection('down');
+      } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+        e.preventDefault();
+        this.handleDirection('up');
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.handleConfirm();
+      }
     });
   }
 
+  toggleAudio() {
+    const isMuted = sound.toggleMute();
+    if (this.soundIcon) this.soundIcon.textContent = isMuted ? '🔇' : '🔊';
+    if (this.soundLabel) this.soundLabel.textContent = isMuted ? 'Muted' : 'Audio';
+    if (!isMuted) sound.playClick();
+  }
+
   initGamepad() {
-    gamepad.onConnect = (gp) => {
-      sound.playAnnihilation();
-      if (this.gamepadBadge) {
-        this.gamepadBadge.style.display = 'inline-block';
-        this.gamepadBadge.innerText = '🎮 ' + gamepad.getControllerType();
-      }
-      if (this.gamepadHud) {
-        this.gamepadHud.classList.add('visible');
-      }
-      if (this.gpName) {
-        this.gpName.innerText = gamepad.getControllerType().split(' ')[0] || 'Gamepad';
+    const updateBadge = (connected) => {
+      if (!this.controllerPill || !this.controllerLabel) return;
+      if (connected) {
+        this.controllerPill.classList.add('connected');
+        this.controllerLabel.textContent = gamepad.getControllerType();
+      } else {
+        this.controllerPill.classList.remove('connected');
+        this.controllerLabel.textContent = 'Keyboard';
       }
     };
 
+    gamepad.onConnect = () => {
+      updateBadge(true);
+      sound.playConsoleBoot();
+      gamepad.triggerHaptic(70, 0.35, 0.35);
+    };
+
     gamepad.onDisconnect = () => {
-      if (this.gamepadBadge) {
-        this.gamepadBadge.style.display = 'none';
-      }
-      if (this.gamepadHud) {
-        this.gamepadHud.classList.remove('visible');
-      }
-      this.clearGamepadFocus();
+      updateBadge(false);
     };
   }
 
@@ -129,369 +407,554 @@ class ArcadeHub {
   }
 
   updateGamepad(timestamp) {
-    const hasGamepad = gamepad.poll();
-    if (!hasGamepad) return;
+    const connected = gamepad.poll();
+    if (!connected) return;
 
-    // Show HUD if connected
-    if (this.gamepadHud && !this.gamepadHud.classList.contains('visible')) {
-      this.gamepadHud.classList.add('visible');
-      if (this.gamepadBadge) {
-        this.gamepadBadge.style.display = 'inline-block';
-        this.gamepadBadge.innerText = '🎮 ' + gamepad.getControllerType();
+    if (this.controllerPill && !this.controllerPill.classList.contains('connected')) {
+      this.controllerPill.classList.add('connected');
+      if (this.controllerLabel) this.controllerLabel.textContent = gamepad.getControllerType();
+    }
+
+    // Skip boot immediately on any controller input
+    if (!this.bootDismissed) {
+      if (gamepad.isAnyJustPressed() || Math.abs(gamepad.axes.leftX) > 0.5 || Math.abs(gamepad.axes.leftY) > 0.5) {
+        sound.init();
+        sound.playConsoleBoot();
+        this.dismissBoot();
       }
+      return;
     }
 
-    // Cooldown for navigational stick/dpad inputs (approx 180ms)
-    if (timestamp < this.gamepadNavCooldown) return;
-
-    const stickY = gamepad.axes.leftY;
-    const stickX = gamepad.axes.leftX;
-    const dpadUp = gamepad.buttons.dpadUp;
-    const dpadDown = gamepad.buttons.dpadDown;
-    const dpadLeft = gamepad.buttons.dpadLeft;
-    const dpadRight = gamepad.buttons.dpadRight;
-
-    // Navigation triggers
-    const navDown = dpadDown || stickY > 0.5;
-    const navUp = dpadUp || stickY < -0.5;
-    const navRight = dpadRight || stickX > 0.5;
-    const navLeft = dpadLeft || stickX < -0.5;
-
-    if (navDown || navUp || navRight || navLeft) {
-      this.handleGamepadDirection(navDown || navRight ? 1 : -1);
-      this.gamepadNavCooldown = timestamp + 180;
-      sound.playClick();
-      gamepad.triggerHaptic(40, 0.2, 0.2);
-    }
-
-    // Button 0: Cross ✕ / A -> Confirm / Click
+    // 1. Face & Shoulder Buttons (Edge-triggered, NEVER blocked by directional cooldown!)
     if (gamepad.isJustPressed('cross')) {
-      this.handleGamepadConfirm();
-      this.gamepadNavCooldown = timestamp + 220;
+      this.handleConfirm();
+      gamepad.triggerHaptic(55, 0.45, 0.45);
     }
 
-    // Button 1: Circle ◯ / B -> Back / Cancel / Close Modals
     if (gamepad.isJustPressed('circle')) {
-      this.handleGamepadBack();
-      this.gamepadNavCooldown = timestamp + 220;
+      this.handleBack();
+      gamepad.triggerHaptic(40, 0.25, 0.25);
     }
 
-    // Button 3: Triangle △ / Y -> Focus Search
-    if (gamepad.isJustPressed('triangle')) {
-      if (this.searchInput) {
-        this.searchInput.focus();
-        sound.playClick();
-        gamepad.triggerHaptic(50, 0.3, 0.3);
-      }
-      this.gamepadNavCooldown = timestamp + 220;
-    }
-
-    // Button 2: Square ▢ / X -> Toggle Add Game Guide
     if (gamepad.isJustPressed('square')) {
-      this.toggleGuideModal();
-      this.gamepadNavCooldown = timestamp + 220;
+      if (this.getActiveModal() === this.gameModal) {
+        this.closeModals();
+      } else {
+        const game = this.filteredGames[this.selectedIndex];
+        if (game) {
+          sound.playClick();
+          this.openGameModal(game);
+        }
+      }
+      gamepad.triggerHaptic(40, 0.25, 0.25);
     }
 
-    // L1 / R1: Cycle Category Tabs
+    if (gamepad.isJustPressed('triangle')) {
+      if (this.getActiveModal() === this.searchModal) {
+        this.closeModals();
+      } else {
+        sound.playClick();
+        this.openSearchModal();
+      }
+      gamepad.triggerHaptic(40, 0.25, 0.25);
+    }
+
     if (gamepad.isJustPressed('l1')) {
       this.cycleCategories(-1);
-      this.gamepadNavCooldown = timestamp + 200;
+      gamepad.triggerHaptic(35, 0.2, 0.2);
     }
+
     if (gamepad.isJustPressed('r1')) {
       this.cycleCategories(1);
-      this.gamepadNavCooldown = timestamp + 200;
+      gamepad.triggerHaptic(35, 0.2, 0.2);
+    }
+
+    if (gamepad.isJustPressed('start')) {
+      this.toggleAudio();
+      gamepad.triggerHaptic(35, 0.2, 0.2);
+    }
+
+    if (gamepad.isJustPressed('select')) {
+      if (this.getActiveModal() === this.guideModal) {
+        this.closeModals();
+      } else {
+        sound.playClick();
+        this.openGuideModal();
+      }
+    }
+
+    // 2. Directional Input with Initial Delay + Smooth Repeat
+    const lx = gamepad.axes.leftX;
+    const ly = gamepad.axes.leftY;
+    let dir = null;
+
+    if (gamepad.buttons.dpadLeft || lx < -0.5) dir = 'left';
+    else if (gamepad.buttons.dpadRight || lx > 0.5) dir = 'right';
+    else if (gamepad.buttons.dpadUp || ly < -0.5) dir = 'up';
+    else if (gamepad.buttons.dpadDown || ly > 0.5) dir = 'down';
+
+    if (!dir) {
+      this.lastDirVector = null;
+      this.nextDirRepeatAt = 0;
+      return;
+    }
+
+    if (dir !== this.lastDirVector) {
+      this.lastDirVector = dir;
+      this.nextDirRepeatAt = timestamp + 270;
+      this.handleDirection(dir);
+      gamepad.triggerHaptic(28, 0.18, 0.18);
+    } else if (timestamp >= this.nextDirRepeatAt) {
+      this.nextDirRepeatAt = timestamp + 115;
+      this.handleDirection(dir);
+      gamepad.triggerHaptic(20, 0.14, 0.14);
     }
   }
 
-  refreshFocusableElements() {
-    // Collect interactive elements visible on page
-    const isModalActive = this.modalOverlay?.classList.contains('active') || this.guideModal?.classList.contains('active');
+  getActiveModal() {
+    if (this.searchModal?.classList.contains('active')) return this.searchModal;
+    if (this.gameModal?.classList.contains('active')) return this.gameModal;
+    if (this.guideModal?.classList.contains('active')) return this.guideModal;
+    return null;
+  }
 
-    let selector = '';
-    if (isModalActive) {
-      selector = '.modal-overlay.active button, .modal-overlay.active a';
-    } else {
-      selector = '#search-input, .category-pill, .btn-ghost, .btn-play, .btn-info, #btn-deploy-empty';
-    }
-
-    this.focusableElements = Array.from(document.querySelectorAll(selector)).filter((el) => {
-      const rect = el.getBoundingClientRect();
-      return rect.width > 0 && rect.height > 0 && !el.disabled;
+  getModalFocusables(modal) {
+    if (!modal) return [];
+    return Array.from(modal.querySelectorAll('button, a.cta-play, input')).filter((el) => {
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0 && !el.disabled;
     });
+  }
 
-    if (this.focusedIndex >= this.focusableElements.length) {
-      this.focusedIndex = 0;
+  clearFocusClasses() {
+    document.querySelectorAll('.gp-focused').forEach((el) => el.classList.remove('gp-focused'));
+  }
+
+  updateZoneUI() {
+    this.clearFocusClasses();
+    if (this.consoleMain) {
+      this.consoleMain.classList.toggle('zone-rail', this.navZone === 'rail');
+    }
+
+    if (this.navZone === 'actions') {
+      const actionBtns = [this.btnPlaySelected, this.btnInfoSelected].filter(Boolean);
+      const target = actionBtns[this.actionIndex % actionBtns.length];
+      target?.classList.add('gp-focused');
+    } else if (this.navZone === 'modal') {
+      const modal = this.getActiveModal();
+      const items = this.getModalFocusables(modal);
+      if (items.length > 0) {
+        const idx = ((this.modalFocusIndex % items.length) + items.length) % items.length;
+        this.modalFocusIndex = idx;
+        items[idx].classList.add('gp-focused');
+      }
     }
   }
 
-  handleGamepadDirection(delta) {
-    this.refreshFocusableElements();
-    if (this.focusableElements.length === 0) return;
-
-    this.clearGamepadFocus();
-
-    if (this.focusedIndex === -1) {
-      this.focusedIndex = delta > 0 ? 0 : this.focusableElements.length - 1;
-    } else {
-      this.focusedIndex = (this.focusedIndex + delta + this.focusableElements.length) % this.focusableElements.length;
+  handleDirection(dir) {
+    const activeModal = this.getActiveModal();
+    if (activeModal) {
+      this.navZone = 'modal';
+      const items = this.getModalFocusables(activeModal);
+      if (items.length === 0) return;
+      const delta = (dir === 'right' || dir === 'down') ? 1 : -1;
+      this.modalFocusIndex = (this.modalFocusIndex + delta + items.length) % items.length;
+      sound.playNavTick();
+      this.updateZoneUI();
+      return;
     }
 
-    const target = this.focusableElements[this.focusedIndex];
-    if (target) {
-      target.classList.add('gp-focused');
-      target.focus();
-      target.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (this.navZone === 'rail') {
+      if (dir === 'left' || dir === 'right') {
+        if (this.filteredGames.length > 1) {
+          const delta = dir === 'right' ? 1 : -1;
+          this.selectGame((this.selectedIndex + delta + this.filteredGames.length) % this.filteredGames.length);
+        }
+      } else if (dir === 'down') {
+        this.navZone = 'actions';
+        this.actionIndex = 0;
+        sound.playNavTick();
+        this.updateZoneUI();
+      }
+      return;
     }
-  }
 
-  clearGamepadFocus() {
-    this.focusableElements.forEach((el) => el.classList.remove('gp-focused'));
-  }
-
-  handleGamepadConfirm() {
-    this.refreshFocusableElements();
-    const target = this.focusableElements[this.focusedIndex];
-    if (target) {
-      sound.playDerivativeHit();
-      gamepad.triggerHaptic(80, 0.5, 0.5);
-      target.click();
-    }
-  }
-
-  handleGamepadBack() {
-    sound.playClick();
-    gamepad.triggerHaptic(60, 0.3, 0.3);
-    const wasModalOpen = this.modalOverlay?.classList.contains('active') || this.guideModal?.classList.contains('active');
-    this.closeModals();
-
-    if (!wasModalOpen && this.searchInput && (this.searchInput.value || document.activeElement === this.searchInput)) {
-      this.searchInput.value = '';
-      this.searchQuery = '';
-      this.searchInput.blur();
-      this.render();
+    if (this.navZone === 'actions') {
+      if (dir === 'up') {
+        this.navZone = 'rail';
+        sound.playNavTick();
+        this.updateZoneUI();
+      } else if (dir === 'left' || dir === 'right') {
+        this.actionIndex = this.actionIndex === 0 ? 1 : 0;
+        sound.playNavTick();
+        this.updateZoneUI();
+      }
     }
   }
 
-  toggleGuideModal() {
-    sound.playClick();
-    gamepad.triggerHaptic(50, 0.3, 0.3);
-    if (this.guideModal?.classList.contains('active')) {
+  handleConfirm() {
+    const activeModal = this.getActiveModal();
+    if (activeModal) {
+      const items = this.getModalFocusables(activeModal);
+      const target = items[this.modalFocusIndex] || items[0];
+      if (target) {
+        if (target.tagName === 'INPUT') {
+          target.focus();
+        } else {
+          target.click();
+        }
+      }
+      return;
+    }
+
+    if (this.navZone === 'actions') {
+      if (this.actionIndex === 0) {
+        this.launchSelectedGame();
+      } else {
+        const game = this.filteredGames[this.selectedIndex];
+        if (game) {
+          sound.playClick();
+          this.openGameModal(game);
+        }
+      }
+      return;
+    }
+
+    // In PS5 rail zone: pressing ✕ immediately launches the selected game!
+    this.launchSelectedGame();
+  }
+
+  handleBack() {
+    const activeModal = this.getActiveModal();
+    if (activeModal) {
+      sound.playBack();
       this.closeModals();
-    } else {
-      this.openGuideModal();
+      return;
     }
-  }
 
-  openGuideModal() {
-    this.closeModals();
-    this.guideModal?.classList.add('active');
-    this.focusedIndex = -1;
+    if (this.navZone === 'actions') {
+      this.navZone = 'rail';
+      sound.playBack();
+      this.updateZoneUI();
+      return;
+    }
+
+    if (this.searchQuery || this.activeCategory !== 'All') {
+      sound.playBack();
+      this.activeCategory = 'All';
+      this.searchQuery = '';
+      if (this.searchInput) this.searchInput.value = '';
+      this.renderCategories();
+      this.applyFilters();
+    }
   }
 
   cycleCategories(direction) {
-    const pills = Array.from(document.querySelectorAll('.category-pill'));
-    if (pills.length <= 1) return;
-
-    const currentIdx = pills.findIndex((p) => p.classList.contains('active'));
-    const nextIdx = (currentIdx + direction + pills.length) % pills.length;
-    pills[nextIdx].click();
-    gamepad.triggerHaptic(40, 0.2, 0.2);
+    const tabs = Array.from(document.querySelectorAll('.category-tab'));
+    if (tabs.length <= 1) return;
+    const currentIdx = tabs.findIndex((t) => t.classList.contains('active'));
+    const nextIdx = (currentIdx + direction + tabs.length) % tabs.length;
+    tabs[nextIdx].click();
   }
 
   renderCategories() {
-    if (!this.categoryContainer) return;
-
-    if (this.games.length === 0) {
-      this.categoryContainer.innerHTML = `
-        <span class="category-pill active">All Categories</span>
-      `;
-      return;
-    }
-
-    // Collect unique categories
+    if (!this.categoryTabs) return;
     const categories = ['All', ...new Set(this.games.map((g) => g.category).filter(Boolean))];
 
-    this.categoryContainer.innerHTML = categories
+    this.categoryTabs.innerHTML = categories
       .map(
         (cat) => `
-        <button class="category-pill ${cat === this.activeCategory ? 'active' : ''}" data-cat="${cat}">
-          ${cat}
-        </button>
-      `
+          <button class="category-tab ${cat === this.activeCategory ? 'active' : ''}" data-cat="${cat}" type="button">
+            ${cat === 'All' ? 'All Games' : cat}
+          </button>
+        `
       )
       .join('');
 
-    this.categoryContainer.querySelectorAll('.category-pill').forEach((btn) => {
+    this.categoryTabs.querySelectorAll('.category-tab').forEach((btn) => {
       btn.addEventListener('click', () => {
-        sound.playClick();
-        this.activeCategory = btn.getAttribute('data-cat');
-        this.categoryContainer.querySelectorAll('.category-pill').forEach((b) => b.classList.remove('active'));
+        sound.playNavTick();
+        this.activeCategory = btn.getAttribute('data-cat') || 'All';
+        this.categoryTabs.querySelectorAll('.category-tab').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
-        this.render();
+        this.applyFilters();
       });
     });
   }
 
-  getFilteredGames() {
-    return this.games.filter((game) => {
+  applyFilters() {
+    this.filteredGames = this.games.filter((game) => {
       const matchCat = this.activeCategory === 'All' || game.category === this.activeCategory;
       if (!matchCat) return false;
-
       if (!this.searchQuery) return true;
 
-      const title = (game.title || '').toLowerCase();
-      const desc = (game.description || '').toLowerCase();
-      const cat = (game.category || '').toLowerCase();
-      const concepts = (game.mathConcepts || []).join(' ').toLowerCase();
+      const haystack = [
+        game.title,
+        game.description,
+        game.category,
+        ...(game.mathConcepts || []),
+      ]
+        .join(' ')
+        .toLowerCase();
 
-      return title.includes(this.searchQuery) || desc.includes(this.searchQuery) || cat.includes(this.searchQuery) || concepts.includes(this.searchQuery);
+      return haystack.includes(this.searchQuery);
     });
+
+    if (this.selectedIndex >= this.filteredGames.length) {
+      this.selectedIndex = 0;
+    }
+
+    this.renderRail();
+    this.renderShowcase();
+    this.updateZoneUI();
   }
 
-  render() {
-    if (!this.grid) return;
+  renderRail() {
+    if (!this.rail) return;
 
-    // Case 1: Fresh Empty Platform (0 games added yet)
-    if (this.games.length === 0) {
-      if (this.statsCounter) {
-        this.statsCounter.innerText = '0 Games Installed • Ready';
-      }
+    const filterLabel = this.searchQuery
+      ? `FILTER: "${this.searchQuery.toUpperCase()}"`
+      : this.activeCategory === 'All'
+      ? 'ALL GAMES • READY TO PLAY'
+      : `${this.activeCategory.toUpperCase()}`;
 
-      this.grid.innerHTML = `
-        <div class="empty-state-card">
-          <div class="empty-radar-icon">🎮</div>
-          <h2 class="empty-title">The Arcade is Ready for Your First Game</h2>
-          <p class="empty-desc">
-            The platform architecture, high-speed Canvas engine, Gamepad controller module (PlayStation ✕, ◯, ▢, △ / Xbox), and GitHub Pages deployment are live and standing by.
-          </p>
+    if (this.railStatusText) this.railStatusText.textContent = filterLabel;
+    if (this.statsCounter) {
+      this.statsCounter.textContent = `${this.filteredGames.length} of ${this.games.length} Games`;
+    }
 
-          <div class="empty-specs">
-            <span class="empty-spec-pill highlight">⚡ Zero Build Dependencies</span>
-            <span class="empty-spec-pill highlight">🎮 Gamepad API Active (✕ Select • ◯ Back)</span>
-            <span class="empty-spec-pill highlight">📐 Calculus & Physics Engine Ready</span>
-            <span class="empty-spec-pill highlight">🌐 Hosted on GitHub Pages</span>
+    if (this.filteredGames.length === 0) {
+      this.rail.innerHTML = `
+        <div class="rail-empty-card">
+          <div>
+            <div style="font-weight:800; color:#fff; margin-bottom:0.2rem;">No matching games found</div>
+            <div style="font-size:0.84rem; color:var(--text-muted);">Clear your filter or add a new game to games.json.</div>
           </div>
-
-          <div style="margin-top: 1rem; display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center;">
-            <button id="btn-deploy-empty" class="btn-play" style="max-width: 280px;">
-              🚀 Ready to Inject HTML
-            </button>
-          </div>
+          <button id="btn-reset-filters-inline" class="cta-secondary" type="button">Reset Filter</button>
         </div>
       `;
-
-      document.getElementById('btn-deploy-empty')?.addEventListener('click', () => {
-        sound.playDerivativeHit();
-        this.openGuideModal();
+      document.getElementById('btn-reset-filters-inline')?.addEventListener('click', () => {
+        this.activeCategory = 'All';
+        this.searchQuery = '';
+        if (this.searchInput) this.searchInput.value = '';
+        this.renderCategories();
+        this.applyFilters();
       });
       return;
     }
 
-    // Case 2: Games exist, apply filtering
-    const filtered = this.getFilteredGames();
-
-    if (this.statsCounter) {
-      this.statsCounter.innerText = `${filtered.length} of ${this.games.length} Games Active`;
-    }
-
-    if (filtered.length === 0) {
-      this.grid.innerHTML = `
-        <div class="empty-state">
-          <p>No mathematical games found matching "${this.searchQuery}".</p>
-          <small style="color:var(--text-dim); margin-top:0.4rem; display:block;">Try clearing filters or search for another term.</small>
-        </div>
-      `;
-      return;
-    }
-
-    this.grid.innerHTML = filtered
-      .map((game) => {
-        const catClass = (game.category || '').replace(/[^a-zA-Z]/g, '');
-        const isPlayable = game.status === 'ready';
-
-        let actionBtn = '';
-        if (isPlayable) {
-          actionBtn = `<a href="${game.path}" class="btn-play">▶ Launch Game</a>`;
-        } else {
-          actionBtn = `<button class="btn-play disabled">🔒 In Development</button>`;
-        }
-
+    this.rail.innerHTML = this.filteredGames
+      .map((game, idx) => {
+        const isSelected = idx === this.selectedIndex;
+        const accent = game.accentColor || '#00e5ff';
         return `
-          <article class="game-card" data-id="${game.id}">
-            <div class="card-watermark">${game.icon || 'ƒ'}</div>
-            <div class="card-header">
-              <div class="card-badge-row">
-                <span class="badge-tag ${catClass}">${game.category}</span>
-                <span class="badge-difficulty diff-${game.difficultyLevel || 3}">Lvl ${game.difficultyLevel || 3} • ${game.difficulty}</span>
-              </div>
+          <button
+            class="ps5-tile ${isSelected ? 'selected' : ''}"
+            data-index="${idx}"
+            role="option"
+            aria-selected="${isSelected ? 'true' : 'false'}"
+            style="--tile-accent: ${accent};"
+            type="button"
+          >
+            <div class="tile-art-frame">
+              ${getGameArtworkSVG(game)}
+              <span class="tile-badge-pill">${game.badge || game.category}</span>
             </div>
-
-            <h2 class="card-title">${game.title}</h2>
-            <p class="card-desc">${game.description}</p>
-
-            <div class="card-concepts">
-              ${(game.mathConcepts || []).map((c) => `<span class="concept-chip">${c}</span>`).join('')}
+            <div class="tile-meta">
+              <span class="tile-title">${game.title}</span>
+              <span class="tile-lvl">Lvl ${game.difficultyLevel || 3}</span>
             </div>
-
-            <div class="card-actions">
-              ${actionBtn}
-              <button class="btn-info" data-action="info" data-id="${game.id}" title="Game Info & Controls">
-                ℹ️
-              </button>
-            </div>
-          </article>
+          </button>
         `;
       })
       .join('');
 
-    // Attach listeners
-    this.grid.querySelectorAll('[data-action="info"]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        sound.playDerivativeHit();
-        const id = btn.getAttribute('data-id');
-        this.openGameModal(id);
+    this.rail.querySelectorAll('.ps5-tile').forEach((tile) => {
+      tile.addEventListener('click', () => {
+        const idx = parseInt(tile.getAttribute('data-index'), 10);
+        if (idx === this.selectedIndex) {
+          this.launchSelectedGame();
+        } else {
+          this.navZone = 'rail';
+          this.selectGame(idx);
+        }
       });
     });
+
+    this.scrollSelectedTileIntoView();
   }
 
-  openGameModal(id) {
-    const game = this.games.find((g) => g.id === id);
-    if (!game) return;
+  selectGame(index) {
+    if (index < 0 || index >= this.filteredGames.length) return;
+    this.selectedIndex = index;
+    sound.playNavTick();
 
-    const modalTitle = document.getElementById('modal-game-title');
-    const modalDesc = document.getElementById('modal-game-desc');
-    const modalConcepts = document.getElementById('modal-game-concepts');
-    const modalControls = document.getElementById('modal-game-controls');
-    const modalAction = document.getElementById('modal-game-action');
+    this.rail?.querySelectorAll('.ps5-tile').forEach((tile, idx) => {
+      const sel = idx === index;
+      tile.classList.toggle('selected', sel);
+      tile.setAttribute('aria-selected', sel ? 'true' : 'false');
+    });
 
-    if (modalTitle) modalTitle.innerText = game.title;
-    if (modalDesc) modalDesc.innerText = game.description;
-
-    if (modalConcepts) {
-      modalConcepts.innerHTML = (game.mathConcepts || []).map((c) => `<li>${c}</li>`).join('');
-    }
-
-    if (modalControls) {
-      modalControls.innerHTML = (game.controls || ['Standard Gamepad / Keyboard / Touch']).map((c) => `<li>${c}</li>`).join('');
-    }
-
-    if (modalAction) {
-      modalAction.innerHTML = `<a href="${game.path}" class="btn-play" style="width:100%;">▶ Launch Simulator</a>`;
-    }
-
-    this.modalOverlay?.classList.add('active');
-    this.focusedIndex = -1;
+    this.scrollSelectedTileIntoView();
+    this.renderShowcase(true);
+    this.updateZoneUI();
   }
 
-  closeModals() {
-    this.modalOverlay?.classList.remove('active');
-    this.guideModal?.classList.remove('active');
-    this.focusedIndex = -1;
-    this.clearGamepadFocus();
+  scrollSelectedTileIntoView() {
+    const activeTile = this.rail?.querySelector('.ps5-tile.selected');
+    if (activeTile) {
+      activeTile.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }
+
+  renderShowcase(animate = false) {
+    const game = this.filteredGames[this.selectedIndex];
+
+    if (!game) {
+      if (this.showcaseTitle) this.showcaseTitle.textContent = 'No Game Selected';
+      if (this.showcaseDesc) this.showcaseDesc.textContent = 'Clear active filters or register a game in games.json.';
+      if (this.showcaseConcepts) this.showcaseConcepts.innerHTML = '';
+      if (this.showcaseControls) this.showcaseControls.innerHTML = '';
+      if (this.btnPlaySelected) this.btnPlaySelected.disabled = true;
+      return;
+    }
+
+    if (animate && this.showcase) {
+      this.showcase.classList.add('switching');
+      setTimeout(() => this.showcase?.classList.remove('switching'), 120);
+    }
+
+    if (this.btnPlaySelected) {
+      const playable = game.status === 'ready';
+      this.btnPlaySelected.disabled = !playable;
+      this.btnPlaySelected.classList.toggle('disabled', !playable);
+    }
+
+    if (this.showcaseCategory) this.showcaseCategory.textContent = game.category || 'Math';
+    if (this.showcaseDiff) this.showcaseDiff.textContent = `Lvl ${game.difficultyLevel || 3} • ${game.difficulty || 'Normal'}`;
+    if (this.showcaseVersion) this.showcaseVersion.textContent = `v${game.version || '1.0'}`;
+    if (this.showcaseStatus) {
+      this.showcaseStatus.textContent = game.status === 'ready' ? '● READY TO PLAY' : '● IN DEVELOPMENT';
+    }
+    if (this.showcaseTitle) this.showcaseTitle.textContent = game.title;
+    if (this.showcaseDesc) this.showcaseDesc.textContent = game.description;
+    if (this.blueprintArtBadge) this.blueprintArtBadge.textContent = game.icon || '∫';
+
+    if (this.showcaseConcepts) {
+      this.showcaseConcepts.innerHTML = (game.mathConcepts || [])
+        .map((c) => `<span class="concept-pill">${c}</span>`)
+        .join('');
+    }
+
+    if (this.showcaseControls) {
+      this.showcaseControls.innerHTML = (game.controls || ['Left Stick / WASD: Move'])
+        .slice(0, 6)
+        .map((entry) => {
+          const { key, desc } = formatControlEntry(entry);
+          return `
+            <li class="blueprint-control-row">
+              <span class="ctrl-key">${key}</span>
+              <span class="ctrl-desc">${desc}</span>
+            </li>
+          `;
+        })
+        .join('');
+    }
+
+    // Shift ambient glow color subtly to match game theme (pure CSS opacity/background, zero blur)
+    if (this.ambientPrimary) {
+      const accent = game.accentColor || '#00e5ff';
+      this.ambientPrimary.style.background = `radial-gradient(circle, ${accent}26 0%, transparent 68%)`;
+    }
+  }
+
+  launchSelectedGame() {
+    if (this.isLaunching) return;
+    const game = this.filteredGames[this.selectedIndex];
+    if (!game || game.status !== 'ready') return;
+
+    this.isLaunching = true;
+    sound.playLaunch();
+    gamepad.triggerHaptic(110, 0.7, 0.7);
+
+    if (this.launchIcon) this.launchIcon.textContent = game.icon || '∫';
+    if (this.launchLabel) this.launchLabel.textContent = `STARTING ${game.title.toUpperCase()}...`;
+    this.launchCurtain?.classList.add('active');
+
+    setTimeout(() => {
+      window.location.href = game.path;
+    }, 240);
+  }
+
+  openSearchModal() {
+    this.closeModals(true);
+    this.searchModal?.classList.add('active');
+    this.searchModal?.setAttribute('aria-hidden', 'false');
+    this.navZone = 'modal';
+    this.modalFocusIndex = 1; // focus first quick tag or search cleanly
+    this.updateZoneUI();
+    setTimeout(() => this.searchInput?.focus(), 60);
+  }
+
+  openGameModal(game) {
+    this.closeModals(true);
+    const titleEl = document.getElementById('modal-game-title');
+    const descEl = document.getElementById('modal-game-desc');
+    const conceptsEl = document.getElementById('modal-game-concepts');
+    const controlsEl = document.getElementById('modal-game-controls');
+    const actionEl = document.getElementById('modal-game-action');
+
+    if (titleEl) titleEl.textContent = game.title;
+    if (descEl) descEl.textContent = game.description;
+    if (conceptsEl) {
+      conceptsEl.innerHTML = (game.mathConcepts || []).map((c) => `<li>${c}</li>`).join('');
+    }
+    if (controlsEl) {
+      controlsEl.innerHTML = (game.controls || ['Standard Gamepad / Keyboard']).map((c) => `<li>${c}</li>`).join('');
+    }
+    if (actionEl) {
+      actionEl.innerHTML = `
+        <button id="btn-modal-launch" class="cta-play" type="button">
+          <span class="gp-dot gp-cross">✕</span>
+          <span>Launch ${game.title}</span>
+        </button>
+        <button id="btn-modal-back" class="cta-secondary" type="button">
+          <span class="gp-dot gp-cir">◯</span>
+          <span>Back</span>
+        </button>
+      `;
+      document.getElementById('btn-modal-launch')?.addEventListener('click', () => this.launchSelectedGame());
+      document.getElementById('btn-modal-back')?.addEventListener('click', () => this.closeModals());
+    }
+
+    this.gameModal?.classList.add('active');
+    this.gameModal?.setAttribute('aria-hidden', 'false');
+    this.navZone = 'modal';
+    this.modalFocusIndex = 1; // Launch button
+    this.updateZoneUI();
+  }
+
+  openGuideModal() {
+    this.closeModals(true);
+    this.guideModal?.classList.add('active');
+    this.guideModal?.setAttribute('aria-hidden', 'false');
+    this.navZone = 'modal';
+    this.modalFocusIndex = 1;
+    this.updateZoneUI();
+  }
+
+  closeModals(silent = false) {
+    [this.searchModal, this.gameModal, this.guideModal].forEach((m) => {
+      m?.classList.remove('active');
+      m?.setAttribute('aria-hidden', 'true');
+    });
+    if (!silent) {
+      this.navZone = 'rail';
+      this.updateZoneUI();
+    }
   }
 }
 
-// Bootstrap
 window.addEventListener('DOMContentLoaded', () => {
-  new ArcadeHub();
+  new ArcadeConsoleHub();
 });

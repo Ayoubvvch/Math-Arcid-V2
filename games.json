@@ -6,7 +6,7 @@
     "category": "Algebra & Survival",
     "difficulty": "Intermediate",
     "difficultyLevel": 3,
-    "version": "1.2.0",
+    "version": "2.0.0",
     "description": "Tactical 2D mathematical survival sandbox engineered exclusively for PlayStation controller (✕, ◯, ▢, △). Match linear equations, track targets with the mathematical threat compass, and unleash chain lightning strikes.",
     "mathConcepts": [
       "Linear Equations (ax = b)",
@@ -19,8 +19,9 @@
       "✕, ◯, ▢, △: 4 PlayStation Core Math Operations",
       "R2 / Space: EMP Shockwave & Kinetic Plasma",
       "L2 / F / Right Click: Place Geometric Parity Turret",
-      "L1 / R1: Cycle Turret Blueprints",
-      "D-Pad: Step X value by ±1"
+      "L1 / R1 / D-Pad ◀▶: Cycle Turret Blueprints",
+      "D-Pad ▲▼: Step X value by ±1",
+      "Options / Share: Pause Menu & Live Sandbox Modder"
     ],
     "path": "games/mathcore-survivor/index.html",
     "badge": "Algebra",
@@ -51,7 +52,7 @@
       "△ (Triangle): Euler Slow-Mo Time Dilation",
       "L1 / R1: Switch Match Roster (x³, x⁴, sin, exp)",
       "L2 / R2: Air-Brake / Continuous Beam Fire",
-      "Left & Right Sticks: 360° Vector Flight & Aiming"
+      "Options / Select: Pause Menu & Auto-Pilot AI"
     ],
     "path": "games/math-battle/index.html",
     "badge": "Calculus",

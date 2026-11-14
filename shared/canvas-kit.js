@@ -7,15 +7,15 @@ export class CanvasKit {
   /**
    * Configures canvas for sharp HiDPI / Retina displays
    */
-  static setupHiDPI(canvas, width, height) {
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
+  static setupHiDPI(canvas, width, height, maxDpr = 1.5) {
+    const dpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
     canvas.style.width = `${width}px`;
     canvas.style.height = `${height}px`;
 
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
+    const ctx = canvas.getContext('2d', { alpha: false });
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     return { ctx, dpr };
   }
 

@@ -6,9 +6,6 @@
 import { MATCH_CONFIGS } from './config.js';
 
 export class CalculusEngine {
-  /**
-   * Returns the complete derivation ladder for a match type
-   */
   static getDerivationLadder(matchId) {
     const config = MATCH_CONFIGS[matchId] || MATCH_CONFIGS.x3;
     return config.chain;
@@ -21,22 +18,22 @@ export class CalculusEngine {
   static differentiate(ball, currentSpeed, bMathR) {
     const type = ball.type;
 
-    // --- Polynomial Powers (x^n -> n * x^(n-1)) ---
     if (type === 'x4') {
       const newBalls = [];
       for (let i = 0; i < 4; i++) {
-        const ang = (i * Math.PI / 2) + (Math.random() - 0.5) * 0.3;
+        const ang = (i * Math.PI / 2) + (Math.random() - 0.5) * 0.25;
         newBalls.push({
           type: 'x3',
           label: 'x³',
           power: 3,
-          x: Math.max(-4.2, Math.min(4.2, ball.x + Math.cos(ang) * bMathR * 1.5)),
-          y: Math.max(-4.2, Math.min(4.2, ball.y + Math.sin(ang) * bMathR * 1.5)),
+          x: Math.max(-4.1, Math.min(4.1, ball.x + Math.cos(ang) * bMathR * 1.4)),
+          y: Math.max(-4.1, Math.min(4.1, ball.y + Math.sin(ang) * bMathR * 1.4)),
           vx: Math.cos(ang) * currentSpeed,
           vy: Math.sin(ang) * currentSpeed,
           radius: 30,
           color: '#ff5500',
-          halo: 'rgba(255, 85, 0, 0.25)'
+          halo: 'rgba(255, 85, 0, 0.24)',
+          grace: 0.16
         });
       }
       return {
@@ -49,18 +46,19 @@ export class CalculusEngine {
     if (type === 'x3') {
       const newBalls = [];
       for (let i = 0; i < 3; i++) {
-        const ang = (i * 2 * Math.PI / 3) + (Math.random() - 0.5) * 0.3;
+        const ang = (i * 2 * Math.PI / 3) + (Math.random() - 0.5) * 0.25;
         newBalls.push({
           type: 'x2',
           label: 'x²',
           power: 2,
-          x: Math.max(-4.2, Math.min(4.2, ball.x + Math.cos(ang) * bMathR * 1.5)),
-          y: Math.max(-4.2, Math.min(4.2, ball.y + Math.sin(ang) * bMathR * 1.5)),
+          x: Math.max(-4.1, Math.min(4.1, ball.x + Math.cos(ang) * bMathR * 1.4)),
+          y: Math.max(-4.1, Math.min(4.1, ball.y + Math.sin(ang) * bMathR * 1.4)),
           vx: Math.cos(ang) * currentSpeed,
           vy: Math.sin(ang) * currentSpeed,
-          radius: 26,
+          radius: 25,
           color: '#00f0ff',
-          halo: 'rgba(0, 240, 255, 0.25)'
+          halo: 'rgba(0, 240, 255, 0.24)',
+          grace: 0.16
         });
       }
       return {
@@ -73,18 +71,19 @@ export class CalculusEngine {
     if (type === 'x2') {
       const newBalls = [];
       for (let i = 0; i < 2; i++) {
-        const ang = (i * Math.PI) + (Math.random() - 0.5) * 0.5;
+        const ang = (i * Math.PI) + (Math.random() - 0.5) * 0.4;
         newBalls.push({
           type: 'x',
           label: 'x',
           power: 1,
-          x: Math.max(-4.2, Math.min(4.2, ball.x + Math.cos(ang) * bMathR * 1.4)),
-          y: Math.max(-4.2, Math.min(4.2, ball.y + Math.sin(ang) * bMathR * 1.4)),
+          x: Math.max(-4.1, Math.min(4.1, ball.x + Math.cos(ang) * bMathR * 1.3)),
+          y: Math.max(-4.1, Math.min(4.1, ball.y + Math.sin(ang) * bMathR * 1.3)),
           vx: Math.cos(ang) * currentSpeed,
           vy: Math.sin(ang) * currentSpeed,
-          radius: 22,
+          radius: 21,
           color: '#f97316',
-          halo: 'rgba(249, 115, 22, 0.25)'
+          halo: 'rgba(249, 115, 22, 0.24)',
+          grace: 0.16
         });
       }
       return {
@@ -104,9 +103,10 @@ export class CalculusEngine {
         y: ball.y,
         vx: Math.cos(ang) * currentSpeed,
         vy: Math.sin(ang) * currentSpeed,
-        radius: 18,
+        radius: 17,
         color: '#ffd700',
-        halo: 'rgba(255, 215, 0, 0.25)'
+        halo: 'rgba(255, 215, 0, 0.24)',
+        grace: 0.14
       }];
       return {
         newBalls,
@@ -116,7 +116,6 @@ export class CalculusEngine {
     }
 
     if (type === '1') {
-      // d/dx(1) = 0 -> Constant derivative is 0! Ball completely disappears!
       return {
         newBalls: [],
         popup: { text: 'd/dx(1) = 0 [ZERO!]', color: '#10b981' },
@@ -127,10 +126,10 @@ export class CalculusEngine {
     // --- Trigonometric Cycle (sin -> cos -> -sin -> -cos -> 0) ---
     if (type === 'sin' || type === 'cos' || type === '-sin' || type === '-cos') {
       const trigMap = {
-        'sin': { next: 'cos', label: 'cos(x)', color: '#06b6d4', popup: 'd/dx(sin) = cos' },
-        'cos': { next: '-sin', label: '-sin(x)', color: '#e11d48', popup: 'd/dx(cos) = -sin' },
-        '-sin': { next: '-cos', label: '-cos(x)', color: '#8b5cf6', popup: 'd/dx(-sin) = -cos' },
-        '-cos': { next: '0', label: '0 [ZERO]', color: '#10b981', popup: 'd/dx(-cos) = sin -> 0' }
+        'sin': { next: 'cos', label: 'cos(x)', color: '#06b6d4', halo: 'rgba(6, 182, 212, 0.24)', popup: 'd/dx(sin) = cos' },
+        'cos': { next: '-sin', label: '-sin(x)', color: '#e11d48', halo: 'rgba(225, 29, 72, 0.24)', popup: 'd/dx(cos) = -sin' },
+        '-sin': { next: '-cos', label: '-cos(x)', color: '#8b5cf6', halo: 'rgba(139, 92, 246, 0.24)', popup: 'd/dx(-sin) = -cos' },
+        '-cos': { next: '0', label: '0 [ZERO]', color: '#10b981', halo: 'rgba(16, 185, 129, 0.24)', popup: 'd/dx(-cos) = sin → 0' }
       };
       const trans = trigMap[type];
       if (trans.next === '0') {
@@ -140,17 +139,19 @@ export class CalculusEngine {
           isAnnihilated: true
         };
       }
+      const ang = Math.random() * Math.PI * 2;
       const newBalls = [{
         type: trans.next,
         label: trans.label,
         power: 3,
         x: ball.x,
         y: ball.y,
-        vx: (Math.random() - 0.5) * currentSpeed * 1.4,
-        vy: (Math.random() - 0.5) * currentSpeed * 1.4,
-        radius: 30,
+        vx: Math.cos(ang) * currentSpeed,
+        vy: Math.sin(ang) * currentSpeed,
+        radius: 28,
         color: trans.color,
-        halo: trans.color
+        halo: trans.halo,
+        grace: 0.16
       }];
       return {
         newBalls,
@@ -166,17 +167,18 @@ export class CalculusEngine {
         type: 'exp',
         label: 'eˣ',
         power: 5,
-        x: Math.max(-4.2, Math.min(4.2, ball.x + Math.cos(ang) * bMathR * 1.4)),
-        y: Math.max(-4.2, Math.min(4.2, ball.y + Math.sin(ang) * bMathR * 1.4)),
-        vx: Math.cos(ang) * currentSpeed * 1.15,
-        vy: Math.sin(ang) * currentSpeed * 1.15,
-        radius: 32,
+        x: Math.max(-4.1, Math.min(4.1, ball.x + Math.cos(ang) * bMathR * 1.1)),
+        y: Math.max(-4.1, Math.min(4.1, ball.y + Math.sin(ang) * bMathR * 1.1)),
+        vx: Math.cos(ang) * currentSpeed * 1.12,
+        vy: Math.sin(ang) * currentSpeed * 1.12,
+        radius: 33,
         color: '#ffd700',
-        halo: 'rgba(255, 215, 0, 0.25)'
+        halo: 'rgba(255, 215, 0, 0.24)',
+        grace: 0.14
       }];
       return {
         newBalls,
-        popup: { text: 'd/dx(eˣ) = eˣ [EIGENFUNCTION!]', color: '#ffd700' },
+        popup: { text: 'd/dx(eˣ) = eˣ [INVARIANT!]', color: '#ffd700' },
         isAnnihilated: false
       };
     }

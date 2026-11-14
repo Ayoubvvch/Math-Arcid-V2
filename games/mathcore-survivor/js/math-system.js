@@ -77,6 +77,8 @@ window.findSuggestedPsButton = function(currentX, targetX) {
 };
 
 window.applyMathButton = function(slotIndex) {
+    if (window.GameState.paused || window.GameState.gameOver) return;
+    window.SoundEngine.init();
     const opId = window.SandboxConfig.buttonOps[slotIndex];
     const opObj = window.AVAILABLE_MATH_OPS.find(o => o.id === opId) || window.AVAILABLE_MATH_OPS[0];
     const oldX = window.GameState.player.coreX;
@@ -91,8 +93,7 @@ window.applyMathButton = function(slotIndex) {
         setTimeout(() => btnEl.classList.remove('pressed'), 120);
     }
 
-    const coreXDisplay = document.getElementById('coreXDisplay');
-    if (coreXDisplay) coreXDisplay.textContent = nextX;
+    window.updateCoreXHUD();
 
     // PlayStation Melodic Sound
     window.SoundEngine.playPsButton(slotIndex);
@@ -111,14 +112,16 @@ window.applyMathButton = function(slotIndex) {
 };
 
 window.stepCoreX = function(delta) {
+    if (window.GameState.paused || window.GameState.gameOver) return;
+    window.SoundEngine.init();
     window.GameState.player.coreX = Math.max(-99, Math.min(999, window.GameState.player.coreX + delta));
-    const coreXDisplay = document.getElementById('coreXDisplay');
-    if (coreXDisplay) coreXDisplay.textContent = window.GameState.player.coreX;
-    window.SoundEngine.playPsButton(0);
+    window.updateCoreXHUD();
+    window.SoundEngine.playPsButton(delta > 0 ? 0 : 1);
     window.triggerMathResonanceCheck(true);
 };
 
 window.triggerMathResonanceCheck = function(manualPulse = false) {
+    if (window.GameState.paused || window.GameState.gameOver) return;
     const p = window.GameState.player;
     const range = window.SandboxConfig.beamRange * (manualPulse ? 1.25 : 1.0);
     let matchedCount = 0;
@@ -205,6 +208,7 @@ window.destroyEnemy = function(index, solvedByMath = false) {
 
     if (window.GameState.score > window.GameState.highScore) {
         window.GameState.highScore = window.GameState.score;
+        window.GameState.isNewRecord = true;
         localStorage.setItem('mathcore_high_score', window.GameState.highScore.toString());
     }
 
@@ -226,6 +230,7 @@ window.destroyEnemy = function(index, solvedByMath = false) {
 
 window.advanceWave = function() {
     window.GameState.wave++;
+    const spawnedWave = window.GameState.wave;
     window.GameState.waveProgress = 0;
     window.GameState.waveGoal = 6 + window.GameState.wave * 2;
 
@@ -244,6 +249,7 @@ window.advanceWave = function() {
     if (window.GameState.wave % 5 === 0) {
         window.SoundEngine.bossAlarm();
         setTimeout(() => {
+            if (window.GameState.gameOver || window.GameState.wave !== spawnedWave) return;
             window.spawnEnemy(true);
             window.addFloatingText(window.GameState.player.x, window.GameState.player.y - 90, '⚠️ تحذير: ظهر زعيم المعادلات!', '#ff007f', 24);
         }, 1200);

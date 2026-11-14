@@ -9,6 +9,8 @@ export class GamepadEngine {
     this.onConnect = options.onConnect || null;
     this.onDisconnect = options.onDisconnect || null;
     this.connectedGamepad = null;
+    this.activeIndex = -1;
+    this._wasConnected = false;
 
     // Standard Gamepad Button Mapping (W3C Standard)
     // 0: A / Cross ✕
@@ -64,48 +66,83 @@ export class GamepadEngine {
   init() {
     window.addEventListener('gamepadconnected', (e) => {
       this.connectedGamepad = e.gamepad;
-      console.log('🎮 Gamepad connected:', e.gamepad.id);
+      this.activeIndex = e.gamepad.index;
+      this._wasConnected = true;
       if (this.onConnect) this.onConnect(e.gamepad);
-      this.triggerHaptic(60, 0.4, 0.4);
+      this.triggerHaptic(60, 0.35, 0.35);
     });
 
     window.addEventListener('gamepaddisconnected', (e) => {
-      console.log('🎮 Gamepad disconnected:', e.gamepad.id);
       if (this.connectedGamepad && this.connectedGamepad.index === e.gamepad.index) {
         this.connectedGamepad = null;
+        this.activeIndex = -1;
+        this._wasConnected = false;
       }
       if (this.onDisconnect) this.onDisconnect(e.gamepad);
     });
   }
 
   /**
+   * Finds the best active connected gamepad across all browser slots
+   */
+  _findActiveGamepad() {
+    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    if (!gamepads) return null;
+
+    if (this.activeIndex >= 0 && gamepads[this.activeIndex] && gamepads[this.activeIndex].connected) {
+      return gamepads[this.activeIndex];
+    }
+
+    for (let i = 0; i < gamepads.length; i++) {
+      if (gamepads[i] && gamepads[i].connected) {
+        this.activeIndex = i;
+        return gamepads[i];
+      }
+    }
+    return null;
+  }
+
+  /**
    * Must be called inside the game/animation loop (requestAnimationFrame)
    */
   poll() {
-    const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
-    let gp = null;
-
-    // Pick first active gamepad
-    for (let i = 0; i < gamepads.length; i++) {
-      if (gamepads[i] && gamepads[i].connected) {
-        gp = gamepads[i];
-        break;
-      }
-    }
+    const gp = this._findActiveGamepad();
 
     if (!gp) {
-      this.connectedGamepad = null;
+      if (this._wasConnected) {
+        this._wasConnected = false;
+        this.connectedGamepad = null;
+        this.activeIndex = -1;
+        if (this.onDisconnect) this.onDisconnect(null);
+      }
       return false;
     }
 
+    const newlyDiscovered = !this._wasConnected;
     this.connectedGamepad = gp;
+    this._wasConnected = true;
 
-    // Save previous state for press edge detection
+    if (newlyDiscovered && this.onConnect) {
+      this.onConnect(gp);
+    }
+
+    // Save previous state for edge detection
     this.prevButtons = { ...this.buttons };
 
-    // Update buttons
-    const btn = (idx) => gp.buttons[idx] && gp.buttons[idx].pressed;
+    const btn = (idx) => Boolean(gp.buttons[idx] && gp.buttons[idx].pressed);
     const btnVal = (idx) => (gp.buttons[idx] ? gp.buttons[idx].value : 0);
+
+    // Hat-switch fallback (axes[9] on non-standard controllers; centered resting value is outside [-1.05, 1.05])
+    let hatUp = false, hatDown = false, hatLeft = false, hatRight = false;
+    if (gp.axes && gp.axes.length > 9 && gp.axes[9] !== undefined) {
+      const h = gp.axes[9];
+      if (h >= -1.05 && h <= 1.05) {
+        hatUp = h < -0.60 || h > 0.85;
+        hatRight = h > -0.82 && h < -0.04;
+        hatDown = h > -0.25 && h < 0.55;
+        hatLeft = h > 0.30;
+      }
+    }
 
     this.buttons = {
       cross: btn(0), // ✕ / A
@@ -120,14 +157,20 @@ export class GamepadEngine {
       start: btn(9),
       l3: btn(10),
       r3: btn(11),
-      dpadUp: btn(12),
-      dpadDown: btn(13),
-      dpadLeft: btn(14),
-      dpadRight: btn(15),
+      dpadUp: btn(12) || hatUp,
+      dpadDown: btn(13) || hatDown,
+      dpadLeft: btn(14) || hatLeft,
+      dpadRight: btn(15) || hatRight,
     };
 
-    // Update Axes with Deadzone
-    const applyDeadzone = (v) => (Math.abs(v) < this.deadzone ? 0 : v);
+    // Rescaled deadzone so movement ramps smoothly from 0 after deadzone
+    const applyDeadzone = (v) => {
+      const abs = Math.abs(v);
+      if (abs < this.deadzone) return 0;
+      const sign = v < 0 ? -1 : 1;
+      return sign * Math.min(1, (abs - this.deadzone) / (1 - this.deadzone));
+    };
+
     this.axes.leftX = applyDeadzone(gp.axes[0] || 0);
     this.axes.leftY = applyDeadzone(gp.axes[1] || 0);
     this.axes.rightX = applyDeadzone(gp.axes[2] || 0);
@@ -155,6 +198,13 @@ export class GamepadEngine {
     return !this.buttons[name] && !!this.prevButtons[name];
   }
 
+  isAnyJustPressed() {
+    for (const key of Object.keys(this.buttons)) {
+      if (this.isJustPressed(key)) return true;
+    }
+    return false;
+  }
+
   on(event, callback) {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
@@ -180,8 +230,8 @@ export class GamepadEngine {
         await actuator.playEffect('dual-rumble', {
           startDelay: 0,
           duration: duration,
-          weakMagnitude: weak,
-          strongMagnitude: strong,
+          weakMagnitude: Math.min(1, Math.max(0, weak)),
+          strongMagnitude: Math.min(1, Math.max(0, strong)),
         });
       }
     } catch {
@@ -190,21 +240,24 @@ export class GamepadEngine {
   }
 
   /**
-   * Returns human-readable controller label
+   * Returns short & readable controller label
    */
   getControllerType() {
     if (!this.connectedGamepad) return 'None';
     const id = this.connectedGamepad.id.toLowerCase();
-    if (id.includes('dual') || id.includes('playstation') || id.includes('sony') || id.includes('ps4') || id.includes('ps5')) {
+    if (id.includes('dualsense') || id.includes('0ce6')) {
+      return 'PS5 DualSense';
+    }
+    if (id.includes('dualshock') || id.includes('playstation') || id.includes('sony') || id.includes('ps4') || id.includes('ps5') || id.includes('wireless controller')) {
       return 'PlayStation (✕, ◯, ▢, △)';
     }
-    if (id.includes('xbox') || id.includes('microsoft')) {
-      return 'Xbox (A, B, X, Y)';
+    if (id.includes('xbox') || id.includes('microsoft') || id.includes('xinput')) {
+      return 'Xbox Controller';
     }
     if (id.includes('nintendo') || id.includes('pro controller')) {
-      return 'Nintendo Switch (B, A, Y, X)';
+      return 'Nintendo Pro';
     }
-    return 'Standard Gamepad (Cross ✕ / Circle ◯)';
+    return 'Gamepad Ready';
   }
 }
 

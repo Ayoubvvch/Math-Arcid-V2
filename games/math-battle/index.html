@@ -9,82 +9,235 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div class="app-shell">
-    <!-- Header & Hub Link -->
+  <div class="battle-shell">
+    <!-- Slim Console Top Navigation -->
     <header class="top-nav">
-      <a href="../../" class="hub-back-btn">‹ ARCADE HUB</a>
-      <span style="font-weight: 900; letter-spacing: 0.5px; color: #f8fafc;">MATH BATTLE: d/dx SHOWDOWN</span>
-      <button id="btnAudio" class="btn" style="padding: 2px 7px; font-size: 9px;">🔊 AUDIO: ON</button>
+      <div class="top-nav-left">
+        <a href="../../index.html?from=game" class="hub-back-btn">‹ ARCADE HUB</a>
+        <span class="game-brand-label">MATH BATTLE: d/dx SHOWDOWN</span>
+      </div>
+
+      <!-- Match Roster Tabs -->
+      <nav class="roster-tabs" aria-label="Boss Match Selection">
+        <span class="l1r1-hint">[L1]</span>
+        <button class="roster-btn active" data-match="x3" type="button">x³ CUBIC</button>
+        <button class="roster-btn" data-match="x4" type="button">x⁴ QUARTIC</button>
+        <button class="roster-btn" data-match="sin" type="button">sin(x) TRIG</button>
+        <button class="roster-btn" data-match="exp" type="button">eˣ IMMORTAL</button>
+        <span class="l1r1-hint">[R1]</span>
+      </nav>
+
+      <div class="top-nav-right">
+        <div class="pilot-toggle-group">
+          <button id="pilotPlayer" class="pilot-toggle-btn active" type="button">PILOT</button>
+          <button id="pilotAuto" class="pilot-toggle-btn" type="button">AUTO AI</button>
+        </div>
+
+        <div class="controller-badge">
+          <span id="padDot" class="pad-dot"></span>
+          <span id="padStatus">CONTROLLER: CONNECT OR USE KEYS</span>
+        </div>
+
+        <button id="btnAudio" class="btn" type="button">🔊 AUDIO: ON</button>
+        <button id="btnStart" class="btn" type="button">⏸ PAUSE</button>
+        <button id="btnRestart" class="btn" type="button">🔄 RESTART</button>
+      </div>
     </header>
 
-    <!-- Match Roster Selector Bar -->
-    <div class="roster-tabs">
-      <button class="roster-btn active" data-match="x3">x³ (CUBIC BOSS)</button>
-      <button class="roster-btn" data-match="x4">x⁴ (QUARTIC)</button>
-      <button class="roster-btn" data-match="sin">sin(x) (TRIG)</button>
-      <button class="roster-btn" data-match="exp">eˣ (IMMORTAL)</button>
+    <!-- Mobile Quick Status Strip (hidden on wide desktop) -->
+    <div class="mobile-status-strip">
+      <span id="mobileHpVal">HP 100</span>
+      <span id="pilotLabelText">PILOT (YOU)</span>
+      <span id="mobileDerivVal">LEFT 16/16</span>
     </div>
 
-    <!-- Pilot & Controller Status Bar -->
-    <div class="pilot-bar">
-      <div class="pilot-toggle-group">
-        <button id="pilotPlayer" class="pilot-toggle-btn active">PILOT (YOU)</button>
-        <button id="pilotAuto" class="pilot-toggle-btn">AUTO PILOT</button>
-      </div>
+    <!-- Main Full-Screen 3-Column Console Battle Stage -->
+    <div class="battle-stage">
 
-      <div class="controller-badge">
-        <span id="padDot" class="pad-dot"></span>
-        <span id="padStatus">PS CONTROLLER: CONNECT VIA USB / BT</span>
-      </div>
-    </div>
+      <!-- Left Panel: Pilot Telemetry & Live DualSense Action Deck -->
+      <aside class="side-panel left-panel">
+        <div class="panel-card">
+          <div class="card-top-row">
+            <div class="pilot-avatar">
+              <span>d</span>
+              <span class="frac-line"></span>
+              <span>dx</span>
+            </div>
+            <div>
+              <div class="panel-eyebrow">OPERATOR CRAFT</div>
+              <div class="panel-heading">PILOT (YOU)</div>
+            </div>
+            <div id="hudComboVal" class="combo-pill">0 d/dx</div>
+          </div>
 
-    <!-- Canvas Viewport -->
-    <main class="viewport" id="viewport">
-      <canvas id="gameCanvas" width="540" height="960"></canvas>
+          <div class="meter-block">
+            <div class="meter-label-row">
+              <span>SHIELD INTEGRITY</span>
+              <span id="hudHpVal" class="mono-val">100 / 100</span>
+            </div>
+            <div class="meter-track">
+              <div id="hudHpFill" class="meter-fill hp-fill" style="width: 100%;"></div>
+            </div>
+          </div>
 
-      <!-- Mobile Touch Joystick Area & PlayStation Button Cluster -->
-      <div class="touch-stick-area" id="touchStickArea"></div>
-      <div class="touch-controls">
-        <div></div>
-        <div class="touch-cluster">
-          <button id="touchDashBtn" class="touch-btn touch-btn-cross" title="Triple Dash (✕)">
-            <span style="font-size: 15px; font-weight: 900;">✕</span>
-            <span>DASH</span>
-          </button>
-          <button id="touchBeamBtn" class="touch-btn touch-btn-square" title="Calculus Beam (▢)">
-            <span style="font-size: 14px; font-weight: 900;">▢</span>
-            <span>BEAM</span>
-          </button>
-          <button id="touchBombBtn" class="touch-btn touch-btn-circle" title="Leibniz Bomb (◯)">
-            <span style="font-size: 15px; font-weight: 900;">◯</span>
-            <span>BOMB</span>
-          </button>
+          <div class="stat-split-row">
+            <div class="mini-stat">
+              <span class="mini-label">CHAIN DASH [✕]</span>
+              <div id="hudDashPips" class="dash-pips">
+                <span class="dash-pip ready">⚡</span>
+                <span class="dash-pip ready">⚡</span>
+                <span class="dash-pip ready">⚡</span>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-label">EULER SLOW-MO [△]</span>
+              <span id="hudSlowVal" class="mono-val" style="color: #00ff88;">READY [△]</span>
+            </div>
+          </div>
+
+          <div class="meter-block">
+            <div class="meter-label-row">
+              <span>LEIBNIZ SUPERNOVA [◯]</span>
+              <span id="hudBombVal" class="mono-val" style="color: #ffd700;">READY [◯]</span>
+            </div>
+            <div class="meter-track">
+              <div id="hudBombFill" class="meter-fill bomb-fill" style="width: 100%;"></div>
+            </div>
+          </div>
         </div>
-      </div>
-    </main>
 
-    <!-- PlayStation Controller Guide Bar -->
-    <div class="guide-box">
-      <strong>PLAYSTATION DUALSENSE:</strong>
-      [✕] Dash &nbsp;|&nbsp;
-      [▢] Beam &nbsp;|&nbsp;
-      [◯] Leibniz Bomb &nbsp;|&nbsp;
-      [△] Slow-Mo &nbsp;|&nbsp;
-      [L1/R1] Match &nbsp;|&nbsp;
-      [L2/R2] Brake/Fire
+        <div class="panel-card">
+          <div class="panel-eyebrow">PLAYSTATION DUALSENSE / KEYBOARD</div>
+          <div class="deck-grid">
+            <button id="deckDashBtn" class="deck-btn btn-cross" type="button">
+              <span class="gp-tag gp-x">✕</span>
+              <span class="deck-name">Triple Dash</span>
+              <span class="deck-kbd">Space / RMB</span>
+            </button>
+            <button id="deckBeamBtn" class="deck-btn btn-square" type="button">
+              <span class="gp-tag gp-sq">▢</span>
+              <span class="deck-name">Calculus Beam</span>
+              <span class="deck-kbd">R2 / F / LMB</span>
+            </button>
+            <button id="deckBombBtn" class="deck-btn btn-circle" type="button">
+              <span class="gp-tag gp-o">◯</span>
+              <span class="deck-name">Leibniz Bomb</span>
+              <span class="deck-kbd">E Key</span>
+            </button>
+            <button id="deckSlowBtn" class="deck-btn btn-triangle" type="button">
+              <span class="gp-tag gp-tri">△</span>
+              <span class="deck-name">Euler Slow-Mo</span>
+              <span class="deck-kbd">Q Key</span>
+            </button>
+          </div>
+          <div class="deck-footnote">
+            <span>Left Stick / WASD: Move</span> • <span>Right Stick / Mouse: Aim</span> • <span>L2 / Shift: Brake</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Center Square Arena Viewport -->
+      <main class="viewport" id="viewport">
+        <canvas id="gameCanvas" width="640" height="640"></canvas>
+
+        <!-- Interactive Controller-Ready Pause / Victory / GameOver Overlay -->
+        <div id="battleOverlay" class="battle-overlay" aria-hidden="true" role="dialog">
+          <div class="overlay-card">
+            <h2 id="ovTitle" class="overlay-title">PAUSED</h2>
+            <p id="ovSubtitle" class="overlay-sub">Ready to differentiate.</p>
+            <div class="overlay-actions">
+              <button id="ovBtnPrimary" class="overlay-btn primary" type="button">
+                <span class="gp-tag gp-x">✕</span> RESUME
+              </button>
+              <button id="ovBtnSecondary" class="overlay-btn" type="button">
+                <span class="gp-tag gp-sq">▢</span> RESTART MATCH
+              </button>
+              <button id="ovBtnHub" class="overlay-btn danger" type="button">
+                <span class="gp-tag gp-o">◯</span> ARCADE HUB
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Mobile Touch Joystick & PlayStation Action Cluster -->
+        <div class="touch-stick-area" id="touchStickArea"></div>
+        <div class="touch-controls">
+          <div></div>
+          <div class="touch-cluster">
+            <button id="touchSlowBtn" class="touch-btn touch-btn-triangle" title="Slow-Mo (△)" type="button">
+              <span style="font-size: 13px; font-weight: 900;">△</span>
+              <span>SLOW</span>
+            </button>
+            <button id="touchDashBtn" class="touch-btn touch-btn-cross" title="Triple Dash (✕)" type="button">
+              <span style="font-size: 15px; font-weight: 900;">✕</span>
+              <span>DASH</span>
+            </button>
+            <button id="touchBeamBtn" class="touch-btn touch-btn-square" title="Calculus Beam (▢)" type="button">
+              <span style="font-size: 14px; font-weight: 900;">▢</span>
+              <span>BEAM</span>
+            </button>
+            <button id="touchBombBtn" class="touch-btn touch-btn-circle" title="Leibniz Bomb (◯)" type="button">
+              <span style="font-size: 15px; font-weight: 900;">◯</span>
+              <span>BOMB</span>
+            </button>
+          </div>
+        </div>
+      </main>
+
+      <!-- Right Panel: Boss Status, Calculus Derivation Lifecycle & Speed -->
+      <aside class="side-panel right-panel">
+        <div class="panel-card">
+          <div class="card-top-row">
+            <div id="hudBossBadge" class="boss-avatar">x³</div>
+            <div>
+              <div class="panel-eyebrow">TARGET FUNCTION</div>
+              <div id="hudBossTitle" class="panel-heading">x³ CUBIC BOSS</div>
+            </div>
+          </div>
+
+          <div class="meter-block">
+            <div class="meter-label-row">
+              <span>DERIVATION PROGRESS</span>
+              <span id="hudDerivVal" class="mono-val">16 / 16</span>
+            </div>
+            <div class="meter-track">
+              <div id="hudDerivFill" class="meter-fill boss-fill" style="width: 100%;"></div>
+            </div>
+          </div>
+
+          <div class="stat-split-row">
+            <div class="mini-stat">
+              <span class="mini-label">ACTIVE ORBS</span>
+              <span id="hudOrbsCount" class="mono-val" style="color: #00f0ff;">1</span>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-label">CURVE HAZARD</span>
+              <span id="hudHazardState" class="mono-val" style="color: #10b981;">CLEAR</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-eyebrow">CALCULUS DERIVATION LADDER</div>
+          <div id="hudLifecycleLadder" class="lifecycle-ladder">
+            <!-- Populated live by game.js -->
+          </div>
+        </div>
+
+        <div class="panel-card">
+          <div class="panel-eyebrow">SIMULATION TEMPO</div>
+          <div class="speed-row">
+            <button class="btn btn-speed" data-speed="0.5" type="button">0.5x</button>
+            <button class="btn btn-speed active" data-speed="1.0" type="button">1.0x</button>
+            <button class="btn btn-speed" data-speed="1.5" type="button">1.5x</button>
+            <button class="btn btn-speed" data-speed="2.0" type="button">2.0x</button>
+          </div>
+          <div class="deck-footnote">
+            <span>START/Esc: Pause</span> • <span>SELECT: Auto AI</span> • <span>L1/R1: Switch Boss</span>
+          </div>
+        </div>
+      </aside>
     </div>
-
-    <!-- Control Deck -->
-    <footer class="deck">
-      <div class="action-row">
-        <button id="btnStart" class="btn btn-primary">⏸ PAUSE BATTLE</button>
-        <button id="btnRestart" class="btn">🔄 RESTART MATCH</button>
-        <button class="btn btn-speed" data-speed="0.5">0.5x</button>
-        <button class="btn btn-speed active" data-speed="1.0">1.0x</button>
-        <button class="btn btn-speed" data-speed="1.5">1.5x</button>
-        <button class="btn btn-speed" data-speed="2.0">2.0x</button>
-      </div>
-    </footer>
   </div>
 
   <script type="module" src="js/game.js"></script>

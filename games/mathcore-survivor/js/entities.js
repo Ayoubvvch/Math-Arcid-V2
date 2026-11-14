@@ -3,7 +3,9 @@
  */
 
 window.GameState = {
-    paused: false,
+    paused: true, // Starts paused while #helpModal is visible
+    gameOver: false,
+    isNewRecord: false,
     time: 0,
     wave: 1,
     waveProgress: 0,
@@ -16,6 +18,8 @@ window.GameState = {
     matter: 120,
     selectedBuildIndex: 0,
     screenShake: 0,
+    viewW: window.innerWidth,
+    viewH: window.innerHeight,
     camera: { x: window.WORLD_SIZE / 2, y: window.WORLD_SIZE / 2 },
     closestEnemy: null,
     player: {
@@ -26,6 +30,7 @@ window.GameState = {
         radius: 24,
         hp: 100,
         maxHp: 100,
+        invulnTimer: 0,
         coreX: 0,
         aimAngle: -Math.PI / 2,
         lastAutoZap: 0,
@@ -38,35 +43,37 @@ window.GameState = {
         y: window.WORLD_SIZE / 2,
         hp: 500,
         maxHp: 500,
-        radius: 46
+        radius: 46,
+        healTick: 0
     },
     structures: [],
     enemies: [],
     projectiles: [],
     lightningBeams: [],
     particles: [],
-    sparkOrbs: [], // Smooth flying energy sparks that fly to the player
+    sparkOrbs: [],
     floatingTexts: [],
     stars: []
 };
 
 // Parallax Cyber Stars
-for (let i = 0; i < 180; i++) {
+for (let i = 0; i < 160; i++) {
     window.GameState.stars.push({
         x: Math.random() * window.WORLD_SIZE,
         y: Math.random() * window.WORLD_SIZE,
-        size: Math.random() * 2.4 + 0.6,
-        alpha: Math.random() * 0.6 + 0.2,
+        size: Math.random() * 2.2 + 0.8,
+        alpha: Math.random() * 0.55 + 0.2,
         color: ['#00f3ff', '#ff007f', '#b537f2', '#00ff88'][Math.floor(Math.random() * 4)]
     });
 }
 
 window.spawnEnemy = function(isBoss = false) {
-    const canvas = document.getElementById('gameCanvas');
+    const viewW = window.GameState.viewW || window.innerWidth;
+    const viewH = window.GameState.viewH || window.innerHeight;
     const angle = Math.random() * Math.PI * 2;
-    const dist = Math.max(canvas.width, canvas.height) * 0.6 + 160;
-    const spawnX = Math.max(100, Math.min(window.WORLD_SIZE - 100, window.GameState.player.x + Math.cos(angle) * dist));
-    const spawnY = Math.max(100, Math.min(window.WORLD_SIZE - 100, window.GameState.player.y + Math.sin(angle) * dist));
+    const dist = Math.max(viewW, viewH) * 0.55 + 140;
+    const spawnX = Math.max(90, Math.min(window.WORLD_SIZE - 90, window.GameState.player.x + Math.cos(angle) * dist));
+    const spawnY = Math.max(90, Math.min(window.WORLD_SIZE - 90, window.GameState.player.y + Math.sin(angle) * dist));
 
     const math = window.generateMathChallenge(window.GameState.wave, isBoss);
 
@@ -84,7 +91,7 @@ window.spawnEnemy = function(isBoss = false) {
         radius: isBoss ? 38 : 20,
         hp: baseHp,
         maxHp: baseHp,
-        speed: isBoss ? 1.05 : (1.3 + Math.random() * 0.5 + Math.min(window.GameState.wave * 0.05, 1.0)),
+        speed: isBoss ? 1.05 : (1.28 + Math.random() * 0.48 + Math.min(window.GameState.wave * 0.05, 0.95)),
         answer: math.answer,
         expr: math.expr,
         color: color,
@@ -95,6 +102,60 @@ window.spawnEnemy = function(isBoss = false) {
     });
 };
 
+window.resetMathCoreGame = function(autoResume = true) {
+    const gs = window.GameState;
+    gs.gameOver = false;
+    gs.isNewRecord = false;
+    gs.paused = !autoResume;
+    gs.time = 0;
+    gs.wave = 1;
+    gs.waveProgress = 0;
+    gs.waveGoal = 6;
+    gs.score = 0;
+    gs.combo = 0;
+    gs.lastKillTime = 0;
+    gs.kills = 0;
+    gs.matter = 120;
+    gs.screenShake = 0;
+    gs.closestEnemy = null;
+
+    gs.player.x = window.WORLD_SIZE / 2;
+    gs.player.y = window.WORLD_SIZE / 2 + 90;
+    gs.player.vx = 0;
+    gs.player.vy = 0;
+    gs.player.hp = gs.player.maxHp;
+    gs.player.invulnTimer = 0;
+    gs.player.coreX = 0;
+    gs.player.aimAngle = -Math.PI / 2;
+    gs.player.lastAutoZap = 0;
+    gs.player.lastKineticShot = 0;
+    gs.player.pulseWaveRadius = 0;
+    gs.player.pulseWaveAlpha = 0;
+
+    gs.camera.x = gs.player.x;
+    gs.camera.y = gs.player.y;
+
+    gs.structures = [];
+    gs.enemies = [];
+    gs.projectiles = [];
+    gs.lightningBeams = [];
+    gs.particles = [];
+    gs.sparkOrbs = [];
+    gs.floatingTexts = [];
+
+    for (let i = 0; i < 4; i++) window.spawnEnemy(false);
+
+    window.updateCoreXHUD();
+    window.updateWaveHUD();
+    window.updateScoreHUD();
+    window.updateMatterHUD();
+    window.updateHpHUD();
+    window.renderBuildBarUI();
+
+    document.getElementById('gameOverModal')?.classList.add('hidden');
+    document.getElementById('pauseModal')?.classList.add('hidden');
+};
+
 window.renderBuildBarUI = function() {
     const container = document.getElementById('buildBarContainer');
     if (!container) return;
@@ -102,22 +163,19 @@ window.renderBuildBarUI = function() {
     window.BUILDINGS.forEach((b, idx) => {
         const isSelected = idx === window.GameState.selectedBuildIndex;
         const btn = document.createElement('button');
-        btn.className = `cyber-btn rounded-xl px-2.5 py-1.5 flex items-center gap-2 border transition-all shrink-0 ${
-            isSelected
-                ? 'bg-cyan-500/25 border-cyan-300 shadow-[0_0_15px_rgba(0,243,255,0.35)] scale-105'
-                : 'bg-slate-900/70 border-slate-700/80 opacity-80 hover:opacity-100'
-        }`;
+        btn.type = 'button';
+        btn.className = `cyber-btn build-slot-btn${isSelected ? ' selected' : ''}`;
         btn.onclick = () => {
             window.GameState.selectedBuildIndex = idx;
             window.renderBuildBarUI();
         };
         btn.innerHTML = `
-            <div class="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-black math-font" style="background:${b.color}22; color:${b.color}; border:1px solid ${b.color}88">
+            <div class="build-formula-badge math-font" style="background:${b.color}22; color:${b.color}; border:1px solid ${b.color}88">
                 ${b.formula}
             </div>
-            <div class="text-right">
-                <div class="text-[11px] font-bold text-white leading-tight">${b.name}</div>
-                <div class="text-[10px] math-font text-cyan-300 font-bold">${b.cost} 💎</div>
+            <div class="build-slot-info">
+                <div class="build-slot-name">${b.name}</div>
+                <div class="build-slot-cost math-font">${b.cost} ◆</div>
             </div>
         `;
         container.appendChild(btn);
@@ -131,10 +189,11 @@ window.cycleBuildingSelection = function(dir) {
 };
 
 window.getTargetBuildCell = function() {
-    const canvas = document.getElementById('gameCanvas');
+    const viewW = window.GameState.viewW || window.innerWidth;
+    const viewH = window.GameState.viewH || window.innerHeight;
     if (window.InputState.usingMouseForBuild) {
-        const wx = window.InputState.mouseX + window.GameState.camera.x - canvas.width / 2;
-        const wy = window.InputState.mouseY + window.GameState.camera.y - canvas.height / 2;
+        const wx = window.InputState.mouseX + window.GameState.camera.x - viewW / 2;
+        const wy = window.InputState.mouseY + window.GameState.camera.y - viewH / 2;
         return {
             gx: Math.floor(wx / window.GRID_SIZE) * window.GRID_SIZE + window.GRID_SIZE / 2,
             gy: Math.floor(wy / window.GRID_SIZE) * window.GRID_SIZE + window.GRID_SIZE / 2
@@ -150,6 +209,7 @@ window.getTargetBuildCell = function() {
 };
 
 window.placeSelectedBuilding = function() {
+    if (window.GameState.paused || window.GameState.gameOver) return;
     const blueprint = window.BUILDINGS[window.GameState.selectedBuildIndex];
     const cell = window.getTargetBuildCell();
 
@@ -184,7 +244,7 @@ window.placeSelectedBuilding = function() {
     });
 
     window.SoundEngine.buildTower();
-    window.spawnParticles(cell.gx, cell.gy, blueprint.color, 16);
+    window.spawnParticles(cell.gx, cell.gy, blueprint.color, 12);
     window.addFloatingText(cell.gx, cell.gy - 25, `بناء: ${blueprint.name}`, blueprint.color, 15);
 };
 
@@ -218,31 +278,37 @@ window.autoBuildMathFortress = function() {
                 cooldown: 0,
                 pulse: 0
             });
-            window.spawnParticles(gx, gy, b.color, 10);
+            window.spawnParticles(gx, gy, b.color, 8);
         }
     });
     window.SoundEngine.buildTower();
     window.addFloatingText(cx, cy - 50, '🏰 تم تشييد القلعة الهندسية!', '#00ff88', 20);
 };
 
-window.spawnParticles = function(x, y, color, count = 12) {
-    for (let i = 0; i < count; i++) {
+window.spawnParticles = function(x, y, color, count = 10) {
+    const particles = window.GameState.particles;
+    if (particles.length > 140) {
+        particles.splice(0, particles.length - 110);
+    }
+    const clampedCount = Math.min(count, 24);
+    for (let i = 0; i < clampedCount; i++) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 5.0 + 1.2;
-        window.GameState.particles.push({
+        const speed = Math.random() * 4.8 + 1.2;
+        particles.push({
             x, y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
-            radius: Math.random() * 3.0 + 1.2,
+            radius: Math.random() * 2.8 + 1.2,
             color,
             alpha: 1,
-            decay: Math.random() * 0.04 + 0.03
+            decay: Math.random() * 0.045 + 0.03
         });
     }
 };
 
 // Spawn smooth flying energy spark that flows directly into player's core
 window.spawnEnergyReward = function(fromX, fromY, count = 3) {
+    if (window.GameState.sparkOrbs.length > 48) return;
     for (let i = 0; i < count; i++) {
         window.GameState.sparkOrbs.push({
             x: fromX + (Math.random() - 0.5) * 20,
@@ -255,21 +321,22 @@ window.spawnEnergyReward = function(fromX, fromY, count = 3) {
 };
 
 window.createLightningBeam = function(x1, y1, x2, y2, color = '#00ff88', life = 14) {
-    const segments = 7;
+    const segments = 6;
     const points = [{ x: x1, y: y1 }];
     for (let i = 1; i < segments; i++) {
         const t = i / segments;
-        const bx = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 26;
-        const by = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 26;
+        const bx = x1 + (x2 - x1) * t + (Math.random() - 0.5) * 22;
+        const by = y1 + (y2 - y1) * t + (Math.random() - 0.5) * 22;
         points.push({ x: bx, y: by });
     }
     points.push({ x: x2, y: y2 });
     window.GameState.lightningBeams.push({ points, color, life, maxLife: life });
 };
 
-// Crisp, fast-fading floating text that NEVER stays on screen
 window.addFloatingText = function(x, y, text, color = '#ffffff', size = 16) {
-    window.GameState.floatingTexts.push({
+    const list = window.GameState.floatingTexts;
+    if (list.length > 26) list.shift();
+    list.push({
         x, y,
         text,
         color,
@@ -277,6 +344,11 @@ window.addFloatingText = function(x, y, text, color = '#ffffff', size = 16) {
         alpha: 1,
         vy: -2.0
     });
+};
+
+window.updateCoreXHUD = function() {
+    const coreXDisplay = document.getElementById('coreXDisplay');
+    if (coreXDisplay) coreXDisplay.textContent = window.GameState.player.coreX;
 };
 
 window.updateWaveHUD = function() {
