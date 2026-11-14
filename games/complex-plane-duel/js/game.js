@@ -221,7 +221,7 @@
         state.stats.score += wasBypass ? 350 : 650;
         window.SeqAudio?.playGateBreak?.();
         window.spawnSeqParticles(state, g.x, g.y, 26, g.color, 260);
-        window.addSeqFloatText(state, g.x, g.y - 34, `تم اختراق البوابة (${state.stats.brokenGates}/4)!`, '#fbbf24', 1.8);
+        window.addSeqFloatText(state, g.x, g.y - 34, `تم اختراق ختم أرغاند (${state.stats.brokenGates}/4)!`, '#fbbf24', 1.8);
 
         if (!wasBypass) {
           state.player.energy = Math.min(state.player.maxEnergy, state.player.energy + 35);
@@ -231,7 +231,7 @@
         if (state.stats.brokenGates >= 4) {
           window.spawnFixedPointBoss(state);
         } else {
-          window.setSectorBanner(state, `بقي ${4 - state.stats.brokenGates} بوابات — واصل التقدم لليمين`, 3.5);
+          window.setSectorBanner(state, `بقي ${4 - state.stats.brokenGates} أختام في أرباع أرغاند — تابع التحليق!`, 3.5);
         }
       }
     } else if (info.kind === 'execute' && info.drone) {
@@ -267,11 +267,11 @@
     const sub = document.getElementById('endSubtitle');
 
     if (victory) {
-      title.innerHTML = 'تقارب ناجح — <span>دمّرْتَ النقطة الصامدة L!</span>';
-      sub.textContent = 'أتقنت كل محاور المتتاليات العددية (39–50): الترجع، الحدود، التآلفية والمتخاطة، مبرهنة الدركيين، والنقطة الصامدة!';
+      title.innerHTML = 'تحرير مستوى أرغاند — <span>دمّرْتَ نواة موافر الأعظم!</span>';
+      sub.textContent = 'أتقنت كل محاور الأعداد العقدية (51–64): الشكل الجبري والمثلثي والأسي، المرافق والمعيار، الهندسة العقدية، والتحويلات!';
     } else {
-      title.innerHTML = 'تباعد حرج نحو <span>+∞ / الخروج عن [m, M]</span>';
-      sub.textContent = 'انهار درعك قبل تحرير كل البوابات. استعمل القفز الثنائي ودرع الترجع [△] واخترق المسار مجدداً!';
+      title.innerHTML = 'انهيار المعيار <span>|z| → 0</span> في المستوى العقدي';
+      sub.textContent = 'تحطمت مركبة اللحق M(z) قبل كسر الأختام الأربعة. استعمل دوران أولير [✕] ودرع جذور الوحدة [△] وحلّق مجدداً!';
     }
 
     const acc = s.stats.questionsAnswered > 0
@@ -301,7 +301,7 @@
     window.sequenceGame = state;
     hudCache = {};
     window.lockStriderInputBriefly(220);
-    window.setSectorBanner(state, 'جولة جديدة — اخترق البوابات الأربع', 3.5);
+    window.setSectorBanner(state, 'جولة جديدة — اخترق أختام أرغاند الأربعة (Q1..Q4)', 3.5);
   };
 
   // Wire UI Buttons
