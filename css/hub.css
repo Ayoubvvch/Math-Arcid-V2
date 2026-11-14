@@ -324,9 +324,9 @@
   background: transparent;
   color: var(--text-muted);
   font-family: inherit;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  padding: 0.34rem 0.66rem;
+  padding: 0.32rem 0.56rem;
   border-radius: var(--radius-full);
   cursor: pointer;
   white-space: nowrap;

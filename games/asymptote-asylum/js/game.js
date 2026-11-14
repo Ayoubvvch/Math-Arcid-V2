@@ -79,20 +79,37 @@
     if (!el) return;
     el.textContent = '';
     const str = String(text || '');
-    // Match math expressions (ASCII letters, digits, brackets, math operators, superscripts/subscripts) while excluding trailing sentence punctuation
-    const mathRe = /[A-Za-z0-9\]\[(){√ⁿ³²⁰¹⁴⁵⁶⁷⁸⁹₀₁₂₃ΩΔαπℝ∞][A-Za-z0-9\]\[(){√ⁿ³²⁰¹⁴⁵⁶⁷⁸⁹₀₁₂₃ΩΔαπℝ∞+\-*/=<>≤≥≠∈∀→⇒⇔·∪∩'′∘⁻|^,. ]*(?:[A-Za-z0-9\]\[(){√ⁿ³²⁰¹⁴⁵⁶⁷⁸⁹₀₁₂₃ΩΔαπℝ∞+\-*/=<>≤≥≠∈∀→⇒⇔·∪∩'′∘⁻|^])?/g;
+    const mathRe = /(?:[+\-](?=[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])|[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])(?:[ +\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→↔⇒⇔·×÷±≈'′∘^_:,.\\]*[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])*/g;
     let lastIndex = 0;
     let match;
     while ((match = mathRe.exec(str)) !== null) {
-      if (match.index > lastIndex) {
-        el.appendChild(document.createTextNode(str.slice(lastIndex, match.index)));
+      let sIdx = match.index;
+      let eIdx = match.index + match[0].length;
+      while (eIdx > sIdx) {
+        const sub = str.slice(sIdx, eIdx);
+        const op = (sub.match(/\(/g) || []).length;
+        const cl = (sub.match(/\)/g) || []).length;
+        if ((sub.endsWith('(') && op > cl) || (sub.endsWith(')') && cl > op) || /\s$/.test(sub)) eIdx--;
+        else break;
+      }
+      while (sIdx < eIdx) {
+        const sub = str.slice(sIdx, eIdx);
+        const op = (sub.match(/\(/g) || []).length;
+        const cl = (sub.match(/\)/g) || []).length;
+        if ((sub.startsWith('(') && op > cl) || (sub.startsWith(')') && cl > op) || /^\s/.test(sub)) sIdx++;
+        else break;
+      }
+      const tok = str.slice(sIdx, eIdx);
+      if (!tok || /^[()\[\]\s]+$/.test(tok)) continue;
+      if (sIdx > lastIndex) {
+        el.appendChild(document.createTextNode(str.slice(lastIndex, sIdx)));
       }
       const bdi = document.createElement('bdi');
       bdi.dir = 'ltr';
       bdi.className = 'math-ltr';
-      bdi.textContent = match[0];
+      bdi.textContent = tok;
       el.appendChild(bdi);
-      lastIndex = mathRe.lastIndex;
+      lastIndex = eIdx;
     }
     if (lastIndex < str.length) {
       el.appendChild(document.createTextNode(str.slice(lastIndex)));

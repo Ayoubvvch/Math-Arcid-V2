@@ -80,6 +80,28 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'sequence-strider') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="ssGlow" cx="55%" cy="48%" r="55%">
+            <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.34" />
+            <stop offset="100%" stop-color="#030712" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#040916" />
+        <circle cx="176" cy="96" r="88" fill="url(#ssGlow)" />
+        <line x1="40" y1="36" x2="280" y2="36" stroke="#fb7185" stroke-dasharray="6 4" stroke-width="1.5" />
+        <line x1="40" y1="164" x2="280" y2="164" stroke="#fb7185" stroke-dasharray="6 4" stroke-width="1.5" />
+        <line x1="45" y1="160" x2="275" y2="42" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1.4" />
+        <path d="M46 155 Q 130 92, 272 52" fill="none" stroke="#38bdf8" stroke-width="2.5" />
+        <polyline points="82,160 82,124 118,124 118,104 156,104 156,88 214,72" fill="none" stroke="#fbbf24" stroke-width="1.8" />
+        <circle cx="214" cy="72" r="6" fill="#10b981" />
+        <text x="160" y="182" text-anchor="middle" fill="#bae6fd" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">uₙ₊₁ = f(uₙ) → L (39..50)</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />

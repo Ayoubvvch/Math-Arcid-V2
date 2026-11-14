@@ -14,7 +14,7 @@
     "totalCyclesCompleted": 3,
     "lastCycleTimestamp": "2026-11-14T00:17:00Z",
     "lastCyclePhase": "PS5 Console Hub & DualSense Masterclass Polish",
-    "totalGamesLive": 3,
+    "totalGamesLive": 4,
     "verificationStatus": "PASSED_100_PERCENT"
   },
   "liveGames": [
@@ -39,6 +39,14 @@
       "slug": "asymptote-asylum",
       "title": "Asymptote Asylum — مصحّة المشتقة",
       "category": "Horror Calculus",
+      "version": "1.0.0",
+      "status": "STABLE_PS5_OPTIMIZED"
+    },
+    {
+      "id": "sequence-strider",
+      "slug": "sequence-strider",
+      "title": "Sequence Strider — عدّاء المتتاليات",
+      "category": "Suites",
       "version": "1.0.0",
       "status": "STABLE_PS5_OPTIMIZED"
     }
