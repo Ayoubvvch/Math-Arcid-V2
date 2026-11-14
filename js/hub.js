@@ -55,6 +55,31 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'asymptote-asylum') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="aaGlow" cx="50%" cy="52%" r="55%">
+            <stop offset="0%" stop-color="#ef4444" stop-opacity="0.38" />
+            <stop offset="100%" stop-color="#050205" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#070204" />
+        <circle cx="160" cy="104" r="92" fill="url(#aaGlow)" />
+        <circle cx="160" cy="100" r="54" fill="none" stroke="#dc2626" stroke-width="2" stroke-opacity="0.55" />
+        <circle cx="160" cy="100" r="38" fill="none" stroke="#991b1b" stroke-dasharray="6 5" stroke-width="1.5" />
+        <path d="M46 156 Q 112 130 160 88 T 274 36" fill="none" stroke="#38bdf8" stroke-width="2.4" />
+        <line x1="78" y1="146" x2="246" y2="30" stroke="#fbbf24" stroke-dasharray="5 4" stroke-width="1.8" />
+        <circle cx="160" cy="88" r="5" fill="#fbbf24" />
+        <ellipse cx="92" cy="148" rx="18" ry="8" fill="#7f1d1d" fill-opacity="0.8" />
+        <ellipse cx="242" cy="146" rx="22" ry="10" fill="#991b1b" fill-opacity="0.72" />
+        <circle cx="240" cy="70" r="3.2" fill="#ff2a2a" />
+        <circle cx="252" cy="70" r="3.2" fill="#ff2a2a" />
+        <text x="160" y="166" text-anchor="middle" fill="#fecaca" font-family="JetBrains Mono, monospace" font-weight="800" font-size="13">f'(x₀) — 23..38</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />
