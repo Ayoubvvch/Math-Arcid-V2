@@ -1,93 +1,65 @@
-# ⚡ MATH ARCADE (Hub & Playground)
+# ⚡ MATH-ARCID-V2 (PS5 Mathematical Console & Autonomous Monster Hub)
 
-> **The Modular Open-Source Hub for Mathematical Games & Visual Simulators**  
-> Play live right in your browser: **[https://ayoubvvch.github.io/math-arcade/](https://ayoubvvch.github.io/math-arcade/)**
+> **The Autonomous 60FPS PlayStation Mathematical Gaming Console (Moroccan 2BAC PC Edition)**  
+> 🎮 **Play Live in Browser**: **[https://ayoubvvch.github.io/Math-Arcid-V2/](https://ayoubvvch.github.io/Math-Arcid-V2/)**  
+> 📦 **GitHub Repository**: **[https://github.com/Ayoubvvch/Math-Arcid-V2](https://github.com/Ayoubvvch/Math-Arcid-V2)**
 
 ---
 
 ## 🌟 Overview
-**Math Arcade** is a zero-bloat, modular platform designed to host high-performance interactive mathematical games, calculus battles, and geometric physics simulations. 
+**Math-Arcid-V2** is a zero-bloat, hardware-accelerated PlayStation 5 style mathematical gaming console and autonomous evolution laboratory. Every curriculum game is engineered to the **7-Stage Gold Standard (`evolution/GOLD_STANDARD.md`)**:
+- **Full-Screen `100vw × 100dvh` 60FPS Canvas** with dynamic HiDPI scaling and smooth camera tracking.
+- **Arabic RTL Interface (`<html lang="ar" dir="rtl">`)** with automatic `setBidiSafeMath` bidirectional formula isolation (`<bdi dir="ltr" class="math-ltr">`).
+- **6-Module Clean Architecture (`≥ 2,800–4,100+ LOC` per game)**: `curriculum.js`, `world.js`, `renderer.js`, `controls.js`, `audio.js`, and `game.js`.
+- **100% PlayStation DualSense / DualShock Support** (`✕`, `◯`, `▢`, `△`, `L1/R1`, `L2/R2`, `Options`, D-Pad, Twin Sticks) across gameplay and interactive mathematical modals.
 
-It is architected specifically for infinite extensibility: new games can be dropped into their own subdirectories and automatically discovered by the central Hub via `games.json` without requiring compilation, bundling, or rebuild steps.
+---
+
+## 🎮 Live Games Catalog
+
+| Game | Genre | 2BAC PC Curriculum Coverage | Direct Link |
+| :--- | :--- | :--- | :--- |
+| **Asymptote Asylum — مصحّة المشتقة** | 2D Survival Horror & Chainsaw Action | **Topics 23–38** (الاشتقاق ودراسة الدوال) | [Play Live](https://ayoubvvch.github.io/Math-Arcid-V2/games/asymptote-asylum/) |
+| **Sequence Strider — عدّاء المتتاليات** | 2D Cyber Momentum Platformer | **Topics 39–50** (المتتاليات العددية) | [Play Live](https://ayoubvvch.github.io/Math-Arcid-V2/games/sequence-strider/) |
+| **Argand Citadel — قلعة أرغاند العقدية** | 2D Orbital Sector Raid & Geometry | **Topics 51–64** (الأعداد العقدية ℂ) | [Play Live](https://ayoubvvch.github.io/Math-Arcid-V2/games/complex-plane-duel/) |
+| **Math Battle: Calculus Showdown** | Differential Operator Boss Arena | Power, Trig & Exponential Derivatives | [Play Live](https://ayoubvvch.github.io/Math-Arcid-V2/games/math-battle/) |
+| **MathCore: PlayStation Survivor** | Tactical 2D Parity & Algebra Arena | Linear Equations & Divisibility | [Play Live](https://ayoubvvch.github.io/Math-Arcid-V2/games/mathcore-survivor/) |
 
 ---
 
 ## 🏗️ Architecture & Project Structure
 
 ```text
-math-arcade/
-├── index.html              # The Central Hub Homepage (Search, Filters, Game Cards, Modals)
-├── games.json              # Single source of truth registry for all games & metadata
+Math-Arcid-V2/
+├── index.html                  # PS5 Console Hub Launcher (Boot Screen, Horizontal Rail, 100% Controller Nav)
+├── games.json                  # Single source of truth registry for all games & metadata
 ├── css/
-│   ├── common.css          # Shared design tokens, typography, dark/OLED aesthetics
-│   └── hub.css             # Hub layout, animations, responsive cards, glassmorphic UI
+│   ├── common.css              # Shared design tokens, typography, dark/OLED aesthetics
+│   └── hub.css                 # PS5 Console Hub layout, dynamic backdrop interpolation & animations
 ├── js/
-│   └── hub.js              # Dynamic loader, fuzzy search, category filter & audio hooks
-├── shared/                 # Universal shared utilities for games
-│   ├── gamepad.js          # PlayStation (✕, ◯, ▢, △) & Xbox gamepad input with dual haptics
-│   ├── math-engine.js      # Vector2D, Calculus operators, Coordinate systems
-│   ├── canvas-kit.js       # HiDPI auto-scaling, Zero-GC particle pool, Cartesian grid
-│   └── retro-audio.js      # Zero-asset Web Audio API pure synthesizer
-├── games/                  # Dedicated directory for self-contained games
-│   ├── math-battle/        # Flagship calculus marble duel simulator
-│   └── README.md           # Game development standard specification
+│   └── hub.js                  # Console launcher, bespoke SVG tile renderer, DualSense navigation
+├── shared/                     # Universal shared utilities
+│   ├── gamepad.js              # PlayStation (✕, ◯, ▢, △) & Xbox gamepad engine with dual haptics
+│   ├── math-engine.js          # Vector2D, Calculus operators, Coordinate systems
+│   ├── canvas-kit.js           # HiDPI auto-scaling, Zero-GC particle pool, Cartesian grid
+│   └── retro-audio.js          # Zero-asset Web Audio API pure synthesizer
+├── games/                      # Self-contained 6-module games
+│   ├── asymptote-asylum/       # Topics 23–38 (2D Calculus Horror, 4,166 LOC)
+│   ├── sequence-strider/       # Topics 39–50 (2D Suites Platformer, 3,331 LOC)
+│   ├── complex-plane-duel/     # Topics 51–64 (2D Complex Plane Citadel, 3,591 LOC)
+│   ├── math-battle/            # Differential Calculus Showdown
+│   └── mathcore-survivor/      # Algebra & Parity Survivor
+├── evolution/                  # Autonomous Twice-Daily Evolution Engine ("The Unleashed Monster")
+│   ├── GOLD_STANDARD.md        # 8-Pillar Architectural & Pedagogical Charter
+│   ├── ROADMAP.md              # 10-Game Moroccan 2BAC PC Master Plan
+│   ├── SPRINT.md               # Active Alpha/Omega cycle milestones
+│   ├── STATE.json              # Live telemetry and cycle state
+│   └── scripts/
+│       ├── trigger.sh          # Twice-daily (05:00 & 17:00 UTC) awakening trigger
+│       └── verify.sh           # 7-Stage Ironclad Quality Gate compiler check
 └── .github/workflows/
-    └── pages.yml           # Automated GitHub Pages CI/CD deployment
+    └── pages.yml               # Automated GitHub Pages CI/CD deployment
 ```
-
----
-
-## 🚀 Key Engineering Highlights
-
-- **⚡ Zero Build Dependencies**: Built 100% on pure modern Web Standards (HTML5, Vanilla ES Modules, CSS3). No `node_modules`, no Webpack/Vite overhead, zero configuration.
-- **🎮 Universal Gamepad Engine**: Full out-of-the-box support for PlayStation (DualSense/DualShock ✕, ◯, ▢, △), Xbox (A, B, X, Y), Nintendo, and standard controllers with analog deadzones and haptic dual-rumble.
-- **📱 60-120 FPS on Any Hardware**: Optimized for low-end mobile devices and OLED screens with zero-GC object pooling and lightweight canvas rendering.
-- **🔊 Zero-Asset Synthesized Audio**: Real-time sound effects generated directly via the browser's `AudioContext` — 0 MB audio downloads.
-- **🔍 Real-Time Fuzzy Search & Filter**: Instantly search by title, mathematical concept (e.g., `d/dx`, `Taylor`, `Matrix`), category, or difficulty level.
-- **🌐 GitHub Pages Ready**: Deploys automatically with native HTTPS and zero server maintenance.
-
----
-
-## 🛠️ How to Add a New Game in 3 Minutes
-
-1. **Create the Game Directory**:
-   ```bash
-   mkdir -p games/my-new-game/
-   ```
-   Add your `index.html`, `style.css`, and JavaScript files inside this folder.
-
-2. **Register in `games.json`**:
-   Add a new entry to the `games.json` array:
-   ```json
-   {
-     "id": "my-new-game",
-     "title": "Fourier Transform Sandbox",
-     "slug": "fourier-sandbox",
-     "category": "Analysis",
-     "difficulty": "Advanced",
-     "difficultyLevel": 3,
-     "description": "Deconstruct arbitrary waveforms into sinusoidal frequency harmonics.",
-     "mathConcepts": ["Fourier Series", "Harmonics", "Orthogonality"],
-     "controls": ["Draw with mouse to synthesize waves"],
-     "path": "games/my-new-game/index.html",
-     "status": "ready"
-   }
-   ```
-
-3. **Optionally Import Shared Utilities**:
-   ```javascript
-   import { Vector2D, Calculus } from '../../shared/math-engine.js';
-   import { CanvasKit, ParticlePool } from '../../shared/canvas-kit.js';
-   import { sound } from '../../shared/retro-audio.js';
-   ```
-
-4. **Commit & Push**:
-   ```bash
-   git add .
-   git commit -m "feat: Add Fourier Transform Sandbox"
-   git push origin main
-   ```
-   The Hub updates immediately!
 
 ---
 

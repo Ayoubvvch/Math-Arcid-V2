@@ -1,7 +1,7 @@
 # ⚡ MathCore: Sandbox Survivor
 
 > **2D Mathematical Equation Survival & Geometric Sandbox**  
-> Play live in the Math Arcade: **[https://ayoubvvch.github.io/math-arcade/games/mathcore-survivor/](https://ayoubvvch.github.io/math-arcade/games/mathcore-survivor/)**
+> Play live in the Math Arcade: **[https://ayoubvvch.github.io/Math-Arcid-V2/games/mathcore-survivor/](https://ayoubvvch.github.io/Math-Arcid-V2/games/mathcore-survivor/)**
 
 ---
 
