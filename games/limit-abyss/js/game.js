@@ -13,34 +13,53 @@ window.AbyssGame = (function() {
   ];
 
   let currentFilterIdx = 0;
-  let isPaused = false;
+  let isPaused = true;
   let isRunning = false;
   let animId = null;
 
   let activeGate = null;
   let activeQuestion = null;
   let isModalLocked = false;
+  let overrideTimerId = null;
+  let endModalShown = false;
+  let recentQuestionIds = [];
+  let hudCache = {};
 
-  // BIDIRECTIONAL MATHEMATICAL ISOLATION (setBidiSafeMath)
+  // BIDIRECTIONAL MATHEMATICAL ISOLATION (setBidiSafeMath with balanced parentheses)
   function setBidiSafeMath(el, text) {
     if (!el) return;
     el.textContent = '';
     const str = String(text || '');
-    // Regex matching mathematical expressions, Greek symbols, brackets, exponents, square roots
     const mathRe = /(?:[+\-](?=[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])|[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])(?:[ +\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→↔⇒⇔·×÷±≈'′∘^_:,.\\]*[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])*/g;
 
     let lastIdx = 0;
     let match;
     while ((match = mathRe.exec(str)) !== null) {
-      const sIdx = match.index;
-      const eIdx = sIdx + match[0].length;
+      let sIdx = match.index;
+      let eIdx = sIdx + match[0].length;
+      while (eIdx > sIdx) {
+        const sub = str.slice(sIdx, eIdx);
+        const op = (sub.match(/\(/g) || []).length;
+        const cl = (sub.match(/\)/g) || []).length;
+        if ((sub.endsWith('(') && op > cl) || (sub.endsWith(')') && cl > op) || /\s$/.test(sub)) eIdx--;
+        else break;
+      }
+      while (sIdx < eIdx) {
+        const sub = str.slice(sIdx, eIdx);
+        const op = (sub.match(/\(/g) || []).length;
+        const cl = (sub.match(/\)/g) || []).length;
+        if ((sub.startsWith('(') && op > cl) || (sub.startsWith(')') && cl > op) || /^\s/.test(sub)) sIdx++;
+        else break;
+      }
+      const tok = str.slice(sIdx, eIdx);
+      if (!tok || /^[()\[\]\s]+$/.test(tok)) continue;
       if (sIdx > lastIdx) {
         el.appendChild(document.createTextNode(str.slice(lastIdx, sIdx)));
       }
       const bdi = document.createElement('bdi');
       bdi.className = 'math-ltr';
       bdi.dir = 'ltr';
-      bdi.textContent = match[0];
+      bdi.textContent = tok;
       el.appendChild(bdi);
       lastIdx = eIdx;
     }
@@ -58,13 +77,17 @@ window.AbyssGame = (function() {
 
     hookUIButtons();
     updateFilterUI();
+
+    isPaused = true;
+    isRunning = true;
+    loop();
   }
 
   function hookUIButtons() {
-    // Sound Toggles
     const btnAudio = document.getElementById('btnAudioToggle');
     const btnAudioPause = document.getElementById('btnToggleSoundPause');
     const onToggleAudio = () => {
+      window.AbyssAudio?.init?.();
       const muted = window.AbyssAudio?.toggleMute?.();
       const txt = muted ? '🔇' : '🔊';
       if (btnAudio) btnAudio.textContent = txt;
@@ -73,17 +96,15 @@ window.AbyssGame = (function() {
     btnAudio?.addEventListener('click', onToggleAudio);
     btnAudioPause?.addEventListener('click', onToggleAudio);
 
-    // Pause Toggle
     document.getElementById('btnPauseToggle')?.addEventListener('click', togglePause);
     document.getElementById('btnResumeGame')?.addEventListener('click', togglePause);
 
-    // Help Toggle opens Intro modal
     document.getElementById('btnHelpToggle')?.addEventListener('click', () => {
       isPaused = true;
+      document.getElementById('pauseModal')?.classList.add('hidden');
       document.getElementById('introModal')?.classList.remove('hidden');
     });
 
-    // Filter Chips
     const onCycleFilter = () => {
       currentFilterIdx = (currentFilterIdx + 1) % FILTER_MODES.length;
       updateFilterUI();
@@ -92,7 +113,6 @@ window.AbyssGame = (function() {
     document.getElementById('filterChip')?.addEventListener('click', onCycleFilter);
     document.getElementById('btnCycleFilterPause')?.addEventListener('click', onCycleFilter);
 
-    // Challenge Modal Buttons
     for (let i = 0; i < 4; i++) {
       const btn = document.getElementById(`seqOpt${i}`);
       btn?.addEventListener('click', () => selectOption(i));
@@ -100,7 +120,6 @@ window.AbyssGame = (function() {
     document.getElementById('btnToggleHint')?.addEventListener('click', toggleHint);
     document.getElementById('btnOverdriveBypass')?.addEventListener('click', triggerBypass);
 
-    // Restarts
     document.getElementById('btnRestartPause')?.addEventListener('click', restartGame);
     document.getElementById('btnRetryEnd')?.addEventListener('click', restartGame);
   }
@@ -118,12 +137,15 @@ window.AbyssGame = (function() {
     window.AbyssAudio?.playUiTick?.();
     document.getElementById('introModal')?.classList.add('hidden');
     isPaused = false;
-    isRunning = true;
-    loop();
+    if (!isRunning) {
+      isRunning = true;
+      loop();
+    }
   }
   window.startAbyssFromIntro = startGame;
 
   function togglePause() {
+    if (endModalShown) return;
     isPaused = !isPaused;
     const modal = document.getElementById('pauseModal');
     if (isPaused) {
@@ -137,32 +159,35 @@ window.AbyssGame = (function() {
   window.toggleAbyssPause = togglePause;
 
   function restartGame() {
+    if (overrideTimerId) {
+      clearTimeout(overrideTimerId);
+      overrideTimerId = null;
+    }
     document.getElementById('pauseModal')?.classList.add('hidden');
     document.getElementById('endModal')?.classList.add('hidden');
     document.getElementById('overrideModal')?.classList.add('hidden');
     window.AbyssWorld.initWorld();
     isPaused = false;
     isModalLocked = false;
+    endModalShown = false;
     activeGate = null;
     activeQuestion = null;
+    hudCache = {};
     if (!isRunning) {
       isRunning = true;
       loop();
     }
   }
 
-  // INTERACTION DISPATCHER (Triggered by ▢ or E)
   function triggerInteractOrOverride() {
     if (isPaused) return;
 
-    // Check if near staggered enemy to execute
     const staggeredEnemy = window.AbyssWorld.findNearbyStaggeredEnemy();
     if (staggeredEnemy) {
       window.AbyssWorld.executeStaggeredEnemy(staggeredEnemy);
       return;
     }
 
-    // Check if near an abyssal gate to open challenge
     const gate = window.AbyssWorld.findNearbyGate();
     if (gate) {
       openOverrideModal(gate);
@@ -175,18 +200,24 @@ window.AbyssGame = (function() {
     isPaused = true;
     isModalLocked = false;
 
-    // Pick a question matching gate sector or user filter
     let targetSector = gate.sectorId;
     const filter = FILTER_MODES[currentFilterIdx];
     if (filter && filter.sector) targetSector = filter.sector;
 
-    const bank = window.LIMIT_QUESTION_BANK || [];
-    let pool = bank.filter(q => q.sector === targetSector);
-    if (!pool.length) pool = bank;
+    if (typeof window.pickLimitChallenge === 'function') {
+      activeQuestion = window.pickLimitChallenge(targetSector, recentQuestionIds);
+    } else {
+      const bank = window.LIMIT_QUESTION_BANK || [];
+      let pool = bank.filter(q => q.sector === targetSector);
+      if (!pool.length) pool = bank;
+      activeQuestion = pool[Math.floor(Math.random() * pool.length)];
+    }
 
-    activeQuestion = pool[Math.floor(Math.random() * pool.length)];
+    if (activeQuestion?.id) {
+      recentQuestionIds.push(activeQuestion.id);
+      if (recentQuestionIds.length > 14) recentQuestionIds.shift();
+    }
 
-    // Populate Modal Elements
     const modal = document.getElementById('overrideModal');
     const srcTag = document.getElementById('seqSourceTag');
     const topTag = document.getElementById('seqTopicTag');
@@ -199,7 +230,6 @@ window.AbyssGame = (function() {
     topTag.textContent = `البند ${activeQuestion.topic}: ${window.LIMIT_TOPICS[activeQuestion.topic] || ''}`;
     setBidiSafeMath(promptEl, activeQuestion.prompt);
 
-    // Interactive Graph Visualizer
     if (activeQuestion.graphSpec) {
       graphWrap.classList.remove('hidden');
       window.drawLimitGraph(graphCanvas, activeQuestion.graphSpec);
@@ -217,7 +247,6 @@ window.AbyssGame = (function() {
       setBidiSafeMath(btn.querySelector('.opt-text'), activeQuestion.options[i] || '');
     }
 
-    // Bypass button energy state
     const bypassBtn = document.getElementById('btnOverdriveBypass');
     const canBypass = window.AbyssWorld.getState().player.energy >= 60;
     bypassBtn.disabled = !canBypass;
@@ -258,22 +287,24 @@ window.AbyssGame = (function() {
       clickedBtn?.classList.add('opt-correct');
       window.AbyssAudio?.playOverrideSuccess?.();
 
-      setTimeout(() => {
+      overrideTimerId = setTimeout(() => {
+        overrideTimerId = null;
         window.AbyssWorld.unlockGate(activeGate);
         closeOverrideModal();
-      }, 700);
+      }, 650);
     } else {
       clickedBtn?.classList.add('opt-wrong');
       const correctBtn = document.getElementById(`seqOpt${activeQuestion.correctIndex}`);
       correctBtn?.classList.add('opt-correct');
 
       window.AbyssAudio?.playOverrideFail?.();
-      // Hull pressure damage penalty for incorrect deduction
+      window.AbyssInput?.triggerHaptic?.(120, 0.6, 0.85);
       wState.player.hp = Math.max(10, wState.player.hp - 20);
 
-      setTimeout(() => {
+      overrideTimerId = setTimeout(() => {
+        overrideTimerId = null;
         closeOverrideModal();
-      }, 1400);
+      }, 1350);
     }
   }
   window.selectAbyssOption = selectOption;
@@ -286,63 +317,96 @@ window.AbyssGame = (function() {
     activeQuestion = null;
   }
 
-  // 60FPS UPDATE HUD
   function updateHUD() {
     const s = window.AbyssWorld.getState();
     const p = s.player;
 
-    // HP & Energy Bars
-    const hpFill = document.getElementById('hpFill');
-    const hpVal = document.getElementById('hpValue');
-    if (hpFill && hpVal) {
-      const pct = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100));
-      hpFill.style.width = pct + '%';
-      hpVal.textContent = `${Math.round(p.hp)}/${p.maxHp}`;
-    }
-
-    const energyFill = document.getElementById('energyFill');
-    const energyVal = document.getElementById('energyValue');
-    if (energyFill && energyVal) {
-      const pct = Math.max(0, Math.min(100, (p.energy / p.maxEnergy) * 100));
-      energyFill.style.width = pct + '%';
-      energyVal.textContent = `${Math.round(p.energy)}%`;
-    }
-
-    // Depth & Stats
-    const depthEl = document.getElementById('depthValue');
-    if (depthEl) depthEl.textContent = `${Math.round(p.y * 4)} m`;
-
-    const gatesEl = document.getElementById('gatesValue');
-    if (gatesEl) gatesEl.textContent = `${s.gatesCleared} / 4`;
-
-    const scoreEl = document.getElementById('scoreValue');
-    if (scoreEl) scoreEl.textContent = s.score.toLocaleString();
-
-    const comboBadge = document.getElementById('comboBadge');
-    const comboCount = document.getElementById('comboCount');
-    if (comboBadge && comboCount) {
-      if (s.combo > 1) {
-        comboBadge.classList.remove('hidden');
-        comboCount.textContent = s.combo;
-      } else {
-        comboBadge.classList.add('hidden');
+    const hpStr = `${Math.round(p.hp)}/${p.maxHp}`;
+    if (hudCache.hp !== hpStr) {
+      hudCache.hp = hpStr;
+      const hpFill = document.getElementById('hpFill');
+      const hpVal = document.getElementById('hpValue');
+      if (hpFill && hpVal) {
+        hpFill.style.width = Math.max(0, Math.min(100, (p.hp / p.maxHp) * 100)) + '%';
+        hpVal.textContent = hpStr;
       }
     }
 
-    // Sector Banner
-    const banner = document.getElementById('sectorBanner');
-    if (banner) {
+    const enStr = `${Math.round(p.energy)}%`;
+    if (hudCache.en !== enStr) {
+      hudCache.en = enStr;
+      const energyFill = document.getElementById('energyFill');
+      const energyVal = document.getElementById('energyValue');
+      if (energyFill && energyVal) {
+        energyFill.style.width = Math.max(0, Math.min(100, (p.energy / p.maxEnergy) * 100)) + '%';
+        energyVal.textContent = enStr;
+      }
+    }
+
+    const depthStr = `${Math.round(p.y * 4)} m`;
+    if (hudCache.depth !== depthStr) {
+      hudCache.depth = depthStr;
+      const depthEl = document.getElementById('depthValue');
+      if (depthEl) depthEl.textContent = depthStr;
+    }
+
+    const gatesStr = s.boss ? `BOSS الطور ${s.boss.phase}` : `${s.gatesCleared} / 4`;
+    if (hudCache.gates !== gatesStr) {
+      hudCache.gates = gatesStr;
+      const gatesEl = document.getElementById('gatesValue');
+      if (gatesEl) gatesEl.textContent = gatesStr;
+    }
+
+    const scoreStr = s.score.toLocaleString();
+    if (hudCache.score !== scoreStr) {
+      hudCache.score = scoreStr;
+      const scoreEl = document.getElementById('scoreValue');
+      if (scoreEl) scoreEl.textContent = scoreStr;
+    }
+
+    if (hudCache.combo !== s.combo) {
+      hudCache.combo = s.combo;
+      const comboBadge = document.getElementById('comboBadge');
+      const comboCount = document.getElementById('comboCount');
+      if (comboBadge && comboCount) {
+        if (s.combo > 1) {
+          comboBadge.classList.remove('hidden');
+          comboCount.textContent = s.combo;
+        } else {
+          comboBadge.classList.add('hidden');
+        }
+      }
+    }
+
+    let bannerText;
+    if (s.boss) {
+      if (s.boss.phase === 3 && s.boss.shieldActive) {
+        bannerText = '⚠ الطور 3: درع TVI نشط! اكسره بـ [△] سونار أو [L2] صدمة أو استهدف نافذة الجذر α';
+      } else if (s.boss.phase === 3) {
+        bannerText = '⚡ انكسر درع TVI مؤقتاً — أطلق طوربيدات المرافق [R2] نحو النواة!';
+      } else if (s.boss.phase === 2) {
+        bannerText = '⚠ الطور 2: حزم قفزة الانقطاع (lim⁻ ≠ lim⁺) — استعمل [◯] للتفادي!';
+      } else {
+        bannerText = '⚠ لوفياثان الانقطاع العظيم — دمره بطوربيدات المرافق [R2] وصدمة [L2]!';
+      }
+    } else {
       const sectorNames = [
         'منطقة الشفق البحري — اخترق أختام الضغط الأربعة عبر النهايات (1–6)',
         'منطقة الظلام الدامس — الاتصال في نقطة والتمديد والمركب (7–11)',
         'منطقة الهاوية — صورة المجال ومبرهنة القيم الوسيطية TVI (12–17)',
         'خندق الهدال — التقابل والدالة العكسية والجذور النونية (18–22)'
       ];
-      banner.textContent = sectorNames[s.currentSectorIdx] || sectorNames[0];
+      bannerText = sectorNames[s.currentSectorIdx] || sectorNames[0];
     }
 
-    // Check Victory / Game Over
-    if (s.isVictory || s.isGameOver) {
+    if (hudCache.banner !== bannerText) {
+      hudCache.banner = bannerText;
+      const banner = document.getElementById('sectorBanner');
+      if (banner) banner.textContent = bannerText;
+    }
+
+    if ((s.isVictory || s.isGameOver) && !endModalShown) {
+      endModalShown = true;
       showEndModal(s);
     }
   }
@@ -355,7 +419,7 @@ window.AbyssGame = (function() {
 
     if (s.isVictory) {
       title.innerHTML = 'تحرير <span>الهاوية وقاع الخندق!</span>';
-      sub.textContent = 'تم إبادة لوفياثان الانقطاع العظيم وكسر أختام الضغط الأربعة بنجاح منهجـي 100% في مقرر 2BAC PC!';
+      sub.textContent = 'تم إبادة لوفياثان الانقطاع العظيم وكسر أختام الضغط الأربعة بنجاح منهجي 100% في مقرر 2BAC PC!';
     } else {
       title.innerHTML = 'انهيار <span>هيكل الغواصة</span>';
       sub.textContent = 'تجاوز ضغط الماء قدرة تحمل الهيكل. تذكر دائماً: إزالة عدم التحديد قبل التعويض المباشر!';
@@ -370,10 +434,10 @@ window.AbyssGame = (function() {
     modal?.classList.remove('hidden');
   }
 
-  // MAIN 60FPS LOOP
+  // MAIN 60FPS LOOP (Polls Gamepad in all states so DualSense works inside every modal!)
   function loop() {
+    window.AbyssInput.pollInput();
     if (!isPaused) {
-      window.AbyssInput.pollInput();
       window.AbyssWorld.updateWorld();
       updateHUD();
     }
@@ -386,7 +450,6 @@ window.AbyssGame = (function() {
   };
 })();
 
-// Start system on page load
 window.addEventListener('DOMContentLoaded', () => {
   window.AbyssGame.initGame();
 });

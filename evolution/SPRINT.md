@@ -29,11 +29,17 @@
   - Bespoke multi-layered SVG tile in `js/hub.js` with glowing sonar caustics.
   - Passed all 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`).
 
-### [NEXT — Cycle 005 Omega (17:00 UTC)] Milestone 2.2: Dual Deep Polish (Limit Abyss & Argand Citadel)
-* Fine-tune Mariana Leviathan Phase 3 TVI shield collision and synthesize deep-ocean acoustic soundscape nuances in `games/limit-abyss/`.
-* Expand `games/complex-plane-duel/js/curriculum.js` from 26 to 32 questions (adding deep National Exam cubic polynomial factorization $P(z) = (z - z_0)(az^2 + bz + c)$ and composite transformation problems).
+### [COMPLETED — Cycle 006 Omega (17:00 UTC)] Milestone 2.2: Dual Deep Polish (Limit Abyss & Argand Citadel)
+* **Limit Abyss v1.1.0 (`games/limit-abyss/`, 4,616 LOC)**:
+  - Implemented full 3-Phase Mariana Leviathan Boss state machine (`Phase 1: Void Spikes`, `Phase 2: Discontinuity Beams (lim⁻ ≠ lim⁺)`, `Phase 3: TVI Resonance Shield f(a)·f(b) < 0` with rotating Root Windows `α` where `f(α) = 0`).
+  - Fine-tuned Phase 3 TVI shield collision: torpedo deflection off solid arcs, piercing through rotating `α` root windows, radial submarine repulsion preventing entrapment, and `△` Sonar / `L2` Shockwave shield shattering + unified `damageBoss` victory trigger.
+  - Upgraded `js/audio.js` with depth-adaptive dual-oscillator drone (`setDepthRatio`), reusable hydrophone noise buffer cavitation, thermal vent bubble chimes (`playBubblePop`), trench creaks, beam charge/fire, and Web Audio timeline echoes (zero timer leaks).
+  - Fixed DualSense modal polling bug in `js/game.js` (`pollInput()` now runs even while paused/modals open), added Fisher-Yates option shuffling (`pickLimitChallenge`), DualSense haptics + analog triggers + D-Pad hat fallback (`js/controls.js`), and eliminated per-frame gradients and `shadowBlur` in `js/renderer.js` for locked 60FPS.
+* **Argand Citadel v2.1.0 (`games/complex-plane-duel/`, 3,792 LOC)**:
+  - Expanded `js/curriculum.js` from 26 to **32 Moroccan 2BAC PC questions** adding cubic polynomial factorization $P(z) = (z - z_0)(az^2 + bz + c)$ (real and complex coefficients), composite transformations ($T_{\vec{u}} \circ R$ and order sensitivity $R \circ T$), weighted barycenter affixes, and pure-imaginary diameter circle loci.
+  - Upgraded `js/renderer.js` to **12 interactive `graphSpec` plots** (adding dedicated `half_angle_chord`, `cubic_roots`, `composite_transform`, and `diameter_circle`), full Y-axis drone culling, and dynamic RTL/LTR floating text direction.
 
-### [UPCOMING — Cycle 006 Alpha (05:00 UTC)] Milestone 2.4: Launch Game 7 — `logarithm-reactor` (مفاعل اللوغاريتم والأسي — Topics 65–78)
+### [NEXT — Cycle 007 Alpha (05:00 UTC)] Milestone 2.4: Launch Game 7 — `logarithm-reactor` (مفاعل اللوغاريتم والأسي — Topics 65–78)
 * **Genre**: 2D Bio-Cyber Metroidvania Lab (`2800 × 1800` containment facility).
 * **Curriculum**: **Topics 65–78 (الدوال اللوغاريتمية والأسية، حل المعادلات والمتراجحات، النهايات الأساسية والمقارنة الإضافية)**.
-* **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, 28 questions with `graphSpec`, 4 core containment seals + Asymptote Containment Boss.
+* **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 core containment seals + Asymptote Containment Boss.

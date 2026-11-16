@@ -255,7 +255,7 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
 
   // 10. Complex Anomaly Drones & Boss
   for (const d of state.drones) {
-    if (d.x + 90 < camX || d.x - 90 > camX + viewW) continue;
+    if (d.x + 90 < camX || d.x - 90 > camX + viewW || d.y + 90 < camY || d.y - 90 > camY + viewH) continue;
     ctx.save();
     ctx.translate(d.x, d.y);
 
@@ -360,6 +360,7 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
 
   for (const ft of state.floatingTexts) {
     ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
+    ctx.direction = /[\u0600-\u06FF]/.test(ft.text) ? 'rtl' : 'ltr';
     ctx.fillStyle = ft.color;
     ctx.font = '800 13px Tahoma, monospace';
     ctx.textAlign = 'center';
@@ -579,7 +580,7 @@ window.drawSequenceGraph = function(canvas, graphSpec) {
     ctx.fillText('1', cx + R + 5, cy - 4);
     ctx.fillText('j', cx - R * 0.5 - 14, cy - R * 0.86 - 4);
     ctx.fillText('j²', cx - R * 0.5 - 16, cy + R * 0.86 + 12);
-  } else if (graphSpec.type === 'rotation_center' || graphSpec.type === 'half_angle_chord') {
+  } else if (graphSpec.type === 'rotation_center') {
     const ox = toX(-0.5), oy = toY(-0.5);
     const mx = toX(1.7), my = toY(-0.5);
     const mpx = toX(-0.5), mpy = toY(1.7);
@@ -592,5 +593,118 @@ window.drawSequenceGraph = function(canvas, graphSpec) {
     ctx.fillText('Ω(ω)', ox - 28, oy + 14);
     ctx.fillText('M(z)', mx + 6, my + 4);
     ctx.fillText('M\'(z\') [+π/2]', mpx + 6, mpy + 4);
+  } else if (graphSpec.type === 'half_angle_chord') {
+    const R = scale * 1.45;
+    const th = Math.PI / 3;
+    const ux = cx + R, uy = cy;
+    const vx = cx + Math.cos(th) * R, vy = cy - Math.sin(th) * R;
+    const sx = cx + R + Math.cos(th) * R, sy = cy - Math.sin(th) * R;
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+    ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI * 2); ctx.stroke();
+
+    ctx.strokeStyle = '#38bdf8';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(ux, uy); ctx.lineTo(sx, sy); ctx.lineTo(vx, vy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 2.3;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy); ctx.lineTo(ux, uy);
+    ctx.moveTo(cx, cy); ctx.lineTo(vx, vy);
+    ctx.stroke();
+
+    ctx.strokeStyle = '#34d399';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(sx, sy); ctx.stroke();
+
+    ctx.fillStyle = '#34d399';
+    ctx.beginPath(); ctx.arc(sx, sy, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText('1 + e^{iθ} = 2cos(θ/2)e^{iθ/2}', sx - 58, sy - 10);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fillText('1', ux + 4, uy + 12);
+    ctx.fillText('e^{iθ}', vx - 28, vy - 8);
+  } else if (graphSpec.type === 'cubic_roots') {
+    const z0x = toX(2), z0y = toY(0);
+    const z1x = toX(1), z1y = toY(1);
+    const z2x = toX(1), z2y = toY(-1);
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(z0x, z0y); ctx.lineTo(z1x, z1y); ctx.lineTo(z2x, z2y); ctx.closePath();
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    for (const pt of [
+      { x: z0x, y: z0y, lbl: 'z₀=2', col: '#10b981', dx: 8, dy: 14 },
+      { x: z1x, y: z1y, lbl: 'z₁=1+i', col: '#fbbf24', dx: 8, dy: -6 },
+      { x: z2x, y: z2y, lbl: 'z₂=1-i', col: '#fb7185', dx: 8, dy: 14 }
+    ]) {
+      ctx.fillStyle = pt.col;
+      ctx.beginPath(); ctx.arc(pt.x, pt.y, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillText(pt.lbl, pt.x + pt.dx, pt.y + pt.dy);
+    }
+  } else if (graphSpec.type === 'composite_transform') {
+    const ox = toX(-1), oy = toY(1);     // Fixed center Ω'(-1 + i)
+    const mx = toX(-1), my = toY(-1);    // M(-1 - i)
+    const m1x = toX(2), m1y = toY(-2);   // M1 = R(M) = 2 - 2i
+    const mpx = toX(1), mpy = toY(1);    // M' = T(M1) = 1 + i
+    ctx.strokeStyle = '#a855f7';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(mx, my); ctx.lineTo(m1x, m1y); ctx.lineTo(mpx, mpy);
+    ctx.stroke();
+
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.55)';
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath();
+    ctx.moveTo(ox, oy); ctx.lineTo(mx, my);
+    ctx.moveTo(ox, oy); ctx.lineTo(mpx, mpy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.fillStyle = '#34d399';
+    ctx.beginPath(); ctx.arc(ox, oy, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText('Ω\'(-1+i)', ox - 56, oy - 8);
+    ctx.fillStyle = '#fbbf24';
+    ctx.beginPath(); ctx.arc(mx, my, 3.8, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText('M', mx - 14, my + 12);
+    ctx.fillText('R(M)', m1x + 6, m1y + 4);
+    ctx.beginPath(); ctx.arc(mpx, mpy, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText('M\'=(T∘R)(M) [+π/2]', mpx + 6, mpy - 4);
+  } else if (graphSpec.type === 'diameter_circle') {
+    const ax = toX(-1.5), ay = toY(0);
+    const bx = toX(1.5), by = toY(0);
+    const mx = toX(0.4), my = toY(1.37);
+    const midX = (ax + bx) / 2, midY = (ay + by) / 2;
+    const R = (bx - ax) / 2;
+
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2.2;
+    ctx.beginPath(); ctx.arc(midX, midY, R, 0, Math.PI * 2); ctx.stroke();
+
+    ctx.strokeStyle = '#fbbf24';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(ax, ay); ctx.lineTo(mx, my); ctx.lineTo(bx, by);
+    ctx.stroke();
+
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath(); ctx.arc(ax, ay, 4.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText('A ∈ E', ax - 36, ay + 14);
+
+    // Excluded point B (hollow)
+    ctx.fillStyle = '#050914';
+    ctx.strokeStyle = '#f43f5e';
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.arc(bx, by, 5, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fda4af';
+    ctx.fillText('B ∉ E', bx + 7, by + 14);
+
+    ctx.fillStyle = '#fde68a';
+    ctx.beginPath(); ctx.arc(mx, my, 4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillText('M(z) [90°]', mx + 6, my - 6);
   }
 };

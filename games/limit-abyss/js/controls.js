@@ -1,6 +1,7 @@
 /**
  * Limit Abyss — هاوية النهايات والاتصال 2BAC PC
  * 100% DualSense / DualShock, Keyboard, Mouse & Mobile Touch Input System
+ * Includes DualSense Haptic Rumble, Analog Trigger Thresholds, D-Pad Hat Fallback & Right-Stick Aim.
  */
 
 window.AbyssInput = (function() {
@@ -13,7 +14,7 @@ window.AbyssInput = (function() {
     gamepadSlot: -1,
     gamepadConnected: false,
     prevButtons: {},
-    prevDpad: { up: false, down: false, left: false, right: false },
+    prevHat: { up: false, down: false, left: false, right: false },
     navCooldownUntil: 0,
 
     pauseFocusIdx: 0,
@@ -27,31 +28,77 @@ window.AbyssInput = (function() {
   };
 
   function initControls() {
-    // Keyboard listeners
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
+    window.addEventListener('blur', () => {
+      state.keys = {};
+      state.isMouseDown = false;
+    });
 
-    // Mouse listeners
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
 
-    // Gamepad connection listeners
     window.addEventListener('gamepadconnected', onGamepadConnected);
     window.addEventListener('gamepaddisconnected', onGamepadDisconnected);
 
-    // Touch joystick listeners
     setupTouchControls();
-
-    // Hook bottom deck buttons
     hookDeckButtons();
+  }
+
+  function findActiveGamepad() {
+    if (!navigator.getGamepads) return null;
+    const pads = navigator.getGamepads();
+    if (state.gamepadSlot >= 0 && pads[state.gamepadSlot]?.connected) {
+      return pads[state.gamepadSlot];
+    }
+    for (let i = 0; i < pads.length; i++) {
+      if (pads[i] && pads[i].connected) {
+        state.gamepadSlot = i;
+        if (!state.gamepadConnected) updateGamepadUI(true, pads[i].id);
+        return pads[i];
+      }
+    }
+    state.gamepadSlot = -1;
+    return null;
+  }
+
+  function readHatDirs(gp) {
+    const dirs = { up: false, down: false, left: false, right: false };
+    if (gp.axes && gp.axes.length > 9) {
+      const h = gp.axes[9];
+      if (typeof h === 'number' && Math.abs(h) <= 1.05 && h < 1.1) {
+        if (h < -0.75) { dirs.up = true; }
+        else if (h < -0.35) { dirs.up = true; dirs.right = true; }
+        else if (h < -0.05) { dirs.right = true; }
+        else if (h < 0.25) { dirs.right = true; dirs.down = true; }
+        else if (h < 0.52) { dirs.down = true; }
+        else if (h < 0.78) { dirs.down = true; dirs.left = true; }
+        else if (h <= 0.92) { dirs.left = true; }
+        else { dirs.left = true; dirs.up = true; }
+      }
+    }
+    return dirs;
+  }
+
+  async function triggerHaptic(duration = 80, weak = 0.4, strong = 0.65) {
+    const gp = findActiveGamepad();
+    if (gp && gp.vibrationActuator && typeof gp.vibrationActuator.playEffect === 'function') {
+      try {
+        await gp.vibrationActuator.playEffect('dual-rumble', {
+          startDelay: 0,
+          duration,
+          weakMagnitude: weak,
+          strongMagnitude: strong
+        });
+      } catch (e) {}
+    }
   }
 
   function onKeyDown(e) {
     state.keys[e.key] = true;
     state.keys[e.code] = true;
 
-    // Direct modal shortcuts
     const isOverrideOpen = !document.getElementById('overrideModal')?.classList.contains('hidden');
     const isPauseOpen = !document.getElementById('pauseModal')?.classList.contains('hidden');
     const isIntroOpen = !document.getElementById('introModal')?.classList.contains('hidden');
@@ -84,20 +131,19 @@ window.AbyssInput = (function() {
     }
 
     if (isPauseOpen) {
-      if (e.key === 'ArrowUp' || e.code === 'KeyW') navigatePauseMenu(-1);
-      else if (e.key === 'ArrowDown' || e.code === 'KeyS') navigatePauseMenu(1);
-      else if (e.key === 'Enter' || e.code === 'Space') activatePauseMenu();
+      if (e.key === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); navigatePauseMenu(-1); }
+      else if (e.key === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); navigatePauseMenu(1); }
+      else if (e.key === 'Enter' || e.code === 'Space') { e.preventDefault(); activatePauseMenu(); }
       return;
     }
 
     if (isEndOpen) {
-      if (e.key === 'ArrowUp' || e.code === 'KeyW') navigateEndMenu(-1);
-      else if (e.key === 'ArrowDown' || e.code === 'KeyS') navigateEndMenu(1);
-      else if (e.key === 'Enter' || e.code === 'Space') activateEndMenu();
+      if (e.key === 'ArrowUp' || e.code === 'KeyW') { e.preventDefault(); navigateEndMenu(-1); }
+      else if (e.key === 'ArrowDown' || e.code === 'KeyS') { e.preventDefault(); navigateEndMenu(1); }
+      else if (e.key === 'Enter' || e.code === 'Space') { e.preventDefault(); activateEndMenu(); }
       return;
     }
 
-    // In-game direct ability hotkeys
     if (e.code === 'Space') {
       e.preventDefault();
       window.AbyssWorld?.actJump?.();
@@ -129,8 +175,10 @@ window.AbyssInput = (function() {
       state.isMouseDown = true;
       const isModalOpen = !document.getElementById('overrideModal')?.classList.contains('hidden') ||
                           !document.getElementById('pauseModal')?.classList.contains('hidden') ||
-                          !document.getElementById('introModal')?.classList.contains('hidden');
+                          !document.getElementById('introModal')?.classList.contains('hidden') ||
+                          !document.getElementById('endModal')?.classList.contains('hidden');
       if (!isModalOpen) {
+        window.AbyssAudio?.init?.();
         window.AbyssWorld?.actPulse?.();
       }
     }
@@ -161,7 +209,10 @@ window.AbyssInput = (function() {
     if (connected) {
       pill.classList.remove('disconnected');
       pill.classList.add('connected');
-      const shortName = name.includes('DualSense') ? 'DualSense PS5 جاهزة' : (name.includes('Xbox') ? 'Xbox Controller' : 'يد تحكم متصلة');
+      const idLow = String(name).toLowerCase();
+      const shortName = (idLow.includes('dualsense') || idLow.includes('054c') || idLow.includes('playstation'))
+        ? 'DualSense PS5 جاهزة'
+        : (idLow.includes('xbox') ? 'Xbox Controller' : 'يد تحكم متصلة');
       label.textContent = shortName;
     } else {
       pill.classList.remove('connected');
@@ -183,13 +234,14 @@ window.AbyssInput = (function() {
 
     joy.addEventListener('touchstart', e => {
       e.preventDefault();
+      window.AbyssAudio?.init?.();
       const t = e.changedTouches[0];
       touchId = t.identifier;
       const rect = joy.getBoundingClientRect();
       state.touchStartX = rect.left + rect.width / 2;
       state.touchStartY = rect.top + rect.height / 2;
       handleTouchMove(t.clientX, t.clientY);
-    });
+    }, { passive: false });
 
     window.addEventListener('touchmove', e => {
       if (touchId === null) return;
@@ -241,7 +293,6 @@ window.AbyssInput = (function() {
     document.getElementById('actOverdrive')?.addEventListener('click', () => window.AbyssWorld?.actOverdrive?.());
   }
 
-  // MENU NAVIGATION HELPERS
   function navigatePauseMenu(delta) {
     const btns = Array.from(document.querySelectorAll('.pause-menu-btn'));
     if (!btns.length) return;
@@ -268,7 +319,7 @@ window.AbyssInput = (function() {
     if (btns[state.endFocusIdx]) btns[state.endFocusIdx].click();
   }
 
-  // 60FPS POLL INPUT FOR GAMEPLAY & GAMEPAD
+  // 60FPS POLL INPUT (Runs in both gameplay & modals so DualSense controls all menus cleanly)
   function pollInput() {
     const p = window.AbyssWorld?.getState?.()?.player;
     if (!p) return;
@@ -276,106 +327,105 @@ window.AbyssInput = (function() {
     let moveX = 0;
     let moveY = 0;
 
-    // Keyboard Arrow / WASD
     if (state.keys['ArrowLeft'] || state.keys['KeyA']) moveX -= 1;
     if (state.keys['ArrowRight'] || state.keys['KeyD']) moveX += 1;
     if (state.keys['ArrowUp'] || state.keys['KeyW']) moveY -= 1;
     if (state.keys['ArrowDown'] || state.keys['KeyS']) moveY += 1;
 
-    // Mobile Touch Joystick
     if (Math.hypot(state.touchVecX, state.touchVecY) > 0.15) {
       moveX += state.touchVecX;
       moveY += state.touchVecY;
     }
 
-    // GAMEPAD POLLING
-    if (navigator.getGamepads) {
-      const pads = navigator.getGamepads();
-      let gp = null;
-      if (state.gamepadSlot >= 0 && pads[state.gamepadSlot]) {
-        gp = pads[state.gamepadSlot];
+    const gp = findActiveGamepad();
+    if (gp && gp.connected) {
+      const deadzone = 0.18;
+      const ax0 = gp.axes[0] || 0;
+      const ax1 = gp.axes[1] || 0;
+      if (Math.abs(ax0) > deadzone) moveX += ax0;
+      if (Math.abs(ax1) > deadzone) moveY += ax1;
+
+      const btnDown = idx => {
+        const b = gp.buttons[idx];
+        return !!(b && (b.pressed || b.value > 0.55));
+      };
+
+      const hat = readHatDirs(gp);
+      const dUp = btnDown(12) || hat.up;
+      const dDown = btnDown(13) || hat.down;
+      const dLeft = btnDown(14) || hat.left;
+      const dRight = btnDown(15) || hat.right;
+
+      if (dLeft) moveX -= 1;
+      if (dRight) moveX += 1;
+      if (dUp) moveY -= 1;
+      if (dDown) moveY += 1;
+
+      // Right Analog Stick aiming (overrides sub orientation cleanly while pushed)
+      if (gp.axes.length >= 4) {
+        const ax2 = gp.axes[2] || 0;
+        const ax3 = gp.axes[3] || 0;
+        if (Math.hypot(ax2, ax3) > 0.28) {
+          p.angle = Math.atan2(ax3, ax2);
+        }
+      }
+
+      const isOverrideOpen = !document.getElementById('overrideModal')?.classList.contains('hidden');
+      const isPauseOpen = !document.getElementById('pauseModal')?.classList.contains('hidden');
+      const isIntroOpen = !document.getElementById('introModal')?.classList.contains('hidden');
+      const isEndOpen = !document.getElementById('endModal')?.classList.contains('hidden');
+
+      const now = performance.now();
+      const btnJustPressed = idx => btnDown(idx) && !state.prevButtons[idx];
+
+      if (isOverrideOpen) {
+        if (btnJustPressed(0)) window.selectAbyssOption?.(0); // ✕
+        if (btnJustPressed(1)) window.selectAbyssOption?.(1); // ◯
+        if (btnJustPressed(2)) window.selectAbyssOption?.(2); // ▢
+        if (btnJustPressed(3)) window.selectAbyssOption?.(3); // △
+        if (btnJustPressed(5)) window.toggleAbyssHint?.();    // R1
+        if (btnJustPressed(6)) window.triggerAbyssBypass?.(); // L2
+        if (btnJustPressed(9)) window.toggleAbyssPause?.();   // Options
+      } else if (isPauseOpen) {
+        if (now > state.navCooldownUntil) {
+          if (dUp || ax1 < -0.45) { navigatePauseMenu(-1); state.navCooldownUntil = now + 180; }
+          if (dDown || ax1 > 0.45) { navigatePauseMenu(1); state.navCooldownUntil = now + 180; }
+        }
+        if (btnJustPressed(0)) activatePauseMenu(); // ✕
+        if (btnJustPressed(1) || btnJustPressed(9)) window.toggleAbyssPause?.(); // ◯ or Options
+      } else if (isIntroOpen) {
+        if (btnJustPressed(0) || btnJustPressed(9)) window.startAbyssFromIntro?.();
+      } else if (isEndOpen) {
+        if (now > state.navCooldownUntil) {
+          if (dUp || ax1 < -0.45) { navigateEndMenu(-1); state.navCooldownUntil = now + 180; }
+          if (dDown || ax1 > 0.45) { navigateEndMenu(1); state.navCooldownUntil = now + 180; }
+        }
+        if (btnJustPressed(0)) activateEndMenu();
+        if (btnJustPressed(1)) document.getElementById('btnHubEnd')?.click();
       } else {
-        for (let i = 0; i < pads.length; i++) {
-          if (pads[i] && pads[i].connected) {
-            gp = pads[i];
-            state.gamepadSlot = i;
-            if (!state.gamepadConnected) updateGamepadUI(true, gp.id);
-            break;
-          }
-        }
+        if (btnJustPressed(0)) window.AbyssWorld?.actJump?.();       // ✕
+        if (btnJustPressed(1)) window.AbyssWorld?.actDash?.();       // ◯
+        if (btnJustPressed(2)) window.triggerInteractOrOverride?.(); // ▢
+        if (btnJustPressed(3)) window.AbyssWorld?.actAegis?.();      // △
+        if (btnJustPressed(7) || btnDown(7)) window.AbyssWorld?.actPulse?.(); // R2 rapid/press
+        if (btnJustPressed(6)) window.AbyssWorld?.actOverdrive?.();  // L2
+        if (btnJustPressed(9)) window.toggleAbyssPause?.();          // Options
       }
 
-      if (gp && gp.connected) {
-        // Left Analog Stick (Axes 0 & 1)
-        const deadzone = 0.18;
-        const ax0 = gp.axes[0] || 0;
-        const ax1 = gp.axes[1] || 0;
-        if (Math.abs(ax0) > deadzone) moveX += ax0;
-        if (Math.abs(ax1) > deadzone) moveY += ax1;
-
-        // D-Pad navigation
-        const dUp = gp.buttons[12]?.pressed;
-        const dDown = gp.buttons[13]?.pressed;
-        const dLeft = gp.buttons[14]?.pressed;
-        const dRight = gp.buttons[15]?.pressed;
-
-        if (dLeft) moveX -= 1;
-        if (dRight) moveX += 1;
-        if (dUp) moveY -= 1;
-        if (dDown) moveY += 1;
-
-        // Modal Check
-        const isOverrideOpen = !document.getElementById('overrideModal')?.classList.contains('hidden');
-        const isPauseOpen = !document.getElementById('pauseModal')?.classList.contains('hidden');
-        const isIntroOpen = !document.getElementById('introModal')?.classList.contains('hidden');
-        const isEndOpen = !document.getElementById('endModal')?.classList.contains('hidden');
-
-        const now = performance.now();
-
-        // Helper to check rising edge (button just pressed)
-        const btnJustPressed = idx => gp.buttons[idx]?.pressed && !state.prevButtons[idx];
-
-        if (isOverrideOpen) {
-          if (btnJustPressed(0)) window.selectAbyssOption?.(0); // ✕
-          if (btnJustPressed(1)) window.selectAbyssOption?.(1); // ◯
-          if (btnJustPressed(2)) window.selectAbyssOption?.(2); // ▢
-          if (btnJustPressed(3)) window.selectAbyssOption?.(3); // △
-          if (btnJustPressed(5)) window.toggleAbyssHint?.();    // R1
-          if (btnJustPressed(6)) window.triggerAbyssBypass?.(); // L2
-        } else if (isPauseOpen) {
-          if (now > state.navCooldownUntil) {
-            if (dUp || ax1 < -0.45) { navigatePauseMenu(-1); state.navCooldownUntil = now + 180; }
-            if (dDown || ax1 > 0.45) { navigatePauseMenu(1); state.navCooldownUntil = now + 180; }
-          }
-          if (btnJustPressed(0)) activatePauseMenu(); // ✕
-          if (btnJustPressed(1) || btnJustPressed(9)) window.toggleAbyssPause?.(); // ◯ or Options
-        } else if (isIntroOpen) {
-          if (btnJustPressed(0) || btnJustPressed(9)) window.startAbyssFromIntro?.();
-        } else if (isEndOpen) {
-          if (now > state.navCooldownUntil) {
-            if (dUp || ax1 < -0.45) { navigateEndMenu(-1); state.navCooldownUntil = now + 180; }
-            if (dDown || ax1 > 0.45) { navigateEndMenu(1); state.navCooldownUntil = now + 180; }
-          }
-          if (btnJustPressed(0)) activateEndMenu();
-        } else {
-          // In-game buttons
-          if (btnJustPressed(0)) window.AbyssWorld?.actJump?.();       // ✕
-          if (btnJustPressed(1)) window.AbyssWorld?.actDash?.();       // ◯
-          if (btnJustPressed(2)) window.triggerInteractOrOverride?.(); // ▢
-          if (btnJustPressed(3)) window.AbyssWorld?.actAegis?.();      // △
-          if (btnJustPressed(7)) window.AbyssWorld?.actPulse?.();      // R2
-          if (btnJustPressed(6)) window.AbyssWorld?.actOverdrive?.();  // L2
-          if (btnJustPressed(9)) window.toggleAbyssPause?.();          // Options
-        }
-
-        // Cache previous buttons
-        for (let i = 0; i < gp.buttons.length; i++) {
-          state.prevButtons[i] = gp.buttons[i]?.pressed || false;
-        }
+      for (let i = 0; i < gp.buttons.length; i++) {
+        state.prevButtons[i] = btnDown(i);
       }
+      state.prevHat = hat;
     }
 
-    // Normalize target velocity
+    if (state.isMouseDown) {
+      const isModalOpen = !document.getElementById('overrideModal')?.classList.contains('hidden') ||
+                          !document.getElementById('pauseModal')?.classList.contains('hidden') ||
+                          !document.getElementById('introModal')?.classList.contains('hidden') ||
+                          !document.getElementById('endModal')?.classList.contains('hidden');
+      if (!isModalOpen) window.AbyssWorld?.actPulse?.();
+    }
+
     const len = Math.hypot(moveX, moveY);
     if (len > 0.05) {
       const spd = p.speed;
@@ -390,6 +440,7 @@ window.AbyssInput = (function() {
 
   return {
     initControls,
-    pollInput
+    pollInput,
+    triggerHaptic
   };
 })();

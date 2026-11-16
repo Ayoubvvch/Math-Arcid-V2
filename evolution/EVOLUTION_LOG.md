@@ -3,6 +3,23 @@
 
 ---
 
+### [Cycle 006-OMEGA] 2026-11-16 17:15 UTC | Milestone: Dual Deep Polish — Limit Abyss v1.1.0 & Argand Citadel v2.1.0
+* **Phase**: Omega (Deep Gameplay, Boss Patterns, Question Bank Expansion & 60FPS Audit)
+* **Targets**: `games/limit-abyss/` (Topics 1–22) & `games/complex-plane-duel/` (Topics 51–64)
+* **Changes Delivered**:
+  - **Limit Abyss v1.1.0 (`games/limit-abyss/`, 4,616 LOC)**:
+    - Engineered full **3-Phase Mariana Leviathan Boss** (`Phase 1: Void Spikes`, `Phase 2: Discontinuity Beams`, `Phase 3: TVI Resonance Shield`).
+    - Fine-tuned Phase 3 TVI shield collision: torpedo deflection off solid `f(a)<0 / f(b)>0` arcs, piercing through rotating TVI Root Windows `α (f(α)=0)`, radial submersible separation preventing entrapment, and `△` Sonar / `L2` TVI Overdrive shield shattering + unified `damageBoss` victory resolution.
+    - Synthesized depth-adaptive acoustic engine in `js/audio.js` (`setDepthRatio`, dual-oscillator sub-harmonic trench drone, reusable white-noise buffer cavitation, bubble vent chimes `playBubblePop`, abyssal trench creaks, shield deflection/shatter chords, beam charge/fire, and AudioContext-scheduled sonar echoes).
+    - Fixed DualSense modal polling bug in `js/game.js`, added `pickLimitChallenge` Fisher-Yates option shuffling, DualSense dual-rumble haptics + analog triggers + `axes[9]` D-Pad hat fallback + Right-Stick aim (`js/controls.js`), and cached backdrop/vent gradients + removed `shadowBlur` in `js/renderer.js` for locked 60FPS.
+  - **Argand Citadel v2.1.0 (`games/complex-plane-duel/`, 3,792 LOC)**:
+    - Expanded `js/curriculum.js` from 26 to **32 Moroccan 2BAC PC National Exam questions** adding cubic polynomial factorization $P(z) = (z - z_0)(az^2 + bz + c)$ (real & complex roots), composite transformations $T_{\vec{u}} \circ R$ and composition-order traps $R \circ T$, weighted barycenters, and diameter-circle loci.
+    - Upgraded `js/renderer.js` to **12 interactive `graphSpec` visualizations** (`half_angle_chord`, `cubic_roots`, `composite_transform`, `diameter_circle`), full Y-axis drone culling, and dynamic RTL/LTR floating text direction.
+* **Verification**: All 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`) + Node physics/curriculum/renderer simulations passed 100%.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 005-ALPHA] 2026-11-16 05:15 UTC | Milestone: Limit Abyss (هاوية النهايات والاتصال) Gold-Standard Launch
 * **Phase**: Alpha (New 6-Module Game Construction >= 3,200 LOC)
 * **Target**: `games/limit-abyss/` (Topics 1–22: النهايات والاتصال، مبرهنة القيم الوسيطية TVI، والدالة العكسية $f^{-1}$)

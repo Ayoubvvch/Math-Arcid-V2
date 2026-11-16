@@ -1,12 +1,14 @@
 /**
  * Limit Abyss — هاوية النهايات والاتصال 2BAC PC
- * Full-Screen 60FPS Abyssal Renderer, Real-Time Volumetric Caustics & Math Graphing Engine
+ * Full-Screen 60FPS Abyssal Renderer, Phase 3 TVI Shield Visualizer & Math Graphing Engine
+ * Optimized for zero per-frame gradient/shadowBlur churn.
  */
 
 window.AbyssRenderer = (function() {
   let canvas = null;
   let ctx = null;
   let dpr = 1;
+  let cachedGradients = null;
 
   const camera = {
     x: 1280,
@@ -18,25 +20,52 @@ window.AbyssRenderer = (function() {
   function initRenderer() {
     canvas = document.getElementById('gameCanvas');
     if (!canvas) return;
-    ctx = canvas.getContext('2d');
+    ctx = canvas.getContext('2d', { alpha: false });
+    cachedGradients = null;
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
   }
 
   function resizeCanvas() {
     if (!canvas || !ctx) return;
-    dpr = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
-    canvas.style.width = window.innerWidth + 'px';
-    canvas.style.height = window.innerHeight + 'px';
-    ctx.scale(dpr, dpr);
+    dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     camera.width = window.innerWidth;
     camera.height = window.innerHeight;
+    canvas.width = Math.round(camera.width * dpr);
+    canvas.height = Math.round(camera.height * dpr);
+    canvas.style.width = camera.width + 'px';
+    canvas.style.height = camera.height + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function ensureBackdropGradients() {
+    if (cachedGradients || !ctx) return cachedGradients;
+    const g1 = ctx.createLinearGradient(0, 0, 0, 380);
+    g1.addColorStop(0, '#03193a');
+    g1.addColorStop(1, '#020f26');
+
+    const g2 = ctx.createLinearGradient(0, 380, 0, 780);
+    g2.addColorStop(0, '#020f26');
+    g2.addColorStop(1, '#010817');
+
+    const g3 = ctx.createLinearGradient(0, 780, 0, 1180);
+    g3.addColorStop(0, '#010817');
+    g3.addColorStop(1, '#01040f');
+
+    const g4 = ctx.createLinearGradient(0, 1180, 0, 1600);
+    g4.addColorStop(0, '#01040f');
+    g4.addColorStop(1, '#000206');
+
+    const subConeGrad = ctx.createRadialGradient(25, 0, 10, 140, 0, 120);
+    subConeGrad.addColorStop(0, 'rgba(0, 243, 255, 0.42)');
+    subConeGrad.addColorStop(0.6, 'rgba(0, 243, 255, 0.12)');
+    subConeGrad.addColorStop(1, 'rgba(0, 243, 255, 0)');
+
+    cachedGradients = { sectors: [g1, g2, g3, g4], subConeGrad, ventMap: new WeakMap() };
+    return cachedGradients;
   }
 
   function updateCamera(player) {
-    // Smooth camera lag tracking
     const targetX = player.x - camera.width / 2;
     const targetY = player.y - camera.height / 2;
 
@@ -46,8 +75,8 @@ window.AbyssRenderer = (function() {
     const clampedTargetX = Math.max(0, Math.min(maxCamX > 0 ? maxCamX : 0, targetX));
     const clampedTargetY = Math.max(0, Math.min(maxCamY > 0 ? maxCamY : 0, targetY));
 
-    camera.x += (clampedTargetX - camera.x) * 0.1;
-    camera.y += (clampedTargetY - camera.y) * 0.1;
+    camera.x += (clampedTargetX - camera.x) * 0.12;
+    camera.y += (clampedTargetY - camera.y) * 0.12;
   }
 
   function renderWorld() {
@@ -56,134 +85,123 @@ window.AbyssRenderer = (function() {
     if (!worldState) return;
 
     updateCamera(worldState.player);
+    ensureBackdropGradients();
 
     ctx.save();
     ctx.clearRect(0, 0, camera.width, camera.height);
-
-    // Apply camera translation
     ctx.translate(-camera.x, -camera.y);
 
-    // 1. Draw Depth Backdrops & Stratification Layers
     drawAbyssalBackdrop();
-
-    // 2. Draw Thermal Bubble Vents
     drawThermalVents(worldState.bubbleVents);
-
-    // 3. Draw Abyssal Pressure Gates / Seals
     drawGates(worldState.gates, worldState.player);
-
-    // 4. Draw Torpedoes
     drawTorpedoes(worldState.torpedoes);
-
-    // 5. Draw Enemies & Boss
     drawEnemies(worldState.enemies);
+    if (worldState.bossBeams && worldState.bossBeams.length > 0) {
+      drawBossBeams(worldState.bossBeams);
+    }
     if (worldState.boss) drawBoss(worldState.boss);
-
-    // 6. Draw Player Submersible (Nautilus-ε)
     drawPlayerSub(worldState.player);
-
-    // 7. Draw Sonar Waves & Particles
     drawSonarWaves(worldState.sonarWaves);
     drawParticles(worldState.particles);
 
-    // Restore Camera
     ctx.restore();
 
-    // 8. Screen-space HUD & Mini-Sonar Radar
     drawMiniSonar(worldState);
   }
 
   function drawAbyssalBackdrop() {
     const W = window.AbyssWorld.WORLD_WIDTH;
     const H = window.AbyssWorld.WORLD_HEIGHT;
+    const grads = cachedGradients.sectors;
 
-    // Sector 1 (0..380): Mesopelagic
-    const grad1 = ctx.createLinearGradient(0, 0, 0, 380);
-    grad1.addColorStop(0, '#03193a');
-    grad1.addColorStop(1, '#020f26');
-    ctx.fillStyle = grad1;
+    ctx.fillStyle = grads[0];
     ctx.fillRect(0, 0, W, 380);
-
-    // Sector 2 (380..780): Bathypelagic
-    const grad2 = ctx.createLinearGradient(0, 380, 0, 780);
-    grad2.addColorStop(0, '#020f26');
-    grad2.addColorStop(1, '#010817');
-    ctx.fillStyle = grad2;
+    ctx.fillStyle = grads[1];
     ctx.fillRect(0, 380, W, 400);
-
-    // Sector 3 (780..1180): Abyssopelagic
-    const grad3 = ctx.createLinearGradient(0, 780, 0, 1180);
-    grad3.addColorStop(0, '#010817');
-    grad3.addColorStop(1, '#01040f');
-    ctx.fillStyle = grad3;
+    ctx.fillStyle = grads[2];
     ctx.fillRect(0, 780, W, 400);
-
-    // Sector 4 & Bed (1180..1600): Hadal Trench
-    const grad4 = ctx.createLinearGradient(0, 1180, 0, 1600);
-    grad4.addColorStop(0, '#01040f');
-    grad4.addColorStop(1, '#000206');
-    ctx.fillStyle = grad4;
+    ctx.fillStyle = grads[3];
     ctx.fillRect(0, 1180, W, 420);
 
-    // Trench Sidewalls & Tectonic Grid
+    // Viewport-culled batched tectonic grid
+    const vx0 = Math.max(0, Math.floor(camera.x / 160) * 160);
+    const vx1 = Math.min(W, camera.x + camera.width + 160);
+    const vy0 = Math.max(0, Math.floor(camera.y / 120) * 120);
+    const vy1 = Math.min(H, camera.y + camera.height + 120);
+
     ctx.strokeStyle = 'rgba(0, 243, 255, 0.06)';
     ctx.lineWidth = 1;
-    for (let x = 0; x < W; x += 160) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, H);
-      ctx.stroke();
+    ctx.beginPath();
+    for (let x = vx0; x <= vx1; x += 160) {
+      ctx.moveTo(x, vy0);
+      ctx.lineTo(x, vy1);
     }
-    for (let y = 0; y < H; y += 120) {
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(W, y);
-      ctx.stroke();
+    for (let y = vy0; y <= vy1; y += 120) {
+      ctx.moveTo(vx0, y);
+      ctx.lineTo(vx1, y);
+    }
+    ctx.stroke();
 
-      // Depth Labels along left & right trench walls
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
-      ctx.font = '11px JetBrains Mono, monospace';
+    ctx.direction = 'ltr';
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.28)';
+    ctx.font = '11px JetBrains Mono, monospace';
+    ctx.textAlign = 'left';
+    for (let y = vy0; y <= vy1; y += 120) {
+      if (y === 0) continue;
       ctx.fillText(`${y * 4}m [y=${y}]`, 45, y - 4);
       ctx.fillText(`${y * 4}m`, W - 90, y - 4);
     }
   }
 
   function drawThermalVents(vents) {
-    vents.forEach(v => {
-      ctx.save();
-      const grad = ctx.createRadialGradient(v.x, v.y, 5, v.x, v.y, v.radius);
-      grad.addColorStop(0, 'rgba(0, 243, 255, 0.25)');
-      grad.addColorStop(0.7, 'rgba(20, 184, 166, 0.08)');
-      grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    const ventMap = cachedGradients.ventMap;
+    for (let i = 0; i < vents.length; i++) {
+      const v = vents[i];
+      if (v.x + v.radius < camera.x || v.x - v.radius > camera.x + camera.width ||
+          v.y + v.radius < camera.y || v.y - v.radius > camera.y + camera.height) {
+        continue;
+      }
+      let grad = ventMap.get(v);
+      if (!grad) {
+        grad = ctx.createRadialGradient(v.x, v.y, 5, v.x, v.y, v.radius);
+        grad.addColorStop(0, 'rgba(0, 243, 255, 0.25)');
+        grad.addColorStop(0.7, 'rgba(20, 184, 166, 0.08)');
+        grad.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ventMap.set(v, grad);
+      }
 
       ctx.fillStyle = grad;
       ctx.beginPath();
       ctx.arc(v.x, v.y, v.radius, 0, Math.PI * 2);
       ctx.fill();
 
+      ctx.save();
       ctx.strokeStyle = 'rgba(0, 243, 255, 0.35)';
       ctx.setLineDash([4, 6]);
       ctx.stroke();
       ctx.restore();
-    });
+    }
   }
 
   function drawGates(gates, player) {
-    gates.forEach(g => {
+    for (let i = 0; i < gates.length; i++) {
+      const g = gates[i];
       g.pulsePhase = (g.pulsePhase || 0) + 0.035;
+      if (g.x + 140 < camera.x || g.x - 140 > camera.x + camera.width ||
+          g.y + 140 < camera.y || g.y - 140 > camera.y + camera.height) {
+        continue;
+      }
       const r = g.radius + Math.sin(g.pulsePhase) * 4;
 
       ctx.save();
       ctx.translate(g.x, g.y);
 
-      // Gate outer ring glow
       ctx.strokeStyle = g.isUnlocked ? '#10b981' : (g.sectorId === 1 ? '#00f3ff' : (g.sectorId === 2 ? '#38bdf8' : (g.sectorId === 3 ? '#10b981' : '#f59e0b')));
       ctx.lineWidth = g.isUnlocked ? 2.5 : 3.5;
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.stroke();
 
-      // Inner rotating glyphs
       ctx.rotate(g.pulsePhase * 0.5);
       ctx.setLineDash([8, 8]);
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
@@ -193,19 +211,18 @@ window.AbyssRenderer = (function() {
       ctx.setLineDash([]);
 
       ctx.rotate(-g.pulsePhase * 0.5);
-      // Center icon / status
+      ctx.direction = g.isUnlocked ? 'rtl' : 'ltr';
       ctx.fillStyle = g.isUnlocked ? '#10b981' : '#ffffff';
       ctx.font = 'bold 15px JetBrains Mono, monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(g.isUnlocked ? '✓ مخترق' : (g.sectorId === 1 ? 'lim 0/0' : (g.sectorId === 2 ? 'x → x₀' : (g.sectorId === 3 ? 'TVI' : 'f⁻¹'))), 0, 0);
 
-      // Depth badge
+      ctx.direction = 'rtl';
       ctx.font = '11px sans-serif';
       ctx.fillStyle = '#94a3b8';
       ctx.fillText(g.depthText, 0, r + 18);
 
-      // Interaction prompt if near player
       const dist = Math.hypot(g.x - player.x, g.y - player.y);
       if (!g.isUnlocked && dist <= 100) {
         ctx.fillStyle = '#fde68a';
@@ -214,19 +231,23 @@ window.AbyssRenderer = (function() {
       }
 
       ctx.restore();
-    });
+    }
   }
 
   function drawTorpedoes(torpedoes) {
-    torpedoes.forEach(t => {
+    for (let i = 0; i < torpedoes.length; i++) {
+      const t = torpedoes[i];
       ctx.save();
       ctx.translate(t.x, t.y);
       ctx.rotate(t.angle);
 
-      ctx.fillStyle = '#00f3ff';
-      ctx.shadowColor = '#00f3ff';
-      ctx.shadowBlur = 10;
+      // Lightweight halo instead of expensive shadowBlur
+      ctx.fillStyle = t.reflected ? 'rgba(168, 85, 247, 0.35)' : 'rgba(0, 243, 255, 0.30)';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, 12, 6, 0, 0, Math.PI * 2);
+      ctx.fill();
 
+      ctx.fillStyle = t.reflected ? '#e879f9' : '#00f3ff';
       ctx.beginPath();
       ctx.ellipse(0, 0, 8, 3.5, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -237,58 +258,64 @@ window.AbyssRenderer = (function() {
       ctx.fill();
 
       ctx.restore();
-    });
+    }
   }
 
   function drawEnemies(enemies) {
     const now = performance.now();
-    enemies.forEach(e => {
+    for (let i = 0; i < enemies.length; i++) {
+      const e = enemies[i];
+      if (e.x + 60 < camera.x || e.x - 60 > camera.x + camera.width ||
+          e.y + 60 < camera.y || e.y - 60 > camera.y + camera.height) {
+        continue;
+      }
+
       ctx.save();
       ctx.translate(e.x, e.y);
-
       const isStaggered = e.staggeredUntil > now;
 
       if (e.type === 'mine') {
-        // Indeterminate Mine
-        ctx.fillStyle = isStaggered ? '#38bdf8' : '#e11d48';
-        ctx.shadowColor = isStaggered ? '#38bdf8' : '#f43f5e';
-        ctx.shadowBlur = 12;
+        ctx.fillStyle = isStaggered ? 'rgba(56, 189, 248, 0.22)' : 'rgba(244, 63, 94, 0.22)';
+        ctx.beginPath();
+        ctx.arc(0, 0, e.radius + 6, 0, Math.PI * 2);
+        ctx.fill();
 
+        ctx.fillStyle = isStaggered ? '#38bdf8' : '#e11d48';
         ctx.beginPath();
         ctx.arc(0, 0, e.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Mine spikes
         ctx.strokeStyle = isStaggered ? '#38bdf8' : '#fda4af';
         ctx.lineWidth = 2;
+        ctx.beginPath();
         for (let a = 0; a < Math.PI * 2; a += Math.PI / 4) {
-          ctx.beginPath();
           ctx.moveTo(Math.cos(a) * e.radius, Math.sin(a) * e.radius);
           ctx.lineTo(Math.cos(a) * (e.radius + 7), Math.sin(a) * (e.radius + 7));
-          ctx.stroke();
         }
+        ctx.stroke();
 
+        ctx.direction = 'ltr';
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 11px JetBrains Mono, monospace';
+        ctx.font = 'bold 10px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(e.label, 0, 0);
 
       } else if (e.type === 'jelly') {
-        // Discontinuity Jelly
-        const pulseScale = 1 + Math.sin(e.pulse || 0) * 0.15;
+        const pulseScale = 1 + Math.sin(e.pulse || 0) * 0.14;
         ctx.scale(pulseScale, pulseScale);
 
-        ctx.fillStyle = isStaggered ? 'rgba(56, 189, 248, 0.65)' : 'rgba(168, 85, 247, 0.65)';
-        ctx.shadowColor = isStaggered ? '#00f3ff' : '#a855f7';
-        ctx.shadowBlur = 14;
+        ctx.fillStyle = isStaggered ? 'rgba(0, 243, 255, 0.18)' : 'rgba(168, 85, 247, 0.18)';
+        ctx.beginPath();
+        ctx.arc(0, 0, e.radius + 7, Math.PI, 0, false);
+        ctx.fill();
 
+        ctx.fillStyle = isStaggered ? 'rgba(56, 189, 248, 0.72)' : 'rgba(168, 85, 247, 0.72)';
         ctx.beginPath();
         ctx.arc(0, 0, e.radius, Math.PI, 0, false);
         ctx.closePath();
         ctx.fill();
 
-        // Tentacles
         ctx.strokeStyle = isStaggered ? '#38bdf8' : '#c084fc';
         ctx.lineWidth = 2;
         for (let tx = -e.radius + 4; tx <= e.radius - 4; tx += 7) {
@@ -299,43 +326,82 @@ window.AbyssRenderer = (function() {
         }
 
       } else if (e.type === 'vortex') {
-        // Infinite Divergence Vortex
         ctx.rotate(e.pulse || 0);
-        ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.55)';
         ctx.lineWidth = 2;
         for (let r = 8; r < e.radius; r += 7) {
           ctx.beginPath();
           ctx.arc(0, 0, r, 0, Math.PI * 1.5);
           ctx.stroke();
         }
+        ctx.direction = 'ltr';
         ctx.fillStyle = '#f87171';
-        ctx.font = 'bold 10px JetBrains Mono, monospace';
+        ctx.font = 'bold 11px JetBrains Mono, monospace';
         ctx.textAlign = 'center';
         ctx.fillText('∞', 0, 4);
       }
 
       if (isStaggered) {
+        ctx.direction = 'rtl';
         ctx.fillStyle = '#34d399';
         ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('[▢ / E] تنفيذ قطعي', 0, -e.radius - 8);
+        ctx.fillText('[▢ / E] تنفيذ قطعي', 0, -e.radius - 10);
       }
 
       ctx.restore();
-    });
+    }
+  }
+
+  function drawBossBeams(beams) {
+    for (let i = 0; i < beams.length; i++) {
+      const bm = beams[i];
+      ctx.save();
+      if (bm.warningFrames > 0) {
+        ctx.strokeStyle = 'rgba(244, 63, 94, 0.65)';
+        ctx.lineWidth = 2;
+        ctx.setLineDash([10, 8]);
+        ctx.beginPath();
+        ctx.moveTo(bm.x1, bm.y1);
+        ctx.lineTo(bm.x2, bm.y2);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = 'rgba(232, 121, 249, 0.35)';
+        ctx.lineWidth = 22;
+        ctx.beginPath();
+        ctx.moveTo(bm.x1, bm.y1);
+        ctx.lineTo(bm.x2, bm.y2);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#f43f5e';
+        ctx.lineWidth = 8;
+        ctx.beginPath();
+        ctx.moveTo(bm.x1, bm.y1);
+        ctx.lineTo(bm.x2, bm.y2);
+        ctx.stroke();
+
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
   }
 
   function drawBoss(boss) {
     ctx.save();
     ctx.translate(boss.x, boss.y);
 
-    // Leviathan Outer Body & Tendrils
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.95)';
-    ctx.strokeStyle = '#f43f5e';
-    ctx.lineWidth = 4;
-    ctx.shadowColor = '#f43f5e';
-    ctx.shadowBlur = 24;
+    // Outer Halo
+    ctx.fillStyle = boss.phase === 3 ? 'rgba(16, 185, 129, 0.14)' : (boss.phase === 2 ? 'rgba(168, 85, 247, 0.14)' : 'rgba(244, 63, 94, 0.16)');
+    ctx.beginPath();
+    ctx.arc(0, 0, boss.radius + 18, 0, Math.PI * 2);
+    ctx.fill();
 
+    // Leviathan Core Hull
+    ctx.fillStyle = boss.hitFlash > 0 ? 'rgba(255, 255, 255, 0.32)' : 'rgba(15, 23, 42, 0.95)';
+    ctx.strokeStyle = boss.phase === 3 ? '#10b981' : (boss.phase === 2 ? '#a855f7' : '#f43f5e');
+    ctx.lineWidth = 4;
     ctx.beginPath();
     ctx.arc(0, 0, boss.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -343,32 +409,86 @@ window.AbyssRenderer = (function() {
 
     // Central Core Pulse
     const corePulse = 18 + Math.sin(boss.pulse) * 5;
-    ctx.fillStyle = '#f43f5e';
+    ctx.fillStyle = boss.phase === 3 ? '#10b981' : (boss.phase === 2 ? '#c084fc' : '#f43f5e');
     ctx.beginPath();
     ctx.arc(0, 0, corePulse, 0, Math.PI * 2);
     ctx.fill();
 
+    // Phase 3 TVI Resonance Shield Visualization
+    if (boss.shieldActive) {
+      const shieldR = boss.shieldRadius || (boss.radius + 30);
+      const gap = boss.tviGapAngle || 0;
+      const w = boss.tviGapWidth || 0.42;
+
+      // Positive Polarity Arc f(b) > 0 (Cyan/Emerald)
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(0, 0, shieldR, gap + w, gap + Math.PI - w);
+      ctx.stroke();
+
+      // Negative Polarity Arc f(a) < 0 (Crimson/Rose)
+      ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.arc(0, 0, shieldR, gap + Math.PI + w, gap + Math.PI * 2 - w);
+      ctx.stroke();
+
+      // Rotating TVI Root Windows α₁, α₂ (f(α) = 0)
+      for (const rootAng of [gap, gap + Math.PI]) {
+        const rx = Math.cos(rootAng) * shieldR;
+        const ry = Math.sin(rootAng) * shieldR;
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(rx, ry, 7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.direction = 'ltr';
+        ctx.fillStyle = '#a7f3d0';
+        ctx.font = 'bold 10px JetBrains Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('α', rx * 1.18, ry * 1.18);
+      }
+
+      // Shield Integrity Sub-Bar
+      const sW = 120;
+      const sFrac = Math.max(0, (boss.shieldHp || 0) / (boss.shieldMaxHp || 180));
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+      ctx.fillRect(-sW / 2, boss.radius + 42, sW, 6);
+      ctx.fillStyle = '#10b981';
+      ctx.fillRect(-sW / 2, boss.radius + 42, sW * sFrac, 6);
+
+      ctx.direction = 'rtl';
+      ctx.fillStyle = '#6ee7b7';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('درع TVI: استعمل [△] سونار أو [L2] أو استهدف α', 0, boss.radius + 60);
+    }
+
     // Core Discontinuity Label
+    ctx.direction = 'ltr';
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 13px JetBrains Mono, monospace';
+    ctx.font = 'bold 12px JetBrains Mono, monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('CORE: lim ≠ f', 0, 0);
+    ctx.fillText(boss.phase === 3 ? 'TVI: f(a)·f(b)<0' : (boss.phase === 2 ? 'lim⁻ ≠ lim⁺' : 'CORE: lim ≠ f'), 0, 0);
 
     // HP Bar Above Boss
-    const barW = 160;
-    const hpFrac = boss.hp / boss.maxHp;
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-    ctx.fillRect(-barW / 2, -boss.radius - 28, barW, 9);
-    ctx.fillStyle = '#f43f5e';
-    ctx.fillRect(-barW / 2, -boss.radius - 28, barW * hpFrac, 9);
+    const barW = 175;
+    const hpFrac = Math.max(0, boss.hp / boss.maxHp);
+    const barY = boss.shieldActive ? -boss.shieldRadius - 26 : -boss.radius - 28;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.fillRect(-barW / 2, barY, barW, 9);
+    ctx.fillStyle = boss.phase === 3 ? '#10b981' : (boss.phase === 2 ? '#a855f7' : '#f43f5e');
+    ctx.fillRect(-barW / 2, barY, barW * hpFrac, 9);
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 1;
-    ctx.strokeRect(-barW / 2, -boss.radius - 28, barW, 9);
+    ctx.strokeRect(-barW / 2, barY, barW, 9);
 
+    ctx.direction = 'rtl';
     ctx.font = 'bold 11px sans-serif';
     ctx.fillStyle = '#fda4af';
-    ctx.fillText('لوفياثان الانقطاع العظيم', 0, -boss.radius - 35);
+    const phaseTag = boss.phase === 3 ? 'الطور 3: درع TVI' : (boss.phase === 2 ? 'الطور 2: حزم الانقطاع' : 'الطور 1: أشواك 0/0');
+    ctx.fillText(`لوفياثان الانقطاع العظيم — ${phaseTag}`, 0, barY - 11);
 
     ctx.restore();
   }
@@ -381,13 +501,8 @@ window.AbyssRenderer = (function() {
     const now = performance.now();
     const isInvuln = player.invulnerableUntil > now;
 
-    // Headlights Cones casting into deep water
-    ctx.save();
-    const lightGrad = ctx.createRadialGradient(25, 0, 10, 140, 0, 120);
-    lightGrad.addColorStop(0, 'rgba(0, 243, 255, 0.45)');
-    lightGrad.addColorStop(0.6, 'rgba(0, 243, 255, 0.12)');
-    lightGrad.addColorStop(1, 'rgba(0, 243, 255, 0)');
-    ctx.fillStyle = lightGrad;
+    // Volumetric Headlights Cone (using cached radial gradient)
+    ctx.fillStyle = cachedGradients.subConeGrad;
     ctx.beginPath();
     ctx.moveTo(18, -6);
     ctx.lineTo(240, -65);
@@ -395,9 +510,7 @@ window.AbyssRenderer = (function() {
     ctx.lineTo(18, 6);
     ctx.closePath();
     ctx.fill();
-    ctx.restore();
 
-    // Shield bubble when invulnerable
     if (isInvuln) {
       ctx.strokeStyle = '#38bdf8';
       ctx.lineWidth = 2.5;
@@ -406,30 +519,29 @@ window.AbyssRenderer = (function() {
       ctx.stroke();
     }
 
+    // Subtle Hull Glow Halo (zero shadowBlur)
+    ctx.fillStyle = 'rgba(0, 243, 255, 0.16)';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, player.radius + 11, player.radius, 0, 0, Math.PI * 2);
+    ctx.fill();
+
     // Submarine Hull (Nautilus-ε)
     ctx.fillStyle = '#0f294a';
     ctx.strokeStyle = '#00f3ff';
     ctx.lineWidth = 2.2;
-    ctx.shadowColor = '#00f3ff';
-    ctx.shadowBlur = 12;
-
-    // Streamlined hull ellipse
     ctx.beginPath();
     ctx.ellipse(0, 0, player.radius + 6, player.radius - 4, 0, 0, Math.PI * 2);
     ctx.fill();
     ctx.stroke();
 
-    // Observation Cockpit Glass Dome
     ctx.fillStyle = '#38bdf8';
     ctx.beginPath();
     ctx.arc(8, 0, 7, 0, Math.PI * 2);
     ctx.fill();
 
-    // Conning Tower
     ctx.fillStyle = '#0284c7';
     ctx.fillRect(-6, -player.radius - 2, 8, 5);
 
-    // Propeller / Thruster at stern
     ctx.fillStyle = '#f59e0b';
     ctx.fillRect(-player.radius - 8, -4, 4, 8);
 
@@ -437,37 +549,36 @@ window.AbyssRenderer = (function() {
   }
 
   function drawSonarWaves(waves) {
-    waves.forEach(w => {
-      ctx.save();
+    ctx.lineWidth = 2.5;
+    for (let i = 0; i < waves.length; i++) {
+      const w = waves[i];
       ctx.strokeStyle = w.color;
       ctx.globalAlpha = w.alpha;
-      ctx.lineWidth = 2.5;
       ctx.beginPath();
       ctx.arc(w.x, w.y, w.radius, 0, Math.PI * 2);
       ctx.stroke();
-      ctx.restore();
-    });
+    }
+    ctx.globalAlpha = 1;
   }
 
   function drawParticles(particles) {
-    particles.forEach(p => {
-      ctx.save();
-      ctx.globalAlpha = p.alpha;
-      ctx.fillStyle = p.color;
-
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+    for (let i = 0; i < particles.length; i++) {
+      const p = particles[i];
+      ctx.globalAlpha = Math.max(0, p.alpha);
       if (p.isBubble) {
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.stroke();
       } else {
+        ctx.fillStyle = p.color;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fill();
       }
-      ctx.restore();
-    });
+    }
+    ctx.globalAlpha = 1;
   }
 
   function drawMiniSonar(worldState) {
@@ -485,7 +596,6 @@ window.AbyssRenderer = (function() {
     ctx.fill();
     ctx.stroke();
 
-    // Player blip
     const p = worldState.player;
     const nx = rx + (p.x / window.AbyssWorld.WORLD_WIDTH) * radarW;
     const ny = ry + (p.y / window.AbyssWorld.WORLD_HEIGHT) * radarH;
@@ -494,7 +604,6 @@ window.AbyssRenderer = (function() {
     ctx.arc(nx, ny, 3.5, 0, Math.PI * 2);
     ctx.fill();
 
-    // Gates blips
     worldState.gates.forEach(g => {
       const gx = rx + (g.x / window.AbyssWorld.WORLD_WIDTH) * radarW;
       const gy = ry + (g.y / window.AbyssWorld.WORLD_HEIGHT) * radarH;
@@ -503,6 +612,15 @@ window.AbyssRenderer = (function() {
       ctx.arc(gx, gy, 2.5, 0, Math.PI * 2);
       ctx.fill();
     });
+
+    if (worldState.boss) {
+      const bx = rx + (worldState.boss.x / window.AbyssWorld.WORLD_WIDTH) * radarW;
+      const by = ry + (worldState.boss.y / window.AbyssWorld.WORLD_HEIGHT) * radarH;
+      ctx.fillStyle = '#f43f5e';
+      ctx.beginPath();
+      ctx.arc(bx, by, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
 
     ctx.restore();
   }
@@ -528,24 +646,24 @@ window.drawLimitGraph = function(canvas, graphSpec) {
   ctx.fillRect(0, 0, W, H);
   ctx.direction = 'ltr';
 
-  // Grid and Axes
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
   ctx.lineWidth = 1;
+  ctx.beginPath();
   for (let x = 0; x < W; x += 30) {
-    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    ctx.moveTo(x, 0); ctx.lineTo(x, H);
   }
   for (let y = 0; y < H; y += 25) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    ctx.moveTo(0, y); ctx.lineTo(W, y);
   }
+  ctx.stroke();
 
   const ox = W * 0.45;
   const oy = H * 0.58;
 
-  // Main Axes
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
   ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.moveTo(15, oy); ctx.lineTo(W - 15, oy); ctx.stroke(); // X
-  ctx.beginPath(); ctx.moveTo(ox, 12); ctx.lineTo(ox, H - 12); ctx.stroke(); // Y
+  ctx.beginPath(); ctx.moveTo(15, oy); ctx.lineTo(W - 15, oy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(ox, 12); ctx.lineTo(ox, H - 12); ctx.stroke();
 
   ctx.fillStyle = '#94a3b8';
   ctx.font = '10px JetBrains Mono, monospace';
@@ -556,7 +674,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
   const type = graphSpec.type;
 
   if (type === 'spec_conjugate_hole') {
-    // Hole at x=1, y=0.25 on f(x) = (√(x+3)-2)/(x-1)
     const scaleX = 40, scaleY = 120;
     ctx.strokeStyle = '#00f3ff';
     ctx.lineWidth = 2.4;
@@ -570,7 +687,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
 
-    // Hollow point at (1, 0.25)
     const hx = ox + 1 * scaleX;
     const hy = oy - 0.25 * scaleY;
     ctx.fillStyle = '#030814';
@@ -582,7 +698,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     ctx.fillText('نقطة انفصال (1, 1/4)', hx + 8, hy - 6);
 
   } else if (type === 'spec_trig_limit') {
-    // sin(3x)/x peaking at 3
     const scaleX = 22, scaleY = 32;
     ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 2.4;
@@ -595,7 +710,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
 
-    // Hollow point at (0, 3)
     const peakY = oy - 3 * scaleY;
     ctx.fillStyle = '#030814';
     ctx.strokeStyle = '#00f3ff';
@@ -606,9 +720,7 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     ctx.fillText('lim = 3', ox + 10, peakY);
 
   } else if (type === 'spec_step_discontinuity') {
-    // One sided jump: 2x+1 (x>=1) and x^2 (x<1)
     const scaleX = 35, scaleY = 22;
-    // Left piece: x^2 (x < 1)
     ctx.strokeStyle = '#a855f7';
     ctx.lineWidth = 2.4;
     ctx.beginPath();
@@ -620,12 +732,10 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
 
-    // Hollow point at (1, 1)
     ctx.fillStyle = '#030814';
     ctx.strokeStyle = '#a855f7';
     ctx.beginPath(); ctx.arc(ox + 1 * scaleX, oy - 1 * scaleY, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
 
-    // Right piece: 2x+1 (x >= 1)
     ctx.strokeStyle = '#f43f5e';
     ctx.beginPath();
     for (let px = 1; px <= 3.2; px += 0.1) {
@@ -636,7 +746,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
 
-    // Filled point at (1, 3)
     ctx.fillStyle = '#f43f5e';
     ctx.beginPath(); ctx.arc(ox + 1 * scaleX, oy - 3 * scaleY, 4.5, 0, Math.PI * 2); ctx.fill();
 
@@ -644,7 +753,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     ctx.fillText('قفزة انقطاع: lim⁻ ≠ lim⁺', ox + 1 * scaleX + 8, oy - 2 * scaleY);
 
   } else if (type === 'spec_piecewise_continuity') {
-    // Continuous piecewise join at (1, 2)
     const scaleX = 35, scaleY = 28;
     ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 2.4;
@@ -657,7 +765,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
 
-    // Joint point at (1, 2)
     ctx.fillStyle = '#10b981';
     ctx.beginPath(); ctx.arc(ox + 1 * scaleX, oy - 2 * scaleY, 5, 0, Math.PI * 2); ctx.fill();
 
@@ -665,7 +772,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     ctx.fillText('اتصال في x₀=1 (m=2)', ox + 1 * scaleX + 8, oy - 2 * scaleY - 4);
 
   } else if (type === 'spec_interval_image') {
-    // Interval [1, 4] mapped to [2, 7]
     const scaleX = 28, scaleY = 16;
     ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 2.4;
@@ -678,7 +784,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
 
-    // Shaded bands
     ctx.fillStyle = 'rgba(56, 189, 248, 0.15)';
     ctx.fillRect(ox + 1 * scaleX, oy - 7 * scaleY, 3 * scaleX, 7 * scaleY);
 
@@ -686,7 +791,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     ctx.fillText('f([1, 4]) = [2, 7]', ox + 1.2 * scaleX, oy - 4 * scaleY);
 
   } else if (type === 'spec_tvi_roots') {
-    // Curve crossing axis between 1 and 2
     const scaleX = 55, scaleY = 18;
     ctx.strokeStyle = '#f59e0b';
     ctx.lineWidth = 2.4;
@@ -699,7 +803,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
 
-    // Root alpha
     const alphaX = 1.51;
     const ax = ox + alphaX * scaleX;
     ctx.fillStyle = '#10b981';
@@ -709,16 +812,13 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     ctx.fillText('حل وحيد α (TVI)', ax - 25, oy - 14);
 
   } else if (type === 'spec_inverse_reflection') {
-    // Cf and Cf^-1 reflection across y=x
     const scale = 32;
-    // Line y = x
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
     ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(ox - 3 * scale, oy + 3 * scale); ctx.lineTo(ox + 4 * scale, oy - 4 * scale); ctx.stroke();
     ctx.setLineDash([]);
     ctx.fillStyle = '#94a3b8'; ctx.fillText('y = x', ox + 3.2 * scale, oy - 3.4 * scale);
 
-    // Cf: y = x^2 (x >= 0)
     ctx.strokeStyle = '#00f3ff';
     ctx.lineWidth = 2.2;
     ctx.beginPath();
@@ -731,7 +831,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     ctx.stroke();
     ctx.fillStyle = '#00f3ff'; ctx.fillText('Cf', ox + 2 * scale + 4, oy - 4 * scale);
 
-    // Cf^-1: y = sqrt(x) (x >= 0)
     ctx.strokeStyle = '#f43f5e';
     ctx.beginPath();
     for (let px = 0; px <= 4; px += 0.08) {
@@ -744,15 +843,12 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     ctx.fillStyle = '#f43f5e'; ctx.fillText('Cf⁻¹', ox + 4 * scale + 4, oy - 2 * scale);
 
   } else if (type === 'spec_nth_root') {
-    // y = x and y = cbrt(x)
     const scale = 40;
-    // y = x
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.35)';
     ctx.setLineDash([3, 3]);
     ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox + 3 * scale, oy - 3 * scale); ctx.stroke();
     ctx.setLineDash([]);
 
-    // y = cbrt(x)
     ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 2.4;
     ctx.beginPath();
@@ -764,7 +860,6 @@ window.drawLimitGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
 
-    // Intersection at (1, 1)
     ctx.fillStyle = '#f59e0b';
     ctx.beginPath(); ctx.arc(ox + 1 * scale, oy - 1 * scale, 4.5, 0, Math.PI * 2); ctx.fill();
 
@@ -773,5 +868,4 @@ window.drawLimitGraph = function(canvas, graphSpec) {
   }
 };
 
-// Hub and generic compatibility alias
 window.drawSequenceGraph = window.drawLimitGraph;

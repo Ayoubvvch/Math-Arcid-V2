@@ -475,3 +475,33 @@ window.LIMIT_QUESTION_BANK = [
 
 // Compatibility alias for quality gates & standard hub runner
 window.QUESTION_BANK = window.LIMIT_QUESTION_BANK;
+
+window.pickLimitChallenge = function(sectorFilter = null, recentIds = []) {
+  const bank = window.LIMIT_QUESTION_BANK || [];
+  let pool = sectorFilter ? bank.filter(q => q.sector === sectorFilter) : bank;
+  if (!pool.length) pool = bank;
+
+  const fresh = pool.filter(q => !recentIds.includes(q.id));
+  const candidates = fresh.length > 0 ? fresh : pool;
+  const base = candidates[Math.floor(Math.random() * candidates.length)];
+
+  // Clone and Fisher-Yates shuffle options so ✕/◯/▢/△ vary dynamically
+  const indexed = base.options.map((text, idx) => ({ text, isCorrect: idx === base.correctIndex }));
+  for (let i = indexed.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = indexed[i];
+    indexed[i] = indexed[j];
+    indexed[j] = tmp;
+  }
+
+  return {
+    id: base.id,
+    sector: base.sector,
+    topic: base.topic,
+    prompt: base.prompt,
+    hint: base.hint,
+    options: indexed.map(o => o.text),
+    correctIndex: indexed.findIndex(o => o.isCorrect),
+    graphSpec: base.graphSpec || null
+  };
+};
