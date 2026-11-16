@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>هاوية النهايات — Limit Abyss | Limites et Continuité 2BAC</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <canvas id="gameCanvas" aria-label="خندق ماريانا الرياضي للأعماق والنهايات"></canvas>
+
+  <!-- TOP ABYSSAL HUD -->
+  <header class="hud-header">
+    <div class="hud-vitals cyber-panel">
+      <div class="vital-block">
+        <div class="vital-row">
+          <span class="vital-label">هيكل الضغط</span>
+          <span class="vital-num text-cyan math-ltr" id="hpValue">100/100</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill hp-bar" id="hpFill" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <div class="vital-block">
+        <div class="vital-row">
+          <span class="vital-label">طاقة السونار</span>
+          <span class="vital-num text-teal math-ltr" id="energyValue">100%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill energy-bar" id="energyFill" style="width: 100%"></div>
+        </div>
+      </div>
+
+      <div class="stat-pill">
+        <span>العمق:</span>
+        <span class="text-sky math-ltr" id="depthValue">0 m</span>
+      </div>
+
+      <div class="stat-pill">
+        <span>الأختام:</span>
+        <span class="text-amber math-ltr" id="gatesValue">0 / 4</span>
+      </div>
+
+      <div class="stat-pill">
+        <span>النقاط:</span>
+        <span class="text-emerald math-ltr" id="scoreValue">0</span>
+      </div>
+
+      <div class="stat-pill combo-badge hidden" id="comboBadge">
+        <span>×</span>
+        <span class="math-ltr" id="comboCount">2</span>
+      </div>
+    </div>
+
+    <div class="hud-tools">
+      <a href="../../index.html?from=game" class="cyber-btn tool-chip hub-back-btn" id="hubBackBtn" title="العودة لـ PS5 Hub">
+        <span>◀ PS5 Hub</span>
+      </a>
+
+      <button type="button" class="cyber-btn tool-chip" id="filterChip" title="تغيير محور الأسئلة (1–22)">
+        <span id="filterChipLabel">المحاور: 1–22</span>
+      </button>
+
+      <div class="gp-pill disconnected" id="gamepadPill">
+        <span>🎮</span>
+        <span id="gamepadStatusText">لوحة المفاتيح جاهزة</span>
+      </div>
+
+      <button type="button" class="cyber-btn tool-chip" id="btnAudioToggle" aria-label="تبديل الصوت">🔊</button>
+      <button type="button" class="cyber-btn tool-chip" id="btnHelpToggle" aria-label="التعليمات">؟</button>
+      <button type="button" class="cyber-btn tool-chip" id="btnPauseToggle" aria-label="إيقاف مؤقت">⏸</button>
+    </div>
+  </header>
+
+  <div class="sector-banner" id="sectorBanner">منطقة الشفق البحري — اخترق أختام الضغط الأربعة عبر النهايات والاتصال (1–22)</div>
+
+  <div class="touch-joystick" id="touchJoystick" aria-hidden="true">
+    <div class="touch-knob" id="touchStickKnob"></div>
+  </div>
+
+  <!-- BOTTOM PLAYSTATION ACTION DECK -->
+  <nav class="bottom-deck cyber-panel" aria-label="أزرار التحكم في الغواصة بالأعماق">
+    <button type="button" class="cyber-btn action-chip" id="actJump" title="نفاثة الدفع الهيدروليكي السريع [✕ / Space]">
+      <span class="ps-badge ps-x">✕</span>
+      <span>دفع هيدروليكي</span>
+    </button>
+
+    <button type="button" class="cyber-btn action-chip" id="actDash" title="تفادي الدوامات الغاطس [◯ / Shift]">
+      <span class="ps-badge ps-o">◯</span>
+      <span>تفادي غاطس</span>
+    </button>
+
+    <button type="button" class="cyber-btn action-chip" id="actOverride" title="اختراق ختم السونار الرياضي [▢ / E]">
+      <span class="ps-badge ps-sq">▢</span>
+      <span>اختراق الختم</span>
+    </button>
+
+    <button type="button" class="cyber-btn action-chip" id="actAegis" title="نبضة سونار الاتصال الكاشفة [△ / Q]">
+      <span class="ps-badge ps-tri">△</span>
+      <span>سونار الاتصال</span>
+    </button>
+
+    <button type="button" class="cyber-btn action-chip" id="actPulse" title="طوربيد إزالة عدم التحديد [R2 / J]">
+      <span class="ps-badge ps-r2">R2</span>
+      <span>طوربيد المرافق</span>
+    </button>
+
+    <button type="button" class="cyber-btn action-chip" id="actOverdrive" title="صدمة مبرهنة القيم الوسيطية TVI [L2 / F]">
+      <span class="ps-badge ps-l2">L2</span>
+      <span>صدمة TVI</span>
+    </button>
+  </nav>
+
+  <!-- INTRO MODAL -->
+  <section class="modal-backdrop" id="introModal" role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <div class="modal-card cyber-panel">
+      <div class="modal-badge">خندق ماريانا الرياضي — 2BAC PC</div>
+      <h1 class="modal-title" id="introTitle">هاوية النهايات والاتصال <span>Limit Abyss</span></h1>
+      <p class="modal-subtitle">
+        استكشف الأعماق السحيقة على متن غواصة نوتيلوس <bdi class="math-ltr">Nautilus-ε</bdi>. اخترق أختام الضغط الهيدروستاتيكي الأربعة عبر إتقان <strong>النهايات، الاتصال، مبرهنة القيم الوسيطية (TVI)، والدالة العكسية <bdi class="math-ltr">f⁻¹</bdi></strong> (البنود 1–22)، وصولاً لسحق لوفياثان الانقطاع العظيم في قاع الخندق!
+      </p>
+
+      <div class="brief-grid">
+        <div class="brief-item">
+          <span class="brief-k">عمق العمليات</span>
+          <span class="brief-v text-cyan">خندق بطول 2560m و4 طبقات مائية</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-k">منهجية 2BAC PC</span>
+          <span class="brief-v text-teal">28 مسألة وطنية + مبيانات تفاعلية</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-k">دعم التحكم</span>
+          <span class="brief-v text-amber">DualSense كامل + كيبورد وتاتش</span>
+        </div>
+        <div class="brief-item">
+          <span class="brief-k">محرك الرسومات</span>
+          <span class="brief-v text-emerald">60FPS Canvas بدقة كاملة</span>
+        </div>
+      </div>
+
+      <div class="controls-guide-grid">
+        <div class="ctrl-row">
+          <span class="ctrl-chip"><span class="ps-badge ps-x">✕</span> / Space</span>
+          <span class="ctrl-desc">اندفاع الدفع الهيدروليكي السريع في اتجاه الحركة</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-chip"><span class="ps-badge ps-o">◯</span> / Shift</span>
+          <span class="ctrl-desc">مناورة الغطس الخاطفة لتفادي دوامات الانقطاع والألغام</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-chip"><span class="ps-badge ps-sq">▢</span> / E</span>
+          <span class="ctrl-desc">بدء بروتوكول اختراق ختم الضغط بواسطة سونار النهايات</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-chip"><span class="ps-badge ps-tri">△</span> / Q</span>
+          <span class="ctrl-desc">نبضة سونار كاشفة تضيء المحيط وتشل كائنات الأعماق</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-chip"><span class="ps-badge ps-r2">R2</span> / J / كليك</span>
+          <span class="ctrl-desc">إطلاق طوربيد المرافق لإزالة الأشكال غير المحددة</span>
+        </div>
+        <div class="ctrl-row">
+          <span class="ctrl-chip"><span class="ps-badge ps-l2">L2</span> / F</span>
+          <span class="ctrl-desc">تفريغ صدمة مبرهنة القيم الوسيطية لتدمير الوحوش وتجاوز الأختام</span>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="cyber-btn cta-primary gp-focused" id="btnStartDive" onclick="window.startAbyssFromIntro()">
+          <span>انطلاق الغوص نحو الهاوية [✕ / Enter]</span>
+        </button>
+        <a href="../../index.html?from=game" class="cyber-btn cta-secondary">العودة لـ PS5 Hub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- OVERRIDE CHALLENGE MODAL -->
+  <section class="modal-backdrop hidden" id="overrideModal" role="dialog" aria-modal="true" aria-labelledby="seqSourceTag">
+    <div class="modal-card cyber-panel override-card">
+      <div class="override-header">
+        <span class="sector-tag" id="seqSourceTag">اختراق ختم الضغط — منطقة الشفق</span>
+        <span class="topic-tag" id="seqTopicTag">البند 1</span>
+      </div>
+
+      <div class="seq-prompt" id="seqPrompt"></div>
+
+      <div class="seq-graph-wrap hidden" id="seqGraphWrap">
+        <canvas id="seqGraphCanvas" width="390" height="185"></canvas>
+      </div>
+
+      <div class="seq-hint-box hidden" id="seqHintBox"></div>
+
+      <div class="seq-options">
+        <button type="button" class="cyber-btn seq-opt-btn" id="seqOpt0" data-idx="0">
+          <span class="ps-badge ps-x">✕</span>
+          <span class="opt-text"></span>
+        </button>
+        <button type="button" class="cyber-btn seq-opt-btn" id="seqOpt1" data-idx="1">
+          <span class="ps-badge ps-o">◯</span>
+          <span class="opt-text"></span>
+        </button>
+        <button type="button" class="cyber-btn seq-opt-btn" id="seqOpt2" data-idx="2">
+          <span class="ps-badge ps-sq">▢</span>
+          <span class="opt-text"></span>
+        </button>
+        <button type="button" class="cyber-btn seq-opt-btn" id="seqOpt3" data-idx="3">
+          <span class="ps-badge ps-tri">△</span>
+          <span class="opt-text"></span>
+        </button>
+      </div>
+
+      <div class="override-footer">
+        <button type="button" class="cyber-btn btn-hint" id="btnToggleHint">
+          <span>[R1 / H]</span>
+          <span>كشف التلميح المنهجي</span>
+        </button>
+
+        <button type="button" class="cyber-btn btn-overdrive" id="btnOverdriveBypass">
+          <span>⚡ [L2 / F] تفريغ صدمة TVI لتجاوز الختم (-60% طاقة)</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAUSE MODAL -->
+  <section class="modal-backdrop hidden" id="pauseModal" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
+    <div class="modal-card cyber-panel" style="max-width: 440px;">
+      <h2 class="modal-title" id="pauseTitle">إيقاف مؤقت — <span>هاوية النهايات</span></h2>
+      <p class="modal-subtitle">تحكّم في محور أسئلة النهايات والاتصال (1–22) أو استأنف الغوص.</p>
+
+      <div class="menu-stack">
+        <button type="button" class="cyber-btn pause-menu-btn gp-focused" id="btnResumeGame">استئناف الغوص [◯ / Esc]</button>
+        <button type="button" class="cyber-btn pause-menu-btn" id="btnCycleFilterPause">محور الأسئلة: الكل (1–22)</button>
+        <button type="button" class="cyber-btn pause-menu-btn" id="btnToggleSoundPause">الصوت: مفعل</button>
+        <button type="button" class="cyber-btn pause-menu-btn" id="btnRestartPause">إعادة تشغيل الهاوية</button>
+        <a href="../../index.html?from=game" class="cyber-btn pause-menu-btn" id="btnExitHubPause">العودة لـ PS5 Hub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- END MODAL -->
+  <section class="modal-backdrop hidden" id="endModal" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="modal-card cyber-panel" style="max-width: 500px;">
+      <h2 class="modal-title" id="endTitle">قاع خندق <span>ماريانا الرياضي</span></h2>
+      <p class="modal-subtitle" id="endSubtitle"></p>
+
+      <div class="stats-summary-grid">
+        <div class="stat-card">
+          <span class="stat-card-k">الأختام المخترقة</span>
+          <span class="stat-card-v text-amber math-ltr" id="endGates">0 / 4</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-k">النقاط النهائية</span>
+          <span class="stat-card-v text-cyan math-ltr" id="endScore">0</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-k">دقة براهين النهايات والاتصال</span>
+          <span class="stat-card-v text-emerald math-ltr" id="endAccuracy">100%</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-card-k">تجاوزات طاقة TVI</span>
+          <span class="stat-card-v text-violet math-ltr" id="endBypasses">0</span>
+        </div>
+      </div>
+
+      <div class="menu-stack">
+        <button type="button" class="cyber-btn cta-primary end-menu-btn gp-focused" id="btnRetryEnd">✕ غوص جديد في الهاوية</button>
+        <a href="../../index.html?from=game" class="cyber-btn end-menu-btn" id="btnHubEnd">◯ العودة لـ PS5 Hub</a>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/curriculum.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/controls.js"></script>
+  <script src="js/renderer.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

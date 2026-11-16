@@ -128,6 +128,40 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'limit-abyss') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="abyssGlow" cx="50%" cy="45%" r="60%">
+            <stop offset="0%" stop-color="#00f3ff" stop-opacity="0.32" />
+            <stop offset="60%" stop-color="#0284c7" stop-opacity="0.12" />
+            <stop offset="100%" stop-color="#01040a" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#01040a" />
+        <circle cx="160" cy="95" r="88" fill="url(#abyssGlow)" />
+        <!-- Sonar Concentric Rings -->
+        <circle cx="160" cy="95" r="76" fill="none" stroke="#00f3ff" stroke-opacity="0.22" stroke-width="1.2" stroke-dasharray="4 6" />
+        <circle cx="160" cy="95" r="48" fill="none" stroke="#00f3ff" stroke-opacity="0.35" stroke-width="1.5" />
+        <circle cx="160" cy="95" r="22" fill="none" stroke="#38bdf8" stroke-opacity="0.55" stroke-width="1.8" />
+        <!-- Light cones from submarine -->
+        <polygon points="160,95 270,40 270,150" fill="#00f3ff" fill-opacity="0.12" />
+        <!-- Submarine Silhouette -->
+        <ellipse cx="160" cy="95" rx="22" ry="12" fill="#0369a1" stroke="#00f3ff" stroke-width="2" />
+        <circle cx="168" cy="95" r="4.5" fill="#38bdf8" />
+        <rect x="156" y="80" width="7" height="4" fill="#0284c7" />
+        <!-- Discontinuity Curve & Hole -->
+        <path d="M 50 145 Q 110 90, 150 90" fill="none" stroke="#10b981" stroke-width="2.2" />
+        <path d="M 170 90 Q 210 90, 270 50" fill="none" stroke="#10b981" stroke-width="2.2" />
+        <circle cx="160" cy="90" r="4" fill="#01040a" stroke="#f59e0b" stroke-width="2" />
+        <!-- Math Indicators -->
+        <text x="75" y="42" fill="#38bdf8" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">TVI: f(a)·f(b)&lt;0</text>
+        <text x="245" y="42" fill="#f472b6" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">f⁻¹(x) ↔ y=x</text>
+        <text x="160" y="184" text-anchor="middle" fill="#bae6fd" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">lim_{x→x₀} f(x) = L (1..22)</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />
