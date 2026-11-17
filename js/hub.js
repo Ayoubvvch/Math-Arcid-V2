@@ -162,6 +162,40 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'logarithm-reactor') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="lrGlow" cx="50%" cy="50%" r="58%">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.34" />
+            <stop offset="55%" stop-color="#84cc16" stop-opacity="0.12" />
+            <stop offset="100%" stop-color="#03090c" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#03090c" />
+        <circle cx="160" cy="98" r="90" fill="url(#lrGlow)" />
+        <!-- Containment Reactor Rings -->
+        <circle cx="160" cy="98" r="66" fill="none" stroke="#10b981" stroke-opacity="0.28" stroke-dasharray="7 5" stroke-width="1.6" />
+        <circle cx="160" cy="98" r="44" fill="none" stroke="#a855f7" stroke-opacity="0.35" stroke-width="1.5" />
+        <!-- Axes & Symmetry Line y=x -->
+        <line x1="48" y1="98" x2="272" y2="98" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1" />
+        <line x1="160" y1="22" x2="160" y2="170" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1" />
+        <line x1="72" y1="168" x2="248" y2="28" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1.3" />
+        <!-- Exponential Curve e^x -->
+        <path d="M 65 94 Q 145 92, 180 62 T 212 24" fill="none" stroke="#f59e0b" stroke-width="2.6" />
+        <!-- Logarithm Curve ln(x) -->
+        <path d="M 164 166 Q 170 98, 212 72 T 268 48" fill="none" stroke="#10b981" stroke-width="2.6" />
+        <!-- Key Points (0,1) and (1,0) -->
+        <circle cx="160" cy="76" r="4.5" fill="#fbbf24" />
+        <circle cx="182" cy="98" r="4.5" fill="#34d399" />
+        <text x="128" y="66" fill="#fde68a" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">eˣ</text>
+        <text x="242" y="42" fill="#6ee7b7" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">ln(x)</text>
+        <text x="88" y="42" fill="#e9d5ff" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">eˣ ≫ xⁿ ≫ ln x</text>
+        <text x="160" y="185" text-anchor="middle" fill="#a7f3d0" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">(ln|u|)' = u'/u | (65..78)</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />

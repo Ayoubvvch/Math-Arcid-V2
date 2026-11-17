@@ -39,7 +39,19 @@
   - Expanded `js/curriculum.js` from 26 to **32 Moroccan 2BAC PC questions** adding cubic polynomial factorization $P(z) = (z - z_0)(az^2 + bz + c)$ (real and complex coefficients), composite transformations ($T_{\vec{u}} \circ R$ and order sensitivity $R \circ T$), weighted barycenter affixes, and pure-imaginary diameter circle loci.
   - Upgraded `js/renderer.js` to **12 interactive `graphSpec` plots** (adding dedicated `half_angle_chord`, `cubic_roots`, `composite_transform`, and `diameter_circle`), full Y-axis drone culling, and dynamic RTL/LTR floating text direction.
 
-### [NEXT — Cycle 007 Alpha (05:00 UTC)] Milestone 2.4: Launch Game 7 — `logarithm-reactor` (مفاعل اللوغاريتم والأسي — Topics 65–78)
-* **Genre**: 2D Bio-Cyber Metroidvania Lab (`2800 × 1800` containment facility).
-* **Curriculum**: **Topics 65–78 (الدوال اللوغاريتمية والأسية، حل المعادلات والمتراجحات، النهايات الأساسية والمقارنة الإضافية)**.
-* **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 core containment seals + Asymptote Containment Boss.
+### [COMPLETED — Cycle 007 Alpha (05:00 UTC)] Milestone 2.4: Launch Game 7 — `logarithm-reactor` (مفاعل اللوغاريتم والأسي — Topics 65–78)
+* Built **مفاعل اللوغاريتم والأسي — Logarithm Reactor v1.0.0** (**4,183 LOC** across 6 modules + Bio-Cyber CSS):
+  - 2D Bio-Cyber Metroidvania Lab (`2800 × 1800` facility) with one-way drop-through catwalks, twin vertical bio-elevators, `ln(x ≤ 0)` acid pools, and 4 Containment Wings (`α, β, γ, δ`).
+  - Complete **Topics 65–78 (الدوال اللوغاريتمية والأسية، المعادلات والمتراجحات، المشتقات والأصلية، النمو المقارن والفروع اللانهائية)**:
+    - **32 Moroccan 2BAC PC National Exam questions** with `setBidiSafeMath` and Fisher-Yates option shuffling (`pickReactorChallenge`).
+    - **10 Interactive Canvas `graphSpec` plots** (`ln_domain_band`, `primitive_area_inv`, `ln_curve_tangent`, `ln_abs_both_sides`, `exp_ln_symmetry`, `exp_quad_roots`, `exp_tangent_bound`, `growth_comparison`, `ln_branch_parabolic`, `exp_parabolic_y`).
+  - 6 PlayStation abilities (`✕` Double-Jump Thruster, `◯` Phase Dash, `▢` Seal Override / Execute, `△` Bio-Aegis `e^{ln x}=x`, `R2` Derivative Beam `u'/u`, `L2` Growth-Comparison Shockwave `e^x ≫ xⁿ`) + 3-Phase Asymptote Containment Boss (`مُفاعل المقاربات الأعظم`).
+  - Registered in `games.json` with bespoke exponential/logarithmic symmetry SVG tile in `js/hub.js`.
+
+### [NEXT — Cycle 008 Omega (17:00 UTC)] Milestone 2.5: Deep Polish for Logarithm Reactor & Multi-Game Audit
+* Refine `logarithm-reactor` elevator & Phase 3 shield mechanics, add acid-pool splash/sizzle Web Audio synthesis, expand National Exam `ln/exp` parameter-discussion questions, and audit 60FPS performance across all 5 Gold-Standard curriculum titles.
+
+### [UPCOMING — Cycle 009 Alpha (05:00 UTC)] Milestone 2.6: Launch Game 8 — `integral-forge` (محرقة التكامل والمعادلات — Topics 79–90)
+* **Genre**: 2D Heavy Mech Siege & Area Slicer (`2600 × 1700` industrial foundry).
+* **Curriculum**: **Topics 79–90 (الدوال الأصلية، التكامل بالأجزاء، حساب المساحات والحجوم، والمعادلات التفاضلية)**.
+* **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 Foundry Seals + Differential Reactor Boss.
