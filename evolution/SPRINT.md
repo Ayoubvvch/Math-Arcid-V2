@@ -55,3 +55,23 @@
 * **Genre**: 2D Heavy Mech Siege & Area Slicer (`2600 × 1700` industrial foundry).
 * **Curriculum**: **Topics 79–90 (الدوال الأصلية، التكامل بالأجزاء، حساب المساحات والحجوم، والمعادلات التفاضلية)**.
 * **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 Foundry Seals + Differential Reactor Boss.
+
+### [UPCOMING — Cycle 010 Omega (17:00 UTC)] Milestone 2.7: Deep Polish for Integral Forge
+* Refine integration-by-parts & volume-revolution `graphSpec` visuals, boss shield mechanics, and DualSense feedback in `games/integral-forge/`.
+
+### [UPCOMING — Cycle 011 Alpha (05:00 UTC)] Milestone 2.8: Launch Game 9 — `vector-odyssey` (أوديسا الفضاء المتجهي — Topics 91–102)
+* **Genre**: 2.5D Starfighter Trench & Sphere Raid (`2600 × 1700` 3D-projected space sector).
+* **Curriculum**: **Topics 91–102 (الهندسة الفضائية، الجداء السلمي والمتجهي، المستقيم والمستوى والفلكة $\mathbb{R}^3$)**.
+* **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 Orbital Seals + Sphere Core Boss.
+
+### [UPCOMING — Cycle 012 Omega (17:00 UTC)] Milestone 2.9: Deep Polish for Vector Odyssey
+* Upgrade 3D projection depth cues, tangent-plane intersection `graphSpec` plots, and 60FPS culling in `games/vector-odyssey/`.
+
+### [UPCOMING — Cycle 013 Alpha (05:00 UTC)] Milestone 2.10: Launch Game 10 — `quantum-casino` (كازينو الاحتمالات الكمومي — Topics 103–114)
+* **Genre**: 2D Tactical Heist & Bullet-Time Roguelite (`2560 × 1600` probability vault).
+* **Curriculum**: **Topics 103–114 (التعداد، الاحتمال الشرطي، الاستقلالية، المتغير العشوائي وقانون برنولي/الحداني)**.
+* **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with probability tree/binomial `graphSpec` plots, 4 Vault Seals + Bernoulli Syndicate Boss.
+
+### [UPCOMING — Cycle 014 Omega (17:00 UTC)] Milestone 2.11: Deep Polish for Quantum Casino & SPRINT_02 Closure
+* Finalize `quantum-casino` balance, probability visualizations, and 60FPS audit.
+* **Sprint Transition Trigger**: Upon completing Cycle 014 Omega, mark `currentSprint.status = "COMPLETED_NEEDS_ROADMAP"` in `STATE.json` and clear pending tags in `SPRINT.md` so **Cycle 015 enters Phase `ARCHITECT`**, audits the full 10-game platform, and generates **`SPRINT_03` (Organization, Code Structure & UX Masterclass)** automatically.

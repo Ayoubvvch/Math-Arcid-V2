@@ -5,11 +5,13 @@
   "deployment": "https://ayoubvvch.github.io/Math-Arcid-V2/",
   "owner": "Ayoub (eulerx0)",
   "chatId": "8959256425",
-  "evolutionMode": "Autonomous Twice-Daily (Alpha/Omega) — Ironclad 7-Stage Gold Standard",
+  "autoEvolutionPaused": false,
+  "evolutionMode": "Perpetual Autonomous Twice-Daily (Alpha / Omega + Auto-Architect Roadmap Loop)",
   "goldStandardCharter": "/home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md",
   "schedule": {
-    "morningPhase": "05:00 UTC - Phase Alpha (6-Module Gold Standard Game Construction >= 2,800 LOC)",
-    "eveningPhase": "17:00 UTC - Phase Omega (Deep Gameplay, Boss Patterns, Question Bank Expansion & 60FPS Audit)"
+    "morningPhase": "05:00 UTC - Phase Alpha (Primary Sprint Build / Feature / Structural Milestone)",
+    "eveningPhase": "17:00 UTC - Phase Omega (Deep Gameplay, Boss Patterns, Question Bank Expansion, UX & 60FPS Audit)",
+    "architectPhase": "Auto-triggered on Sprint completion -> Full Project Audit & Next Multi-Day Roadmap Generation (Endless until paused by Owner)"
   },
   "metrics": {
     "totalCyclesCompleted": 7,
@@ -83,9 +85,23 @@
   ],
   "currentSprint": {
     "id": "SPRINT_02",
-    "name": "Math-Arcid-V2 Gold Standard Unleashed",
+    "name": "Math-Arcid-V2 Gold Standard Unleashed (Games 5–10)",
+    "status": "ACTIVE",
     "nextCycleNumber": 8,
     "nextOmegaMilestone": "Phase Omega Polish for Logarithm Reactor (Topics 65–78 Boss patterns, acid-pool physics & elevator audio cues, extra log-inequality graphSpecs & 60FPS audit across catalog)",
     "nextAlphaMilestone": "Build Game 8: Integral Forge — محرقة التكامل والمعادلات (Topics 79–90) with 6-module RTL architecture (>= 3,200 LOC)"
-  }
+  },
+  "perpetualRoadmapPolicy": {
+    "enabled": true,
+    "stopCondition": "Manual Owner stop only (autoEvolutionPaused: true or crontab disable)",
+    "sprint03Focus": "التنظيم والترتيب وتجربة المستخدم (Repository organization, shared engine deduplication, PS5 Hub curriculum grouping & progress tracking, unified UX/DualSense ergonomics & visual cohesion across all 10 games)",
+    "sprint04PlusPolicy": "After each Sprint completes, automatically trigger Phase ARCHITECT to perform a full codebase/UX audit and draft the next multi-day Roadmap targeting what the project lacks or needs most next (e.g., 2BAC PC Physics & Chemistry modules, National Exam Boss-Rush Mode, Offline PWA, Mastery Analytics)."
+  },
+  "sprintHistory": [
+    {
+      "id": "SPRINT_01",
+      "name": "Genesis & Gold Standard Foundations (Games 1–4)",
+      "status": "COMPLETED"
+    }
+  ]
 }

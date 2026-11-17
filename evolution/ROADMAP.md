@@ -29,16 +29,20 @@
 
 ---
 
-## 3. Twice-Daily Autonomous Evolution Protocol (Alpha & Omega)
+## 3. Perpetual Autonomous Evolution Protocol (Alpha / Omega / Auto-Architect)
 
-1. **Morning Run (05:00 UTC) — Phase Alpha (Gold-Standard Game Construction)**:
+1. **Morning Run (05:00 UTC) — Phase `ALPHA`**:
    - Reads `evolution/GOLD_STANDARD.md`, `evolution/STATE.json`, and `evolution/SPRINT.md`.
-   - Studies `games/asymptote-asylum/`, `games/sequence-strider/`, and `games/complex-plane-duel/` as reference implementations.
-   - Builds the target game with all 6 modules (`≥ 2,800 LOC`), Arabic RTL + `setBidiSafeMath`, 4 Sectors, ≥ 24 questions with `graphSpec`, and custom SVG tile in `js/hub.js`.
-   - Runs `bash evolution/scripts/verify.sh` (all 7 gates must pass).
-   - Commits and pushes to `origin main` on `Ayoubvvch/Math-Arcid-V2`.
+   - Executes `nextAlphaMilestone` (either constructing a new Gold-Standard 6-module game `≥ 2,800 LOC`, or executing a major Organization/UX/Platform milestone in `SPRINT_03+`).
+   - Passes `bash evolution/scripts/verify.sh` (all 7 gates), commits, and pushes to `origin main`.
 
-2. **Evening Run (17:00 UTC) — Phase Omega (Deep Gameplay, Physics, Boss & Pedagogical Hardening)**:
-   - Audits the most recently launched game and existing catalog in `Math-Arcid-V2`.
-   - Expands question banks, adds new interactive `graphSpec` visualizations, refines enemy AI / boss patterns / particle FX / DualSense haptics, and verifies locked 60FPS performance.
-   - Runs `bash evolution/scripts/verify.sh`, commits, pushes, and sends an Arabic engineering report to Owner Ayoub (`8959256425`).
+2. **Evening Run (17:00 UTC) — Phase `OMEGA`**:
+   - Audits the active target game/subsystem in `Math-Arcid-V2`.
+   - Executes `nextOmegaMilestone` (expands question banks, adds interactive `graphSpec` plots, refines boss AI / particle FX / DualSense haptics / UX polish, and audits locked 60FPS).
+   - If the just-completed milestone finishes the active Sprint, marks `currentSprint.status = "COMPLETED_NEEDS_ROADMAP"` in `STATE.json`.
+
+3. **Automatic Sprint Transition — Phase `ARCHITECT` (Infinite Self-Planning Loop)**:
+   - Whenever `SPRINT_02` (or any subsequent Sprint) finishes, `evolution/scripts/trigger.sh` automatically enters **Phase `ARCHITECT`** on the very next cycle instead of stopping:
+     - **Full Project Audit**: Scans all games, `js/hub.js`, `css/`, `shared/`, `games.json`, and `evolution/` logs to diagnose structural clutter, UX friction, and missing capabilities.
+     - **`SPRINT_03` Mandate (Post-Game-10)**: Strictly prioritizes **التنظيم والترتيب وتجربة المستخدم** (Clean folder/module architecture, Hub curriculum grouping & progress persistence, unified UX/DualSense ergonomics, visual consistency, and refactoring).
+     - **`SPRINT_04+` Endless Loop**: Every time a Roadmap finishes, `Phase ARCHITECT` runs again automatically to audit what is missing or next highest impact (e.g., Physics & Chemistry 2BAC PC Arcade games, National Exam Boss-Rush mode, Offline PWA support, Mastery Analytics) and generates the next multi-day Roadmap — continuing indefinitely until explicitly paused by Owner Ayoub (`autoEvolutionPaused: true`).
