@@ -94,9 +94,14 @@ window.triggerReactorHaptic = async function(duration = 75, weak = 0.45, strong 
   }
 };
 
+let cachedGpPill = null;
+let cachedGpStatusText = null;
+
 function updateReactorGamepadBanner(gp) {
-  const pill = document.getElementById('gamepadPill');
-  const txt = document.getElementById('gamepadStatusText');
+  if (!cachedGpPill) cachedGpPill = document.getElementById('gamepadPill');
+  if (!cachedGpStatusText) cachedGpStatusText = document.getElementById('gamepadStatusText');
+  const pill = cachedGpPill;
+  const txt = cachedGpStatusText;
   if (!pill || !txt) return;
   if (gp) {
     if (!window.ReactorInput.gamepadConnected) {

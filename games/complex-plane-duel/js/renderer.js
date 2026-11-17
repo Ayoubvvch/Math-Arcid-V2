@@ -218,8 +218,9 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
     ctx.restore();
   }
 
-  // 8. Orbs
+  // 8. Orbs (viewport-culled)
   for (const o of state.orbs) {
+    if (o.x + 24 < camX || o.x - 24 > camX + viewW || o.y + 24 < camY || o.y - 24 > camY + viewH) continue;
     ctx.save();
     ctx.translate(o.x, o.y);
     ctx.fillStyle = o.kind === 'hp' ? '#fbbf24' : '#c084fc';
@@ -238,9 +239,10 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
     ctx.restore();
   }
 
-  // 9. Projectiles
+  // 9. Projectiles (viewport-culled)
   ctx.fillStyle = '#fbbf24';
   for (const b of state.projectiles) {
+    if (b.x + 12 < camX || b.x - 12 > camX + viewW || b.y + 12 < camY || b.y - 12 > camY + viewH) continue;
     ctx.beginPath();
     ctx.arc(b.x, b.y, 4.8, 0, Math.PI * 2);
     ctx.fill();
@@ -248,6 +250,7 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
 
   ctx.fillStyle = '#fb7185';
   for (const ep of state.enemyProjectiles) {
+    if (ep.x + 12 < camX || ep.x - 12 > camX + viewW || ep.y + 12 < camY || ep.y - 12 > camY + viewH) continue;
     ctx.beginPath();
     ctx.arc(ep.x, ep.y, 5.5, 0, Math.PI * 2);
     ctx.fill();
@@ -348,8 +351,9 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
   ctx.fillText('M(z)', 0, 0.5);
   ctx.restore();
 
-  // 12. Particles & Floating Texts
+  // 12. Particles & Floating Texts (viewport-culled)
   for (const pt of state.particles) {
+    if (pt.x + 16 < camX || pt.x - 16 > camX + viewW || pt.y + 16 < camY || pt.y - 16 > camY + viewH) continue;
     ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
     ctx.fillStyle = pt.color;
     ctx.beginPath();
@@ -359,6 +363,7 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
   ctx.globalAlpha = 1;
 
   for (const ft of state.floatingTexts) {
+    if (ft.x + 140 < camX || ft.x - 140 > camX + viewW || ft.y + 40 < camY || ft.y - 40 > camY + viewH) continue;
     ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
     ctx.direction = /[\u0600-\u06FF]/.test(ft.text) ? 'rtl' : 'ltr';
     ctx.fillStyle = ft.color;
@@ -370,11 +375,16 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
 
   ctx.restore();
 
-  // 13. Screen-Space Telemetry Bar (z = a + bi, |z|, arg(z)) & Mini-Argand Radar
-  const c = window.worldToComplex(p.x, p.y);
-  const signIm = c.im >= 0 ? '+' : '-';
-  const deg = Math.round((c.arg * 180) / Math.PI);
-  const affixStr = `z = ${c.re.toFixed(2)} ${signIm} ${Math.abs(c.im).toFixed(2)}i   |z| = ${c.mod.toFixed(2)}   arg(z) = ${deg}°`;
+  // 13. Screen-Space Telemetry Bar (z = a + bi, |z|, arg(z)) & Mini-Argand Radar (Cached string)
+  const affixKey = `${Math.round(p.x)}:${Math.round(p.y)}`;
+  if (state._lastAffixKey !== affixKey) {
+    state._lastAffixKey = affixKey;
+    const c = window.worldToComplex(p.x, p.y);
+    const signIm = c.im >= 0 ? '+' : '-';
+    const deg = Math.round((c.arg * 180) / Math.PI);
+    state._lastAffixStr = `z = ${c.re.toFixed(2)} ${signIm} ${Math.abs(c.im).toFixed(2)}i   |z| = ${c.mod.toFixed(2)}   arg(z) = ${deg}°`;
+  }
+  const affixStr = state._lastAffixStr || '';
 
   ctx.save();
   ctx.direction = 'ltr';

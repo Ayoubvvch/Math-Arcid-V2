@@ -9,8 +9,8 @@ window.REACTOR_WORLD = {
   WIDTH: 2800,
   HEIGHT: 1800,
   GRAVITY: 1280,
-  JUMP_VEL: -635,
-  DOUBLE_JUMP_VEL: -595,
+  JUMP_VEL: -655,
+  DOUBLE_JUMP_VEL: -605,
   MAX_FALL: 780,
   MAX_PARTICLES: 160
 };
@@ -27,13 +27,13 @@ window.createInitialReactorState = function(topicFilter = 'all') {
     // Central Reactor Atrium & Spine (x: 1120..1680)
     { x: 1180, y: 500, w: 440, h: 20, label: 'منصة الانطلاق المركزية (ln 1 = 0)', oscAxis: null },
     { x: 1220, y: 780, w: 360, h: 20, label: 'جسر المفاعل الأوسط', oscAxis: null },
-    { x: 1180, y: 1030, w: 440, h: 20, label: 'قاعة نواة المقاربات', oscAxis: null },
-    { x: 1220, y: 1320, w: 360, h: 20, label: 'ممر المشتقات u\'/u', oscAxis: null },
+    { x: 1180, y: 1045, w: 440, h: 20, label: 'قاعة نواة المقاربات', oscAxis: null },
+    { x: 1220, y: 1310, w: 360, h: 20, label: 'ممر المشتقات u\'/u', oscAxis: null },
     { x: 1180, y: 1550, w: 440, h: 20, label: 'بوابة التبريد السفلية', oscAxis: null },
 
-    // Twin Vertical Bio-Elevators bridging upper & lower wings
-    { x: 1020, y: 720, w: 130, h: 18, label: 'مصعد α↔γ', oscAxis: 'y', baseY: 960, amp: 460, freq: 0.72, prevX: 1020, prevY: 720 },
-    { x: 1650, y: 1120, w: 130, h: 18, label: 'مصعد β↔δ', oscAxis: 'y', baseY: 960, amp: 460, freq: 0.72, phaseOffset: Math.PI, prevX: 1650, prevY: 1120 },
+    // Twin Vertical Bio-Elevators bridging upper & lower wings (490..1470 with terminal dwell)
+    { x: 1020, y: 980, w: 130, h: 18, label: 'مصعد α↔γ', oscAxis: 'y', baseY: 980, amp: 490, freq: 0.72, phaseOffset: 0, prevX: 1020, prevY: 980, velY: 0, dockSide: 0 },
+    { x: 1650, y: 980, w: 130, h: 18, label: 'مصعد β↔δ', oscAxis: 'y', baseY: 980, amp: 490, freq: 0.72, phaseOffset: Math.PI, prevX: 1650, prevY: 980, velY: 0, dockSide: 0 },
 
     // Wing α (Top-Left: Topics 65-67, Seal 1 at (330, 310))
     { x: 740, y: 640, w: 260, h: 18, label: 'x > 0 (شرط اللوغاريتم)', oscAxis: null },
@@ -41,7 +41,7 @@ window.createInitialReactorState = function(topicFilter = 'all') {
     { x: 140, y: 630, w: 250, h: 18, label: 'ln(ab) = ln a + ln b', oscAxis: null },
     { x: 460, y: 500, w: 260, h: 18, label: 'ln(a/b) = ln a - ln b', oscAxis: null },
     { x: 180, y: 390, w: 320, h: 20, label: 'غرفة الختم α (ln e = 1)', oscAxis: null },
-    { x: 690, y: 310, w: 220, h: 18, label: 'جسر الأساس a', oscAxis: 'x', baseX: 740, amp: 90, freq: 1.05, prevX: 690, prevY: 310 },
+    { x: 740, y: 310, w: 220, h: 18, label: 'جسر الأساس a', oscAxis: 'x', baseX: 740, amp: 90, freq: 1.05, prevX: 740, prevY: 310 },
 
     // Wing β (Top-Right: Topics 68-70, Seal 2 at (2470, 310))
     { x: 1800, y: 640, w: 260, h: 18, label: 'lim (ln x)/x = 0', oscAxis: null },
@@ -49,7 +49,7 @@ window.createInitialReactorState = function(topicFilter = 'all') {
     { x: 2400, y: 630, w: 260, h: 18, label: '(ln|u|)\' = u\'/u', oscAxis: null },
     { x: 2070, y: 500, w: 260, h: 18, label: 'ln x ≤ x - 1', oscAxis: null },
     { x: 2300, y: 390, w: 320, h: 20, label: 'غرفة الختم β (u\'/u)', oscAxis: null },
-    { x: 1840, y: 310, w: 220, h: 18, label: 'مماس x₀ = 1', oscAxis: 'x', baseX: 1890, amp: 90, freq: 1.1, prevX: 1840, prevY: 310 },
+    { x: 1890, y: 310, w: 220, h: 18, label: 'مماس x₀ = 1', oscAxis: 'x', baseX: 1890, amp: 90, freq: 1.1, prevX: 1890, prevY: 310 },
 
     // Wing γ (Bottom-Left: Topics 71-74, Seal 3 at (330, 1150))
     { x: 720, y: 1520, w: 270, h: 18, label: 'eˣ > 0 قطعا على ℝ', oscAxis: null },
@@ -57,7 +57,7 @@ window.createInitialReactorState = function(topicFilter = 'all') {
     { x: 450, y: 1410, w: 260, h: 18, label: 'e^{a+b} = eᵃ·eᵇ', oscAxis: null },
     { x: 760, y: 1280, w: 250, h: 18, label: '(eᵘ)\' = u\'·eᵘ', oscAxis: null },
     { x: 180, y: 1230, w: 320, h: 20, label: 'غرفة الختم γ (exp = ln⁻¹)', oscAxis: null },
-    { x: 460, y: 1080, w: 240, h: 18, label: 'aˣ = e^{x ln a}', oscAxis: 'x', baseX: 500, amp: 85, freq: 1.0, prevX: 460, prevY: 1080 },
+    { x: 500, y: 1080, w: 240, h: 18, label: 'aˣ = e^{x ln a}', oscAxis: 'x', baseX: 500, amp: 85, freq: 1.0, prevX: 500, prevY: 1080 },
 
     // Wing δ (Bottom-Right: Topics 75-78, Seal 4 at (2470, 1150))
     { x: 1810, y: 1520, w: 270, h: 18, label: 'lim (eˣ - 1)/x = 1', oscAxis: null },
@@ -65,8 +65,12 @@ window.createInitialReactorState = function(topicFilter = 'all') {
     { x: 2090, y: 1410, w: 260, h: 18, label: 'lim xⁿ·eˣ = 0 (-∞)', oscAxis: null },
     { x: 1790, y: 1280, w: 250, h: 18, label: 'eˣ ≥ x + 1', oscAxis: null },
     { x: 2300, y: 1230, w: 320, h: 20, label: 'غرفة الختم δ (النمو المقارن)', oscAxis: null },
-    { x: 2040, y: 1080, w: 240, h: 18, label: 'فرع شلجمي (Oy)', oscAxis: 'x', baseX: 2080, amp: 85, freq: 1.05, prevX: 2040, prevY: 1080 }
+    { x: 2080, y: 1080, w: 240, h: 18, label: 'فرع شلجمي (Oy)', oscAxis: 'x', baseX: 2080, amp: 85, freq: 1.05, prevX: 2080, prevY: 1080 }
   ];
+
+  for (const plat of platforms) {
+    plat.isRtl = /[\u0600-\u06FF]/.test(plat.label || '');
+  }
 
   // Bio-Acid Containment Vats on the sub-floor (hazardous ln(x <= 0) pools)
   const acidPools = [
@@ -114,6 +118,7 @@ window.createInitialReactorState = function(topicFilter = 'all') {
     mode: 'intro', // 'intro' | 'play' | 'override' | 'pause' | 'end'
     topicFilter,
     time: 0,
+    worldTime: 0,
     screenShake: 0,
     damageFlash: 0,
     bannerText: 'الجناح α — اخترق أختام الاحتواء الأربعة عبر اللوغاريتم والأسية (65–78)',
@@ -145,7 +150,11 @@ window.createInitialReactorState = function(topicFilter = 'all') {
       aegisCooldown: 0,
       aegisTimer: 0,
       overdriveCooldown: 0,
-      ridingPlatform: null
+      ridingPlatform: null,
+      lastRidingPlat: null,
+      inAcid: false,
+      acidSizzleCooldown: 0,
+      acidMsgCooldown: 0
     },
 
     platforms,
@@ -207,7 +216,10 @@ window.spawnReactorParticles = function(state, x, y, count = 12, color = '#10b98
 };
 
 window.addReactorFloatText = function(state, x, y, text, color = '#a3e635', life = 1.2) {
-  state.floatingTexts.push({ x, y, text, color, life, maxLife: life });
+  state.floatingTexts.push({
+    x, y, text, color, life, maxLife: life,
+    isRtl: /[\u0600-\u06FF]/.test(String(text || ''))
+  });
   if (state.floatingTexts.length > 26) state.floatingTexts.shift();
 };
 
@@ -252,6 +264,7 @@ window.spawnReactorEnemy = function(state, forceKind = null, forceX = null, forc
     id: state.nextEnemyId++,
     kind,
     label: cfg.label,
+    isRtl: /[\u0600-\u06FF]/.test(cfg.label),
     color: cfg.color,
     x: sx,
     y: sy,
@@ -267,6 +280,10 @@ window.spawnReactorEnemy = function(state, forceKind = null, forceX = null, forc
     shieldActive: false,
     shieldHp: 0,
     shieldMaxHp: 140,
+    shieldAngle: 0,
+    shieldGapHalf: 0.48,
+    shieldRechargeTimer: 0,
+    stunTimer: 0,
     phase: 1,
     shootTimer: kind === 'boss' ? 1.5 : 2.1,
     beamTimer: 0,
@@ -288,14 +305,16 @@ window.spawnAsymptoteBoss = function(state) {
 
 window.damageReactorEnemy = function(state, enemy, dmg, forceKill = false, ignoreShield = false) {
   if (enemy.kind === 'boss' && enemy.shieldActive && !ignoreShield && !forceKill) {
-    enemy.shieldHp = Math.max(0, enemy.shieldHp - dmg);
+    enemy.shieldHp = Math.max(0, enemy.shieldHp - dmg * 0.65);
     enemy.hitFlash = 0.08;
+    window.ReactorAudio?.playShieldDeflect?.();
     window.spawnReactorParticles(state, enemy.x, enemy.y, 5, '#22d3ee', 140);
     if (enemy.shieldHp <= 0) {
       enemy.shieldActive = false;
-      enemy.staggered = true;
+      enemy.stunTimer = 2.6;
+      enemy.shieldRechargeTimer = 8.5;
       window.ReactorAudio?.playAegis?.();
-      window.addReactorFloatText(state, enemy.x, enemy.y - enemy.radius - 16, 'انكسر الدرع اللوغاريتمي! [▢ / E]', '#34d399', 1.8);
+      window.addReactorFloatText(state, enemy.x, enemy.y - enemy.radius - 18, 'انكسر الدرع اللوغاريتمي مؤقتاً! أطلق [R2]', '#34d399', 1.8);
     }
     return false;
   }
@@ -318,15 +337,20 @@ window.damageReactorEnemy = function(state, enemy, dmg, forceKill = false, ignor
       enemy.phase = 3;
       enemy.shieldActive = true;
       enemy.shieldHp = enemy.shieldMaxHp;
+      enemy.shieldRechargeTimer = 8.5;
       window.ReactorAudio?.playOverdrive?.();
-      window.setReactorBanner(state, '☢ الطور 3: درع الاحتواء اللوغاريتمي! اكسره بـ [△] أو [L2]!', 4.2);
-      window.addReactorFloatText(state, enemy.x, enemy.y - 62, 'درع ln(x) نشط — استعمل [△] أو [L2]!', '#22d3ee', 2.0);
+      window.setReactorBanner(state, '☢ الطور 3: درع ln(x) الدوّار! اصب نافذة الجذر α=1 أو استعمل [△] / [L2]!', 4.6);
+      window.addReactorFloatText(state, enemy.x, enemy.y - 62, 'درع ln(x) نشط — فجوة α=1 أو [△/L2]!', '#22d3ee', 2.2);
     }
   }
 
-  if (!enemy.staggered && enemy.hp > 0 && enemy.hp <= enemy.maxHp * 0.36 && (enemy.kind === 'sentinel_asym' || (enemy.kind === 'boss' && !enemy.shieldActive))) {
-    enemy.staggered = true;
-    window.addReactorFloatText(state, enemy.x, enemy.y - enemy.radius - 14, 'مشلول! [▢ / E] تفكيك النواة', '#fbbf24', 1.6);
+  if (!enemy.staggered && enemy.hp > 0) {
+    const canStagger = (enemy.kind === 'sentinel_asym' && enemy.hp <= enemy.maxHp * 0.36) ||
+      (enemy.kind === 'boss' && !enemy.shieldActive && enemy.hp <= enemy.maxHp * 0.18);
+    if (canStagger) {
+      enemy.staggered = true;
+      window.addReactorFloatText(state, enemy.x, enemy.y - enemy.radius - 14, 'مشلول! [▢ / E] تفكيك النواة', '#fbbf24', 1.6);
+    }
   }
 
   if (enemy.hp <= 0 || forceKill) {
@@ -446,6 +470,8 @@ window.performReactorAegis = function(state) {
       if (e.kind === 'boss' && e.shieldActive) {
         e.shieldActive = false;
         e.shieldHp = 0;
+        e.stunTimer = 2.6;
+        e.shieldRechargeTimer = 8.5;
         window.addReactorFloatText(state, e.x, e.y - 68, 'تحطّم درع المفاعل!', '#34d399', 1.5);
       }
       if (e.kind !== 'boss') e.staggered = true;
@@ -497,6 +523,8 @@ window.performReactorOverdrive = function(state) {
       if (e.kind === 'boss' && e.shieldActive) {
         e.shieldActive = false;
         e.shieldHp = 0;
+        e.stunTimer = 2.8;
+        e.shieldRechargeTimer = 8.5;
       }
       window.damageReactorEnemy(state, e, 145, e.kind !== 'boss', true);
     }
@@ -533,6 +561,7 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
   const tScale = state.mode === 'override' ? 0.035 : 1.0;
   const dt = rawDt * tScale;
   state.time += rawDt;
+  state.worldTime += dt;
 
   const p = state.player;
   const W = window.REACTOR_WORLD.WIDTH;
@@ -542,14 +571,25 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
   if (state.damageFlash > 0) state.damageFlash = Math.max(0, state.damageFlash - rawDt * 2.4);
   if (state.screenShake > 0) state.screenShake = Math.max(0, state.screenShake - rawDt * 38);
 
-  // Move Bio-Elevators & Oscillating Catwalks
+  // Move Bio-Elevators (with smooth terminal dwell & dock cues) & Oscillating Catwalks
   for (const plat of state.platforms) {
     plat.prevX = plat.x;
     plat.prevY = plat.y;
     if (plat.oscAxis === 'y') {
-      plat.y = plat.baseY + Math.sin(state.time * plat.freq + (plat.phaseOffset || 0)) * plat.amp;
+      const rawSin = Math.sin(state.worldTime * plat.freq + (plat.phaseOffset || 0));
+      const wave = Math.max(-1, Math.min(1, 1.18 * rawSin));
+      plat.y = plat.baseY + wave * plat.amp;
+      plat.velY = dt > 0.0001 ? (plat.y - plat.prevY) / dt : 0;
+      const newDock = wave <= -0.995 ? -1 : (wave >= 0.995 ? 1 : 0);
+      if (newDock !== 0 && newDock !== plat.dockSide && state.mode === 'play') {
+        if (Math.hypot(p.x - (plat.x + plat.w * 0.5), p.y - plat.y) < 620) {
+          window.ReactorAudio?.playElevatorDock?.();
+          window.spawnReactorParticles(state, plat.x + plat.w * 0.5, plat.y + 6, 6, '#22d3ee', 95);
+        }
+      }
+      plat.dockSide = newDock;
     } else if (plat.oscAxis === 'x') {
-      plat.x = plat.baseX + Math.sin(state.time * plat.freq + (plat.phaseOffset || 0)) * plat.amp;
+      plat.x = plat.baseX + Math.sin(state.worldTime * plat.freq + (plat.phaseOffset || 0)) * plat.amp;
     }
   }
 
@@ -564,6 +604,8 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
     p.dropThroughTimer = Math.max(0, p.dropThroughTimer - dt);
     p.coyoteTimer = Math.max(0, p.coyoteTimer - dt);
     p.jumpBuffer = Math.max(0, p.jumpBuffer - dt);
+    p.acidSizzleCooldown = Math.max(0, p.acidSizzleCooldown - dt);
+    p.acidMsgCooldown = Math.max(0, p.acidMsgCooldown - dt);
     p.energy = Math.min(p.maxEnergy, p.energy + dt * 5.8);
 
     if (state.stats.comboTimer > 0) {
@@ -583,10 +625,11 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
       p.aimAngle = p.facing >= 0 ? 0 : Math.PI;
     }
 
+    const wasRiding = p.ridingPlatform;
     // Carry player smoothly if standing on a moving elevator/catwalk
-    if (p.grounded && p.ridingPlatform) {
-      p.x += (p.ridingPlatform.x - p.ridingPlatform.prevX);
-      p.y += (p.ridingPlatform.y - p.ridingPlatform.prevY);
+    if (p.grounded && wasRiding) {
+      p.x += (wasRiding.x - wasRiding.prevX);
+      p.y += (wasRiding.y - wasRiding.prevY);
     }
 
     const prevBottom = p.y + p.radius;
@@ -605,7 +648,7 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
     p.x = Math.max(44 + p.radius, Math.min(W - 44 - p.radius, p.x));
     p.y = Math.max(90, Math.min(H - p.radius, p.y));
 
-    // One-way & Solid Platform Landing
+    // One-way & Solid Platform Landing (with fast-elevator & direction-reversal lock)
     p.grounded = false;
     p.ridingPlatform = null;
     const newBottom = p.y + p.radius;
@@ -615,13 +658,22 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
         if (!plat.solid && p.dropThroughTimer > 0) continue;
         if (p.x + p.radius * 0.65 >= plat.x && p.x - p.radius * 0.65 <= plat.x + plat.w) {
           const prevPlatTop = plat.prevY !== undefined ? plat.prevY : plat.y;
-          if (prevBottom <= prevPlatTop + 14 && newBottom >= plat.y - 2) {
+          const catchTol = Math.max(15, Math.abs(plat.y - prevPlatTop) + 12);
+          const lockedOnMoving = wasRiding === plat && (plat.solid || p.dropThroughTimer <= 0);
+          if (lockedOnMoving || (prevBottom <= prevPlatTop + catchTol && newBottom >= plat.y - 4)) {
             p.y = plat.y - p.radius;
             p.vy = 0;
             p.grounded = true;
             p.coyoteTimer = 0.12;
             p.jumpsLeft = 2;
             p.ridingPlatform = plat;
+            if (plat.oscAxis === 'y' && p.lastRidingPlat !== plat) {
+              p.lastRidingPlat = plat;
+              window.ReactorAudio?.playElevatorBoard?.();
+              window.spawnReactorParticles(state, p.x, plat.y, 7, '#22d3ee', 120);
+            } else if (!plat.oscAxis) {
+              p.lastRidingPlat = null;
+            }
             if (p.jumpBuffer > 0 && !holdingDown) {
               p.jumpBuffer = 0;
               window.performReactorJump(state, false);
@@ -631,17 +683,66 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
         }
       }
     }
+    if (!p.grounded) p.lastRidingPlat = null;
 
-    // Bio-Acid Containment Pools Hazard
+    // Bio-Acid Containment Pools Physics (Splash, Viscous Drag, Sizzle, Aegis Neutralization)
+    let inAcidNow = false;
     for (const pool of state.acidPools) {
       if (p.x + p.radius * 0.6 >= pool.x && p.x - p.radius * 0.6 <= pool.x + pool.w &&
           p.y + p.radius >= pool.y && p.y - p.radius <= pool.y + pool.h) {
-        if (p.invulnTimer <= 0 && p.aegisTimer <= 0 && p.dashTimer <= 0) {
-          applyReactorHit(state, 14, 'حمض ln(x ≤ 0)!');
-          p.vy = -440;
+        inAcidNow = true;
+        p.vx *= Math.pow(0.28, dt);
+
+        if (!p.inAcid) {
+          window.ReactorAudio?.playAcidSplash?.();
+          p.acidSizzleCooldown = 0.25;
+          for (let k = 0; k < 10; k++) {
+            state.particles.push({
+              x: p.x + (Math.random() - 0.5) * 26,
+              y: pool.y + 2,
+              vx: (Math.random() - 0.5) * 180,
+              vy: -(90 + Math.random() * 170),
+              size: 2.5 + Math.random() * 3.5,
+              life: 0.35 + Math.random() * 0.25,
+              maxLife: 0.6,
+              color: '#a3e635'
+            });
+          }
+          while (state.particles.length > window.REACTOR_WORLD.MAX_PARTICLES) state.particles.shift();
         }
+
+        if (p.acidSizzleCooldown <= 0) {
+          p.acidSizzleCooldown = 0.28;
+          window.ReactorAudio?.playAcidSizzle?.();
+          for (let k = 0; k < 4; k++) {
+            state.particles.push({
+              x: p.x + (Math.random() - 0.5) * 30,
+              y: pool.y + 2,
+              vx: (Math.random() - 0.5) * 55,
+              vy: -(60 + Math.random() * 80),
+              size: 2 + Math.random() * 2.5,
+              life: 0.35,
+              maxLife: 0.35,
+              color: p.aegisTimer > 0 ? '#34d399' : '#bef264'
+            });
+          }
+          while (state.particles.length > window.REACTOR_WORLD.MAX_PARTICLES) state.particles.shift();
+        }
+
+        if (p.aegisTimer > 0) {
+          if (p.acidMsgCooldown <= 0) {
+            p.acidMsgCooldown = 1.1;
+            window.addReactorFloatText(state, p.x, p.y - 30, '🛡️ تكافؤ e^{ln x}=x يحيّد الحمض!', '#34d399', 1.0);
+          }
+        } else if (p.invulnTimer <= 0 && p.dashTimer <= 0) {
+          applyReactorHit(state, 14, 'حمض ln(x ≤ 0)!');
+          p.vy = -485;
+          p.jumpsLeft = Math.max(1, p.jumpsLeft);
+        }
+        break;
       }
     }
+    p.inAcid = inAcidNow;
 
     // Collect Bio-Cells & Exponential Cores
     for (let i = state.orbs.length - 1; i >= 0; i--) {
@@ -668,7 +769,7 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
     }
   }
 
-  // Player Derivative Plasma Bolts
+  // Player Derivative Plasma Bolts (checks Phase 3 rotating Equivalence Root Window α=1!)
   for (let i = state.projectiles.length - 1; i >= 0; i--) {
     const b = state.projectiles[i];
     b.x += b.vx * dt;
@@ -678,8 +779,20 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
     if (!rm) {
       for (let j = state.enemies.length - 1; j >= 0; j--) {
         const e = state.enemies[j];
-        if (Math.hypot(e.x - b.x, e.y - b.y) <= e.radius + 9) {
-          window.damageReactorEnemy(state, e, b.dmg, false, false);
+        const hitDist = (e.kind === 'boss' && e.shieldActive) ? (e.radius + 24) : (e.radius + 9);
+        if (Math.hypot(e.x - b.x, e.y - b.y) <= hitDist) {
+          if (e.kind === 'boss' && e.shieldActive) {
+            const ang = Math.atan2(b.y - e.y, b.x - e.x);
+            const diff = Math.abs(Math.atan2(Math.sin(ang - e.shieldAngle), Math.cos(ang - e.shieldAngle)));
+            if (diff <= e.shieldGapHalf) {
+              window.damageReactorEnemy(state, e, Math.round(b.dmg * 1.25), false, true);
+              window.spawnReactorParticles(state, b.x, b.y, 7, '#a3e635', 160);
+            } else {
+              window.damageReactorEnemy(state, e, b.dmg, false, false);
+            }
+          } else {
+            window.damageReactorEnemy(state, e, b.dmg, false, false);
+          }
           rm = true;
           break;
         }
@@ -733,12 +846,27 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
   for (const e of state.enemies) {
     e.hitFlash = Math.max(0, e.hitFlash - dt);
     e.animPhase += rawDt * 4.0;
+    if (e.kind === 'boss' && e.phase >= 3) {
+      e.shieldAngle = (e.shieldAngle + dt * 1.45) % (Math.PI * 2);
+      if (e.stunTimer > 0) e.stunTimer = Math.max(0, e.stunTimer - dt);
+      if (!e.shieldActive && !e.staggered && e.stunTimer <= 0) {
+        e.shieldRechargeTimer -= dt;
+        if (e.shieldRechargeTimer <= 0) {
+          e.shieldActive = true;
+          e.shieldHp = e.shieldMaxHp;
+          window.ReactorAudio?.playOverdrive?.();
+          window.addReactorFloatText(state, e.x, e.y - 68, 'تجديد درع ln(x) — اصب فجوة α=1 أو [△/L2]!', '#22d3ee', 1.8);
+        }
+      }
+    }
+
     const dx = p.x - e.x;
     const dy = p.y - e.y;
     const dist = Math.hypot(dx, dy);
 
     if (state.mode === 'play' && dist > 1) {
-      const spd = (e.staggered ? e.speed * 0.25 : e.speed) * slowMul;
+      const stunned = e.stunTimer > 0;
+      const spd = (e.staggered || stunned ? e.speed * 0.25 : e.speed) * slowMul;
       const baseAng = Math.atan2(dy, dx);
 
       if (e.kind === 'mutant_ln') {
@@ -760,7 +888,7 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
         e.y = Math.max(120, Math.min(H - 100, e.y + Math.sin(moveAng) * spd * dt));
       }
 
-      if (e.kind === 'sentinel_asym' || e.kind === 'boss') {
+      if ((e.kind === 'sentinel_asym' || e.kind === 'boss') && !stunned) {
         e.shootTimer -= dt;
         if (e.shootTimer <= 0 && !e.staggered) {
           e.shootTimer = e.kind === 'boss' ? (e.phase === 3 ? 1.35 : 1.75) : 2.3;
@@ -777,24 +905,41 @@ window.updateReactorWorld = function(state, rawDt, moveVec, aimVec, holdingDown 
         }
       }
 
-      // Boss Phase 2+ Telegraphed Asymptote Laser Beams
-      if (e.kind === 'boss' && e.phase >= 2 && !e.staggered) {
+      // Boss Phase 2+ Telegraphed Asymptote Laser Beams (Phase 3 fires orthogonal Cross-Asymptotes!)
+      if (e.kind === 'boss' && e.phase >= 2 && !e.staggered && !stunned) {
         e.beamTimer -= dt;
         if (e.beamTimer <= 0) {
-          e.beamTimer = e.phase === 3 ? 3.2 : 4.1;
+          e.beamTimer = e.phase === 3 ? 3.3 : 4.1;
           window.ReactorAudio?.playBeamCharge?.();
-          state.bossBeams.push({
-            axis: Math.random() < 0.5 ? 'x' : 'y',
-            pos: Math.random() < 0.5 ? p.x : p.y,
-            warnTimer: 1.05,
-            activeTimer: 0.65
-          });
+          if (e.phase === 3) {
+            state.bossBeams.push(
+              { axis: 'x', pos: p.x, warnTimer: 1.15, activeTimer: 0.6 },
+              { axis: 'y', pos: p.y, warnTimer: 1.15, activeTimer: 0.6 }
+            );
+          } else {
+            state.bossBeams.push({
+              axis: Math.random() < 0.5 ? 'x' : 'y',
+              pos: Math.random() < 0.5 ? p.x : p.y,
+              warnTimer: 1.05,
+              activeTimer: 0.65
+            });
+          }
         }
+      }
+
+      // Smooth Boss shield repulsion prevents player entrapment inside Boss core
+      const effRad = (e.kind === 'boss' && e.shieldActive) ? e.radius + 22 : e.radius;
+      if (e.kind === 'boss' && dist < effRad + p.radius) {
+        const nx = dist > 0.01 ? dx / dist : 0;
+        const ny = dist > 0.01 ? dy / dist : -1;
+        const pushD = effRad + p.radius + 4;
+        p.x = Math.max(44 + p.radius, Math.min(W - 44 - p.radius, e.x + nx * pushD));
+        p.y = Math.max(90, Math.min(H - p.radius, e.y + ny * pushD));
       }
 
       if (p.aegisTimer > 0 && dist <= 56 + e.radius) {
         window.damageReactorEnemy(state, e, 30 * dt, false, true);
-      } else if (!e.staggered && dist <= p.radius + e.radius + 3 && p.invulnTimer <= 0 && p.aegisTimer <= 0 && p.dashTimer <= 0) {
+      } else if (!e.staggered && dist <= effRad + p.radius + 3 && p.invulnTimer <= 0 && p.aegisTimer <= 0 && p.dashTimer <= 0) {
         applyReactorHit(state, e.dmg, `-${e.dmg} درع`);
       }
     }

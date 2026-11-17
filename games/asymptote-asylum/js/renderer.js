@@ -1,9 +1,22 @@
 /**
  * Asymptote Asylum - Fast 60 FPS Horror World Renderer & Calculus Graph Plotter
- * Zero ctx.shadowBlur, zero offscreen blur overhead, explicit canvas ctx.direction safety.
+ * Zero ctx.shadowBlur, zero offscreen blur overhead, cached radial gradients, explicit ctx.direction safety.
  */
 
+const ASYLUM_GRAD_CACHE = {
+  coneGrad: null,
+  darkGrad: null,
+  darkKey: '',
+  ctxRef: null
+};
+
 window.renderAsylumFrame = function(ctx, viewW, viewH, state) {
+  if (ASYLUM_GRAD_CACHE.ctxRef !== ctx) {
+    ASYLUM_GRAD_CACHE.ctxRef = ctx;
+    ASYLUM_GRAD_CACHE.coneGrad = null;
+    ASYLUM_GRAD_CACHE.darkGrad = null;
+    ASYLUM_GRAD_CACHE.darkKey = '';
+  }
   const p = state.player;
   const time = state.time;
 
@@ -365,16 +378,18 @@ window.renderAsylumFrame = function(ctx, viewW, viewH, state) {
   ctx.stroke();
   ctx.restore();
 
-  // Gore Particles
+  // Gore Particles (viewport-culled)
   for (const pt of state.particles) {
+    if (pt.x + 16 < camX || pt.x - 16 > camX + viewW || pt.y + 16 < camY || pt.y - 16 > camY + viewH) continue;
     ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
     ctx.fillStyle = pt.color;
     ctx.fillRect(pt.x - pt.size / 2, pt.y - pt.size / 2, pt.size, pt.size);
   }
   ctx.globalAlpha = 1;
 
-  // Floating Texts
+  // Floating Texts (viewport-culled)
   for (const ft of state.floatingTexts) {
+    if (ft.x + 140 < camX || ft.x - 140 > camX + viewW || ft.y + 40 < camY || ft.y - 40 > camY + viewH) continue;
     ctx.save();
     ctx.globalAlpha = Math.min(1, ft.life / 0.35);
     ctx.direction = 'rtl';
@@ -388,7 +403,7 @@ window.renderAsylumFrame = function(ctx, viewW, viewH, state) {
   ctx.restore(); // Exit World Camera Transform
 
   // =========================================================================
-  // FAST 1-PASS HORROR FLASHLIGHT CONE & DARKNESS (Zero GPU lag!)
+  // FAST 1-PASS HORROR FLASHLIGHT CONE & DARKNESS (Cached Gradients, Zero GPU lag!)
   // =========================================================================
   const cx = viewW / 2;
   const cy = viewH / 2;
@@ -398,24 +413,32 @@ window.renderAsylumFrame = function(ctx, viewW, viewH, state) {
     ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
     ctx.fillRect(0, 0, viewW, viewH);
   } else {
-    // Fast directional darkness gradient + warm beam highlight
-    const reach = (viewW * 0.46) * (0.55 + 0.45 * (p.sanity / p.maxSanity));
-    const darkGrad = ctx.createRadialGradient(cx, cy, 70, cx, cy, Math.max(220, reach));
-    darkGrad.addColorStop(0, 'rgba(4, 2, 5, 0.0)');
-    darkGrad.addColorStop(0.55, 'rgba(4, 2, 5, 0.42)');
-    darkGrad.addColorStop(1, 'rgba(2, 1, 4, 0.82)');
-    ctx.fillStyle = darkGrad;
+    // Cached directional darkness gradient (rebuilt only on resize or sanity bucket change)
+    const reach = Math.max(220, Math.round(((viewW * 0.46) * (0.55 + 0.45 * (p.sanity / p.maxSanity))) / 8) * 8);
+    const dKey = `${viewW}x${viewH}:${reach}`;
+    if (ASYLUM_GRAD_CACHE.darkKey !== dKey) {
+      ASYLUM_GRAD_CACHE.darkKey = dKey;
+      const g = ctx.createRadialGradient(cx, cy, 70, cx, cy, reach);
+      g.addColorStop(0, 'rgba(4, 2, 5, 0.0)');
+      g.addColorStop(0.55, 'rgba(4, 2, 5, 0.42)');
+      g.addColorStop(1, 'rgba(2, 1, 4, 0.82)');
+      ASYLUM_GRAD_CACHE.darkGrad = g;
+    }
+    ctx.fillStyle = ASYLUM_GRAD_CACHE.darkGrad;
     ctx.fillRect(0, 0, viewW, viewH);
   }
 
-  // Visible Flashlight Cone Ray
+  // Cached Visible Flashlight Cone Ray
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate(p.aimAngle);
-  const coneGrad = ctx.createRadialGradient(0, 0, 12, 0, 0, 340);
-  coneGrad.addColorStop(0, 'rgba(254, 243, 199, 0.22)');
-  coneGrad.addColorStop(1, 'rgba(254, 243, 199, 0.0)');
-  ctx.fillStyle = coneGrad;
+  if (!ASYLUM_GRAD_CACHE.coneGrad) {
+    const cg = ctx.createRadialGradient(0, 0, 12, 0, 0, 340);
+    cg.addColorStop(0, 'rgba(254, 243, 199, 0.22)');
+    cg.addColorStop(1, 'rgba(254, 243, 199, 0.0)');
+    ASYLUM_GRAD_CACHE.coneGrad = cg;
+  }
+  ctx.fillStyle = ASYLUM_GRAD_CACHE.coneGrad;
   ctx.beginPath();
   ctx.moveTo(0, 0);
   ctx.arc(0, 0, 340, -0.42, 0.42);

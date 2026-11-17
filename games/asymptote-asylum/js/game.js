@@ -422,42 +422,59 @@
   document.getElementById('actBolt')?.addEventListener('click', () => state.mode === 'play' && window.performBloodBolt(state));
   document.getElementById('actSacrifice')?.addEventListener('click', () => state.mode === 'play' && window.performForbiddenSacrificeWorld(state));
 
-  // Sync HUD lazily (zero unnecessary DOM writes)
+  const hudEls = {
+    hpValue: document.getElementById('hpValue'),
+    hpFill: document.getElementById('hpFill'),
+    sanityValue: document.getElementById('sanityValue'),
+    sanityFill: document.getElementById('sanityFill'),
+    sealsValue: document.getElementById('sealsValue'),
+    killValue: document.getElementById('killValue'),
+    comboBadge: document.getElementById('comboBadge'),
+    comboCount: document.getElementById('comboCount'),
+    frenzyBadge: document.getElementById('frenzyBadge'),
+    frenzyTimer: document.getElementById('frenzyTimer'),
+    wardBanner: document.getElementById('wardBanner'),
+    actRitual: document.getElementById('actRitual'),
+    actDash: document.getElementById('actDash'),
+    actFlare: document.getElementById('actFlare'),
+    actSacrifice: document.getElementById('actSacrifice')
+  };
+
+  // Sync HUD lazily (zero unnecessary DOM queries or writes)
   function syncHUD() {
     const p = state.player;
     const hpStr = `${Math.ceil(p.hp)}/${p.maxHp}`;
     if (hudCache.hp !== hpStr) {
       hudCache.hp = hpStr;
-      document.getElementById('hpValue').textContent = hpStr;
-      document.getElementById('hpFill').style.width = `${Math.max(0, (p.hp / p.maxHp) * 100)}%`;
+      if (hudEls.hpValue) hudEls.hpValue.textContent = hpStr;
+      if (hudEls.hpFill) hudEls.hpFill.style.width = `${Math.max(0, (p.hp / p.maxHp) * 100)}%`;
     }
 
     const sanStr = `${Math.round(p.sanity)}%`;
     if (hudCache.san !== sanStr) {
       hudCache.san = sanStr;
-      document.getElementById('sanityValue').textContent = sanStr;
-      document.getElementById('sanityFill').style.width = `${Math.max(0, (p.sanity / p.maxSanity) * 100)}%`;
+      if (hudEls.sanityValue) hudEls.sanityValue.textContent = sanStr;
+      if (hudEls.sanityFill) hudEls.sanityFill.style.width = `${Math.max(0, (p.sanity / p.maxSanity) * 100)}%`;
     }
 
     const sealStr = state.bossSpawned ? 'BOSS ☠' : `${state.stats.brokenSeals} / 4`;
     if (hudCache.seal !== sealStr) {
       hudCache.seal = sealStr;
-      document.getElementById('sealsValue').textContent = sealStr;
+      if (hudEls.sealsValue) hudEls.sealsValue.textContent = sealStr;
     }
 
     const killStr = String(state.stats.kills);
     if (hudCache.kills !== killStr) {
       hudCache.kills = killStr;
-      document.getElementById('killValue').textContent = killStr;
+      if (hudEls.killValue) hudEls.killValue.textContent = killStr;
     }
 
     const comboShow = state.stats.combo >= 2;
     if (hudCache.comboShow !== comboShow || hudCache.combo !== state.stats.combo) {
       hudCache.comboShow = comboShow;
       hudCache.combo = state.stats.combo;
-      const badge = document.getElementById('comboBadge');
-      badge?.classList.toggle('hidden', !comboShow);
-      if (comboShow) document.getElementById('comboCount').textContent = String(state.stats.combo);
+      hudEls.comboBadge?.classList.toggle('hidden', !comboShow);
+      if (comboShow && hudEls.comboCount) hudEls.comboCount.textContent = String(state.stats.combo);
     }
 
     const frenzySec = Math.ceil(p.frenzyTimer);
@@ -465,27 +482,43 @@
     if (hudCache.frenzyShow !== frenzyShow || hudCache.frenzySec !== frenzySec) {
       hudCache.frenzyShow = frenzyShow;
       hudCache.frenzySec = frenzySec;
-      const fb = document.getElementById('frenzyBadge');
-      fb?.classList.toggle('hidden', !frenzyShow);
-      if (frenzyShow) document.getElementById('frenzyTimer').textContent = `${frenzySec}s`;
+      hudEls.frenzyBadge?.classList.toggle('hidden', !frenzyShow);
+      if (frenzyShow && hudEls.frenzyTimer) hudEls.frenzyTimer.textContent = `${frenzySec}s`;
     }
 
-    const bannerEl = document.getElementById('wardBanner');
-    if (bannerEl) {
+    if (hudEls.wardBanner) {
       const showB = state.bannerTimer > 0 && state.mode === 'play';
-      bannerEl.classList.toggle('visible', showB);
+      if (hudCache.showBanner !== showB) {
+        hudCache.showBanner = showB;
+        hudEls.wardBanner.classList.toggle('visible', showB);
+      }
       if (showB && hudCache.banner !== state.bannerText) {
         hudCache.banner = state.bannerText;
-        bannerEl.textContent = state.bannerText;
+        hudEls.wardBanner.textContent = state.bannerText;
       }
     }
 
     // Cooldown & Ready proximity highlights
-    const nearInteract = state.mode === 'play' ? window.findNearestInteractable(state) : null;
-    document.getElementById('actRitual')?.classList.toggle('highlight-ready', !!nearInteract);
-    document.getElementById('actDash')?.classList.toggle('cooldown', p.dashCooldown > 0);
-    document.getElementById('actFlare')?.classList.toggle('cooldown', p.flareCooldown > 0);
-    document.getElementById('actSacrifice')?.classList.toggle('cooldown', p.sacrificeCooldown > 0);
+    const nearInteract = state.mode === 'play' && !!window.findNearestInteractable(state);
+    if (hudCache.nearInteract !== nearInteract) {
+      hudCache.nearInteract = nearInteract;
+      hudEls.actRitual?.classList.toggle('highlight-ready', nearInteract);
+    }
+    const dashCd = p.dashCooldown > 0;
+    if (hudCache.dashCd !== dashCd) {
+      hudCache.dashCd = dashCd;
+      hudEls.actDash?.classList.toggle('cooldown', dashCd);
+    }
+    const flareCd = p.flareCooldown > 0;
+    if (hudCache.flareCd !== flareCd) {
+      hudCache.flareCd = flareCd;
+      hudEls.actFlare?.classList.toggle('cooldown', flareCd);
+    }
+    const sacCd = p.sacrificeCooldown > 0;
+    if (hudCache.sacCd !== sacCd) {
+      hudCache.sacCd = sacCd;
+      hudEls.actSacrifice?.classList.toggle('cooldown', sacCd);
+    }
   }
 
   // Initialize Controls & Launch Main 60FPS Loop

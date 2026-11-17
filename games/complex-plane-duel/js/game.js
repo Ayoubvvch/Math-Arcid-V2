@@ -351,57 +351,90 @@
   document.getElementById('actPulse')?.addEventListener('click', () => state.mode === 'play' && window.performPulseShot(state));
   document.getElementById('actOverdrive')?.addEventListener('click', () => state.mode === 'play' && window.performOverdriveWorld(state));
 
+  const hudEls = {
+    hpValue: document.getElementById('hpValue'),
+    hpFill: document.getElementById('hpFill'),
+    energyValue: document.getElementById('energyValue'),
+    energyFill: document.getElementById('energyFill'),
+    gatesValue: document.getElementById('gatesValue'),
+    scoreValue: document.getElementById('scoreValue'),
+    comboBadge: document.getElementById('comboBadge'),
+    comboCount: document.getElementById('comboCount'),
+    sectorBanner: document.getElementById('sectorBanner'),
+    actOverride: document.getElementById('actOverride'),
+    actDash: document.getElementById('actDash'),
+    actAegis: document.getElementById('actAegis'),
+    actOverdrive: document.getElementById('actOverdrive')
+  };
+
   function syncHUD() {
     const p = state.player;
     const hpStr = `${Math.ceil(p.hp)}/${p.maxHp}`;
     if (hudCache.hp !== hpStr) {
       hudCache.hp = hpStr;
-      document.getElementById('hpValue').textContent = hpStr;
-      document.getElementById('hpFill').style.width = `${Math.max(0, (p.hp / p.maxHp) * 100)}%`;
+      if (hudEls.hpValue) hudEls.hpValue.textContent = hpStr;
+      if (hudEls.hpFill) hudEls.hpFill.style.width = `${Math.max(0, (p.hp / p.maxHp) * 100)}%`;
     }
 
     const enStr = `${Math.round(p.energy)}%`;
     if (hudCache.en !== enStr) {
       hudCache.en = enStr;
-      document.getElementById('energyValue').textContent = enStr;
-      document.getElementById('energyFill').style.width = `${Math.max(0, (p.energy / p.maxEnergy) * 100)}%`;
+      if (hudEls.energyValue) hudEls.energyValue.textContent = enStr;
+      if (hudEls.energyFill) hudEls.energyFill.style.width = `${Math.max(0, (p.energy / p.maxEnergy) * 100)}%`;
     }
 
     const gStr = state.bossSpawned ? 'BOSS موافر' : `${state.stats.brokenGates} / 4`;
     if (hudCache.gates !== gStr) {
       hudCache.gates = gStr;
-      document.getElementById('gatesValue').textContent = gStr;
+      if (hudEls.gatesValue) hudEls.gatesValue.textContent = gStr;
     }
 
     const scStr = String(state.stats.score);
     if (hudCache.score !== scStr) {
       hudCache.score = scStr;
-      document.getElementById('scoreValue').textContent = scStr;
+      if (hudEls.scoreValue) hudEls.scoreValue.textContent = scStr;
     }
 
     const cShow = state.stats.combo >= 2;
     if (hudCache.cShow !== cShow || hudCache.cVal !== state.stats.combo) {
       hudCache.cShow = cShow;
       hudCache.cVal = state.stats.combo;
-      document.getElementById('comboBadge')?.classList.toggle('hidden', !cShow);
-      if (cShow) document.getElementById('comboCount').textContent = String(state.stats.combo);
+      hudEls.comboBadge?.classList.toggle('hidden', !cShow);
+      if (cShow && hudEls.comboCount) hudEls.comboCount.textContent = String(state.stats.combo);
     }
 
-    const bannerEl = document.getElementById('sectorBanner');
-    if (bannerEl) {
+    if (hudEls.sectorBanner) {
       const showB = state.bannerTimer > 0 && state.mode === 'play';
-      bannerEl.classList.toggle('visible', showB);
+      if (hudCache.showBanner !== showB) {
+        hudCache.showBanner = showB;
+        hudEls.sectorBanner.classList.toggle('visible', showB);
+      }
       if (showB && hudCache.banner !== state.bannerText) {
         hudCache.banner = state.bannerText;
-        bannerEl.textContent = state.bannerText;
+        hudEls.sectorBanner.textContent = state.bannerText;
       }
     }
 
-    const nearInt = state.mode === 'play' ? window.findNearestSeqInteract(state) : null;
-    document.getElementById('actOverride')?.classList.toggle('highlight-ready', !!nearInt);
-    document.getElementById('actDash')?.classList.toggle('cooldown', p.dashCooldown > 0);
-    document.getElementById('actAegis')?.classList.toggle('cooldown', p.aegisCooldown > 0);
-    document.getElementById('actOverdrive')?.classList.toggle('cooldown', p.overdriveCooldown > 0 || p.energy < 40);
+    const nearReady = state.mode === 'play' && !!window.findNearestSeqInteract(state);
+    if (hudCache.nearReady !== nearReady) {
+      hudCache.nearReady = nearReady;
+      hudEls.actOverride?.classList.toggle('highlight-ready', nearReady);
+    }
+    const dashCd = p.dashCooldown > 0;
+    if (hudCache.dashCd !== dashCd) {
+      hudCache.dashCd = dashCd;
+      hudEls.actDash?.classList.toggle('cooldown', dashCd);
+    }
+    const aegisCd = p.aegisCooldown > 0;
+    if (hudCache.aegisCd !== aegisCd) {
+      hudCache.aegisCd = aegisCd;
+      hudEls.actAegis?.classList.toggle('cooldown', aegisCd);
+    }
+    const odCd = p.overdriveCooldown > 0 || p.energy < 40;
+    if (hudCache.odCd !== odCd) {
+      hudCache.odCd = odCd;
+      hudEls.actOverdrive?.classList.toggle('cooldown', odCd);
+    }
   }
 
   window.initStriderControls(() => state);

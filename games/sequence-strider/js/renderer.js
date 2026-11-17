@@ -118,8 +118,9 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
     ctx.restore();
   }
 
-  // Pickups
+  // Pickups (viewport-culled)
   for (const o of state.orbs) {
+    if (o.x + 24 < camX || o.x - 24 > camX + viewW || o.y + 24 < camY || o.y - 24 > camY + viewH) continue;
     ctx.save();
     ctx.translate(o.x, o.y + Math.sin(time * 5 + o.id) * 3);
     ctx.fillStyle = o.kind === 'hp' ? '#38bdf8' : '#c084fc';
@@ -132,8 +133,9 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
     ctx.restore();
   }
 
-  // Drones
+  // Drones (viewport-culled)
   for (const d of state.drones) {
+    if (d.x + 80 < camX || d.x - 80 > camX + viewW || d.y + 80 < camY || d.y - 80 > camY + viewH) continue;
     ctx.save();
     ctx.translate(d.x, d.y);
     ctx.fillStyle = d.hitFlash > 0 ? '#ffffff'
@@ -172,15 +174,17 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
     ctx.restore();
   }
 
-  // Projectiles
+  // Projectiles (viewport-culled)
+  ctx.fillStyle = '#67e8f9';
   for (const b of state.projectiles) {
-    ctx.fillStyle = '#67e8f9';
+    if (b.x + 10 < camX || b.x - 10 > camX + viewW || b.y + 10 < camY || b.y - 10 > camY + viewH) continue;
     ctx.beginPath();
     ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
     ctx.fill();
   }
+  ctx.fillStyle = '#fb7185';
   for (const ep of state.enemyProjectiles) {
-    ctx.fillStyle = '#fb7185';
+    if (ep.x + 12 < camX || ep.x - 12 > camX + viewW || ep.y + 12 < camY || ep.y - 12 > camY + viewH) continue;
     ctx.beginPath();
     ctx.arc(ep.x, ep.y, 6, 0, Math.PI * 2);
     ctx.fill();
@@ -211,25 +215,26 @@ window.renderStriderFrame = function(ctx, viewW, viewH, state) {
   ctx.fillRect(p.radius - 2, -3, 14, 6);
   ctx.restore();
 
-  // Particles
+  // Particles (viewport-culled)
   for (const pt of state.particles) {
+    if (pt.x + 16 < camX || pt.x - 16 > camX + viewW || pt.y + 16 < camY || pt.y - 16 > camY + viewH) continue;
     ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
     ctx.fillStyle = pt.color;
     ctx.fillRect(pt.x - pt.size / 2, pt.y - pt.size / 2, pt.size, pt.size);
   }
   ctx.globalAlpha = 1;
 
-  // Floating text
+  // Floating text (viewport-culled)
+  ctx.direction = 'rtl';
+  ctx.font = '900 13px Tahoma, sans-serif';
+  ctx.textAlign = 'center';
   for (const ft of state.floatingTexts) {
-    ctx.save();
+    if (ft.x + 140 < camX || ft.x - 140 > camX + viewW || ft.y + 40 < camY || ft.y - 40 > camY + viewH) continue;
     ctx.globalAlpha = Math.min(1, ft.life / 0.3);
-    ctx.direction = 'rtl';
     ctx.fillStyle = ft.color;
-    ctx.font = '900 13px Tahoma, sans-serif';
-    ctx.textAlign = 'center';
     ctx.fillText(ft.text, ft.x, ft.y);
-    ctx.restore();
   }
+  ctx.globalAlpha = 1;
 
   ctx.restore();
 

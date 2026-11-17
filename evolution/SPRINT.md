@@ -48,10 +48,18 @@
   - 6 PlayStation abilities (`✕` Double-Jump Thruster, `◯` Phase Dash, `▢` Seal Override / Execute, `△` Bio-Aegis `e^{ln x}=x`, `R2` Derivative Beam `u'/u`, `L2` Growth-Comparison Shockwave `e^x ≫ xⁿ`) + 3-Phase Asymptote Containment Boss (`مُفاعل المقاربات الأعظم`).
   - Registered in `games.json` with bespoke exponential/logarithmic symmetry SVG tile in `js/hub.js`.
 
-### [NEXT — Cycle 008 Omega (17:00 UTC)] Milestone 2.5: Deep Polish for Logarithm Reactor & Multi-Game Audit
-* Refine `logarithm-reactor` elevator & Phase 3 shield mechanics, add acid-pool splash/sizzle Web Audio synthesis, expand National Exam `ln/exp` parameter-discussion questions, and audit 60FPS performance across all 5 Gold-Standard curriculum titles.
+### [COMPLETED — Cycle 008 Omega (17:00 UTC)] Milestone 2.5: Deep Polish for Logarithm Reactor & Multi-Game Audit
+* **Logarithm Reactor v1.1.0 (`games/logarithm-reactor/`, 4,678 LOC)**:
+  - Fixed `override` bullet-time elevator drift by decoupling `state.worldTime += dt` from `state.time`, tuned twin bio-elevator range (`y: 490..1470`) with terminal dwell plateaus, dynamic `▲/▼/●` track indicators, direction-reversal lock, and hydraulic Web Audio cues (`playElevatorBoard`, `playElevatorDock`).
+  - Added full `ln(x ≤ 0)` acid-pool physics (viscous drag, upward caustic splash burst, continuous bubble sizzle particles, `playAcidSplash` / `playAcidSizzle` Web Audio synthesis, thermal bounce with jump recovery, and safe neutralization under `△` Equivalence Aegis `e^{ln x} = x`) plus animated wave surfaces in `js/renderer.js`.
+  - Upgraded the Phase 3 **Asymptote Containment Boss (`مُفاعل المقاربات الأعظم`)** with a rotating **Equivalence Root Window `α = 1`** (`shieldAngle`), projectile piercing vs solid-arc deflection (`playShieldDeflect`), shield recharge & stun windows, radial separation repulsion, and twin orthogonal Cross-Asymptote Beams.
+  - Expanded `js/curriculum.js` from 32 to **39 Moroccan 2BAC PC questions** (+7 questions covering parameter discussions $e^x = mx$, $x\ln x = m$, $\ln^2 x - (m+1)\ln x + m \le 0$, $1-\frac{1}{x} \le \ln x \le x-1$, base-$a$ flip $(1/2)^x > 8$, $x e^{-x}$ inflection point, and $F(0)=0$ primitive) with **13 live `graphSpec` plots** (`log_ineq_band`, `exp_param_tangent`, `ln_param_roots`).
+* **Multi-Game 60FPS Audit (All 5 Gold-Standard Titles)**:
+  - Eliminated full-screen GPU `backdrop-filter: blur(...)` overhead over the 60FPS canvas in `games/limit-abyss/css/style.css`.
+  - Cached `coneGrad` and `darkGrad` radial gradients in `games/asymptote-asylum/js/renderer.js` (zero per-frame gradient allocations).
+  - Added full X+Y viewport culling across orbs, drones, projectiles, particles, and floating texts in `sequence-strider`, `complex-plane-duel`, `asymptote-asylum`, and `logarithm-reactor`, cached `affixStr` formatting in `complex-plane-duel`, and cached HUD element refs & boolean states across all `syncHUD()` loops.
 
-### [UPCOMING — Cycle 009 Alpha (05:00 UTC)] Milestone 2.6: Launch Game 8 — `integral-forge` (محرقة التكامل والمعادلات — Topics 79–90)
+### [NEXT — Cycle 009 Alpha (05:00 UTC)] Milestone 2.6: Launch Game 8 — `integral-forge` (محرقة التكامل والمعادلات — Topics 79–90)
 * **Genre**: 2D Heavy Mech Siege & Area Slicer (`2600 × 1700` industrial foundry).
 * **Curriculum**: **Topics 79–90 (الدوال الأصلية، التكامل بالأجزاء، حساب المساحات والحجوم، والمعادلات التفاضلية)**.
 * **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 Foundry Seals + Differential Reactor Boss.

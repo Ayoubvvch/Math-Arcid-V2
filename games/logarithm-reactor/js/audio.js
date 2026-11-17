@@ -154,6 +154,37 @@ window.ReactorAudio = {
     this.tone(880, 1320, 0.28, 'sine', 0.14, 0.16);
   },
 
+  playAcidSplash() {
+    this.init();
+    this.noise(0.24, 980, 1.1, 0.16, 0);
+    this.tone(290, 110, 0.16, 'sine', 0.12, 0);
+    this.tone(380, 740, 0.12, 'triangle', 0.08, 0.05);
+  },
+
+  playAcidSizzle() {
+    this.init();
+    this.noise(0.19, 2400, 1.8, 0.11, 0);
+    const popF = 520 + Math.random() * 440;
+    this.tone(popF, popF * 1.45, 0.075, 'sine', 0.06, 0.02);
+  },
+
+  playElevatorBoard() {
+    this.init();
+    this.tone(240, 360, 0.11, 'triangle', 0.075, 0);
+    this.tone(360, 480, 0.12, 'sine', 0.06, 0.05);
+  },
+
+  playElevatorDock() {
+    this.init();
+    this.tone(175, 115, 0.14, 'sine', 0.065, 0);
+    this.noise(0.08, 620, 2.0, 0.04, 0);
+  },
+
+  playShieldDeflect() {
+    this.init();
+    this.tone(720, 1140, 0.09, 'triangle', 0.085, 0);
+  },
+
   playBeamCharge() {
     this.init();
     this.tone(240, 620, 0.48, 'sine', 0.12);
