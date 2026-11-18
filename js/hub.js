@@ -196,6 +196,43 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'integral-forge') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="ifGlow" cx="50%" cy="52%" r="58%">
+            <stop offset="0%" stop-color="#f97316" stop-opacity="0.36" />
+            <stop offset="55%" stop-color="#f59e0b" stop-opacity="0.14" />
+            <stop offset="100%" stop-color="#090605" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#090605" />
+        <circle cx="160" cy="100" r="92" fill="url(#ifGlow)" />
+        <!-- Axes -->
+        <line x1="36" y1="122" x2="284" y2="122" stroke="#ffffff" stroke-opacity="0.26" stroke-width="1.2" />
+        <line x1="78" y1="24" x2="78" y2="168" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1.2" />
+        <!-- Shaded Definite Integral Area & Revolution Disc -->
+        <path d="M 105 122 L 105 90 Q 150 42, 215 62 L 215 122 Z" fill="#f97316" fill-opacity="0.28" />
+        <path d="M 105 122 L 105 154 Q 150 176, 215 158 L 215 122 Z" fill="#38bdf8" fill-opacity="0.14" />
+        <!-- Boundary Verticals x=a, x=b -->
+        <line x1="105" y1="56" x2="105" y2="156" stroke="#fde047" stroke-dasharray="4 3" stroke-width="1.3" />
+        <line x1="215" y1="50" x2="215" y2="160" stroke="#fde047" stroke-dasharray="4 3" stroke-width="1.3" />
+        <!-- Revolution Cross-Section Ellipse -->
+        <ellipse cx="215" cy="122" rx="10" ry="38" fill="none" stroke="#38bdf8" stroke-width="2" />
+        <ellipse cx="160" cy="122" rx="8" ry="44" fill="none" stroke="#fbbf24" stroke-opacity="0.55" stroke-dasharray="3 3" stroke-width="1.4" />
+        <!-- Curves f(x) and Harmonic ODE Wave -->
+        <path d="M 48 106 Q 145 24, 268 78" fill="none" stroke="#fb923c" stroke-width="2.8" />
+        <path d="M 48 136 Q 90 104, 130 136 T 212 136 T 276 122" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-opacity="0.85" />
+        <!-- Heavy Integral Glyph -->
+        <text x="52" y="70" fill="#fde047" font-family="Cambria Math, serif" font-weight="900" font-size="36">∫</text>
+        <text x="160" y="34" text-anchor="middle" fill="#fed7aa" font-family="JetBrains Mono, monospace" font-weight="800" font-size="10.5">V = π ∫ (f(x))² dx  |  y'' + ω²y = 0</text>
+        <text x="105" y="170" text-anchor="middle" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">a</text>
+        <text x="215" y="170" text-anchor="middle" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">b</text>
+        <text x="160" y="188" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">∫_a^b f(x)dx &amp; EDO | (79..90)</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />

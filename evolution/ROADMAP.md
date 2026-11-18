@@ -23,7 +23,7 @@
 | 5 | `complex-plane-duel` | **Argand Citadel — قلعة أرغاند العقدية** | 2D Orbital Sector Raid & Geometry | **Topics 51–64** (الأعداد العقدية ℂ) | **LIVE (Gold Standard v2.0)** |
 | 6 | `limit-abyss` | **Limit Abyss — هاوية النهايات والاتصال** | 2D Deep-Trench Subnautic Survival | **Topics 1–22** (النهايات والاتصال و TVI و $f^{-1}$) | **LIVE (Gold Standard)** |
 | 7 | `logarithm-reactor` | **Logarithm Reactor — مفاعل اللوغاريتم والأسي** | 2D Bio-Cyber Metroidvania Lab | **Topics 65–78** ($\ln x$ و $e^x$ والمعادلات) | **LIVE (Gold Standard)** |
-| 8 | `integral-forge` | **Integral Forge — محرقة التكامل والمعادلات** | 2D Heavy Mech Siege & Area Slicer | **Topics 79–90** (الأصلية، التكامل والمعادلات التفاضلية) | **PLANNED (Cycle 009)** |
+| 8 | `integral-forge` | **Integral Forge — محرقة التكامل والمعادلات** | 2D Heavy Mech Siege & Area Slicer | **Topics 79–90** (الأصلية، التكامل والمعادلات التفاضلية) | **LIVE (Gold Standard)** |
 | 9 | `vector-odyssey` | **Vector Odyssey — أوديسا الفضاء المتجهي** | 2.5D Starfighter Trench & Sphere Raid | **Topics 91–102** (الهندسة الفضائية والفلكة $\mathbb{R}^3$) | **PLANNED (Cycle 011)** |
 | 10 | `quantum-casino` | **Quantum Casino — كازينو الاحتمالات الكمومي** | 2D Tactical Heist & Bullet-Time Roguelite | **Topics 103–114** (التعداد والاحتمالات وقانون برنولي) | **PLANNED (Cycle 013)** |
 

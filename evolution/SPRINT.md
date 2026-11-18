@@ -59,13 +59,17 @@
   - Cached `coneGrad` and `darkGrad` radial gradients in `games/asymptote-asylum/js/renderer.js` (zero per-frame gradient allocations).
   - Added full X+Y viewport culling across orbs, drones, projectiles, particles, and floating texts in `sequence-strider`, `complex-plane-duel`, `asymptote-asylum`, and `logarithm-reactor`, cached `affixStr` formatting in `complex-plane-duel`, and cached HUD element refs & boolean states across all `syncHUD()` loops.
 
-### [NEXT — Cycle 009 Alpha (05:00 UTC)] Milestone 2.6: Launch Game 8 — `integral-forge` (محرقة التكامل والمعادلات — Topics 79–90)
-* **Genre**: 2D Heavy Mech Siege & Area Slicer (`2600 × 1700` industrial foundry).
-* **Curriculum**: **Topics 79–90 (الدوال الأصلية، التكامل بالأجزاء، حساب المساحات والحجوم، والمعادلات التفاضلية)**.
-* **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 Foundry Seals + Differential Reactor Boss.
+### [COMPLETED — Cycle 009 Alpha (05:00 UTC)] Milestone 2.6: Launch Game 8 — `integral-forge` (محرقة التكامل والمعادلات — Topics 79–90)
+* Built **محرقة التكامل والمعادلات — Integral Forge v1.0.0** (**4,485 LOC** across 6 modules + Molten Foundry CSS):
+  - 2D Heavy Mech Siege & Area Slicer (`2600 × 1700` molten foundry) starring `TITAN-∫`, twin magnetic gantry cranes (`y: 490..1410` with terminal dwell), one-way catwalks, molten slag cooling channels with splash/sizzle physics, and 4 Foundry Wings (`α, β, γ, δ`).
+  - Complete **Topics 79–90 (الدوال الأصلية، التكامل المحدود، المكاملة بالأجزاء ALPES، التفكيك و Φ(x)، حساب المساحات والحجوم، والمعادلات التفاضلية من الرتبة 1 و 2)**:
+    - **30 Moroccan 2BAC PC National Exam questions** with `setBidiSafeMath` and Fisher-Yates option shuffling (`pickForgeChallenge`).
+    - **10 Interactive Canvas `graphSpec` plots** (`primitive_shift`, `chasles_split`, `riemann_integral_sign`, `ipp_area_ln`, `integral_phi_deriv`, `area_below_ox`, `area_between_curves`, `volume_revolution_ox`, `ode_first_order`, `ode_second_harmonic`).
+  - 3 Foundry Enemy Archetypes (`drone_riemann`, `turret_flux`, `golem_ode` with Stagger/Execute), 6 PlayStation Mech Abilities (`✕` Magnetic Double-Jump, `◯` Area Slicer Cleave `|f-g|`, `▢` Seal Override / Golem Execute, `△` Chasles Thermal Aegis `∫_a^c + ∫_c^b`, `R2` Riemann Plasma Cannon, `L2` Volume of Revolution Shockwave `π∫f² dx`), and the 3-Phase **Differential Colossus Boss (`عملاق المعادلات التفاضلية`)** featuring a rotating Characteristic Root Window `r₀` in Phase 3.
+  - Registered in `games.json` with bespoke area-under-curve, solid-of-revolution & harmonic-wave SVG artwork in `js/hub.js`.
 
-### [UPCOMING — Cycle 010 Omega (17:00 UTC)] Milestone 2.7: Deep Polish for Integral Forge
-* Refine integration-by-parts & volume-revolution `graphSpec` visuals, boss shield mechanics, and DualSense feedback in `games/integral-forge/`.
+### [NEXT — Cycle 010 Omega (17:00 UTC)] Milestone 2.7: Deep Polish for Integral Forge
+* Refine integration-by-parts & volume-revolution `graphSpec` visuals, boss shield & slag/crane cues, expand parameter-integral & ODE National Exam questions, DualSense feedback & 60FPS audit in `games/integral-forge/`.
 
 ### [UPCOMING — Cycle 011 Alpha (05:00 UTC)] Milestone 2.8: Launch Game 9 — `vector-odyssey` (أوديسا الفضاء المتجهي — Topics 91–102)
 * **Genre**: 2.5D Starfighter Trench & Sphere Raid (`2600 × 1700` 3D-projected space sector).

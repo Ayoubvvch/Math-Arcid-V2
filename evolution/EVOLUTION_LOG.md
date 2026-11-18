@@ -3,6 +3,21 @@
 
 ---
 
+### [Cycle 009-ALPHA] 2026-11-18 05:08 UTC | Milestone: Integral Forge (محرقة التكامل والمعادلات) Gold-Standard Launch
+* **Phase**: Alpha (New 6-Module Game Construction >= 2,800 LOC)
+* **Target**: `games/integral-forge/` (Topics 79–90: الدوال الأصلية، التكامل بالأجزاء، المساحات والحجوم، والمعادلات التفاضلية)
+* **Changes Delivered**:
+  - Engineered **محرقة التكامل والمعادلات — Integral Forge v1.0.0** (**4,485 Lines of Code** across 6 modules + Molten Foundry CSS):
+    - Full-Screen 100vw × 100dvh 60FPS **2D Heavy Mech Siege & Area Slicer** (`2600 × 1700` molten foundry) with `TITAN-∫`, twin magnetic gantry cranes (`y: 490..1410` with terminal dwell & `override` bullet-time freeze), one-way foundry catwalks, molten slag cooling channels with splash/sizzle physics & Aegis neutralization, and 4 Containment Wings (`α, β, γ, δ`).
+    - Complete **Topics 79–90 Curriculum Engine** (`js/curriculum.js`): **30 Moroccan 2BAC PC National Exam questions** covering every topic from `79` to `90`, `setBidiSafeMath` isolation, and Fisher-Yates shuffled options (`pickForgeChallenge`).
+    - **10 Interactive HTML5 Canvas `graphSpec` Plotters** (`primitive_shift`, `chasles_split`, `riemann_integral_sign`, `ipp_area_ln`, `integral_phi_deriv`, `area_below_ox`, `area_between_curves`, `volume_revolution_ox`, `ode_first_order`, `ode_second_harmonic`).
+    - 3 Foundry Enemy Archetypes (`drone_riemann`, `turret_flux`, `golem_ode` with Stagger/Execute `[▢ / E]`), 6 PlayStation Mech Abilities (`✕` Magnetic Double-Jump, `◯` Area Slicer Cleave `|f-g|` destroying bolts & slicing foes, `▢` Seal Override / Golem Execute, `△` Chasles Thermal Aegis `∫_a^c + ∫_c^b`, `R2` Riemann Plasma Cannon, `L2` Volume of Revolution Shockwave `π∫f² dx`), and the 3-Phase **Differential Colossus Boss (`عملاق المعادلات التفاضلية`)** with rotating Characteristic Root Window `r₀` in Phase 3.
+    - Full DualSense/DualShock gameplay + modal polling + haptics (`js/controls.js`), procedural Web Audio forge synthesizer (`js/audio.js`), zero per-frame DOM writes in `js/game.js`, bespoke integral/revolution/ODE SVG tile in `js/hub.js`, and registration in `games.json`.
+* **Verification**: All 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`) + Node physics, Area Slicer, 3-Phase Boss, 30-question curriculum & 10-graphSpec simulation passed 100%.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 008-OMEGA] 2026-11-17 17:15 UTC | Milestone: Logarithm Reactor v1.1.0 Deep Polish & 5-Game 60FPS Audit
 * **Phase**: Omega (Deep Gameplay, Boss Patterns, Curriculum Expansion, Audio Synthesis & 60FPS Audit)
 * **Targets**: `games/logarithm-reactor/` (primary) + 60FPS performance audit across `limit-abyss`, `asymptote-asylum`, `sequence-strider`, `complex-plane-duel`
