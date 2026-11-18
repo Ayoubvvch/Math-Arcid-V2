@@ -186,6 +186,7 @@
       state.stats.questionsCorrect++;
       btn.classList.add('opt-correct');
       window.ForgeAudio?.playGateBreak?.();
+      window.triggerForgeHaptic?.(55, 0.25, 0.45);
       overrideResolveTimer = setTimeout(() => {
         overrideResolveTimer = null;
         resolveForgeOverride(false);

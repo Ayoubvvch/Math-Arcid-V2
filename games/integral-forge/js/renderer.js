@@ -624,8 +624,20 @@ window.drawForgeGraph = function(canvas, graphSpec) {
     ctx.fillStyle = '#fde047'; ctx.fillText('∫₀² (x-1)dx = 0 | A = 1', toX(1.2), toY(2.0));
 
   } else if (type === 'ipp_area_ln') {
-    // Shaded area under ln(x) on [1, e]
-    ctx.fillStyle = 'rgba(249, 115, 22, 0.30)';
+    // Geometric Integration by Parts: rectangle [0,e]x[0,1] = e minus complementary ∫₀¹ e^y dy = (e-1)
+    ctx.strokeStyle = 'rgba(253, 224, 71, 0.45)';
+    ctx.setLineDash([4, 4]);
+    ctx.strokeRect(ox, toY(1), toX(Math.E) - ox, oy - toY(1));
+    ctx.setLineDash([]);
+
+    // Complementary area ∫₀¹ e^y dy = e - 1
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(ox, toY(1)); ctx.lineTo(toX(Math.E), toY(1));
+    for (let x = Math.E; x >= 1; x -= 0.05) ctx.lineTo(toX(x), toY(Math.log(x)));
+    ctx.closePath(); ctx.fill();
+
+    // Target area ∫₁ᵉ ln(x)dx = 1
+    ctx.fillStyle = 'rgba(249, 115, 22, 0.34)';
     ctx.beginPath(); ctx.moveTo(toX(1), oy);
     for (let x = 1; x <= Math.E; x += 0.05) ctx.lineTo(toX(x), toY(Math.log(x)));
     ctx.lineTo(toX(Math.E), oy); ctx.closePath(); ctx.fill();
@@ -638,10 +650,11 @@ window.drawForgeGraph = function(canvas, graphSpec) {
       if (x === 0.16) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.stroke();
+    ctx.fillStyle = '#bae6fd'; ctx.fillText('e - 1', toX(0.35), toY(0.55));
     ctx.fillStyle = '#fde047';
     ctx.fillText('1', toX(1) - 3, oy + 12);
     ctx.fillText('e', toX(Math.E) - 3, oy + 12);
-    ctx.fillText('∫₁ᵉ ln(x)dx = 1', toX(1.4), toY(1.6));
+    ctx.fillText('∫₁ᵉ ln(x)dx = e - (e - 1) = 1', toX(0.75), toY(1.8));
 
   } else if (type === 'integral_phi_deriv') {
     // Phi'(x) = (x - 2) * e^(-x) scaled for clarity, crossing 0 at x=2
@@ -660,7 +673,7 @@ window.drawForgeGraph = function(canvas, graphSpec) {
     ctx.beginPath(); ctx.arc(toX(2), oy, 4.5, 0, Math.PI * 2); ctx.fill();
     ctx.fillText('x = 2 (Φ\'=0)', toX(2.15), oy - 8);
     ctx.fillStyle = '#fca5a5'; ctx.fillText('Φ\' < 0', toX(0.35), toY(-1.2));
-    ctx.fillStyle = '#6ee7b7'; ctx.fillText('Φ\' > 0 (دنيا)', toX(2.8), toY(0.8));
+    ctx.fillStyle = '#6ee7b7'; ctx.fillText('Φ\' > 0 (min)', toX(2.8), toY(0.8));
 
   } else if (type === 'area_below_ox') {
     // f(x) = (x^2 - 4) * 0.45 below Ox on [-2, 2]
@@ -708,9 +721,9 @@ window.drawForgeGraph = function(canvas, graphSpec) {
     ctx.fillStyle = '#fde047'; ctx.fillText('A = ∫ (f(x)-x)dx', toX(1.35), toY(1.8));
 
   } else if (type === 'volume_revolution_ox') {
-    // Solid of revolution of y = e^x on [0, 1] around Ox
+    // Solid of revolution of y = e^x on [0, 1] around Ox with 3D sliced discs
     const ys = 0.65;
-    ctx.fillStyle = 'rgba(249, 115, 22, 0.24)';
+    ctx.fillStyle = 'rgba(249, 115, 22, 0.22)';
     ctx.beginPath();
     for (let x = 0; x <= 1.5; x += 0.05) {
       const px = toX(x), py = toY(Math.exp(x * 0.7) * ys);
@@ -721,6 +734,19 @@ window.drawForgeGraph = function(canvas, graphSpec) {
     }
     ctx.closePath(); ctx.fill();
 
+    // 3 cross-section disc slices illustrating dV = π·(f(x))² dx
+    for (const sx of [0.45, 0.98, 1.5]) {
+      const rx = 7;
+      const ry = Math.abs(toY(Math.exp(sx * 0.7) * ys) - oy);
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
+      ctx.strokeStyle = sx === 1.5 ? '#fde047' : 'rgba(56, 189, 248, 0.75)';
+      ctx.lineWidth = sx === 1.5 ? 2.0 : 1.3;
+      ctx.beginPath(); ctx.ellipse(toX(sx), oy, rx, ry, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    }
+    // Radius indicator on middle disc
+    ctx.strokeStyle = '#38bdf8';
+    ctx.beginPath(); ctx.moveTo(toX(0.98), oy); ctx.lineTo(toX(0.98), toY(Math.exp(0.98 * 0.7) * ys)); ctx.stroke();
+
     ctx.strokeStyle = '#fb923c';
     ctx.lineWidth = 2.3;
     ctx.beginPath();
@@ -729,7 +755,6 @@ window.drawForgeGraph = function(canvas, graphSpec) {
       if (x === -0.5) ctx.moveTo(px, py); else ctx.lineTo(px, py);
     }
     ctx.stroke();
-    // Symmetrical lower envelope
     ctx.setLineDash([4, 4]);
     ctx.beginPath();
     for (let x = -0.5; x <= 1.8; x += 0.05) {
@@ -738,11 +763,7 @@ window.drawForgeGraph = function(canvas, graphSpec) {
     }
     ctx.stroke();
     ctx.setLineDash([]);
-    // End disc ellipse
-    const rEnd = Math.abs(toY(Math.exp(1.5 * 0.7) * ys) - oy);
-    ctx.strokeStyle = '#fde047';
-    ctx.beginPath(); ctx.ellipse(toX(1.5), oy, 8, rEnd, 0, 0, Math.PI * 2); ctx.stroke();
-    ctx.fillStyle = '#fed7aa'; ctx.fillText('V = π ∫ (f(x))² dx', toX(1.8), toY(2.1));
+    ctx.fillStyle = '#fed7aa'; ctx.fillText('V = π ∫ (f(x))² dx', toX(1.65), toY(2.1));
 
   } else if (type === 'ode_first_order') {
     // y = 5 e^(-3x) scaled cleanly
@@ -774,6 +795,77 @@ window.drawForgeGraph = function(canvas, graphSpec) {
     ctx.beginPath(); ctx.arc(ox, toY(fn(0)), 4.5, 0, Math.PI * 2); ctx.fill();
     ctx.fillText('y(0) = 2', ox + 8, toY(1.3));
     ctx.fillStyle = '#bae6fd'; ctx.fillText('y\'\' + 4y = 0 (Δ < 0)', toX(1.3), toY(2.2));
+
+  } else if (type === 'ipp_x_exp_area') {
+    // f(x) = x * e^(-x) on [0, alpha] magnified by 4.5x for visual clarity
+    const ym = 4.5;
+    const alpha = 3.1;
+    ctx.fillStyle = 'rgba(245, 158, 11, 0.28)';
+    ctx.beginPath(); ctx.moveTo(ox, oy);
+    for (let x = 0; x <= alpha; x += 0.06) ctx.lineTo(toX(x), toY(x * Math.exp(-x) * ym));
+    ctx.lineTo(toX(alpha), oy); ctx.closePath(); ctx.fill();
+
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    for (let x = 0; x <= 4.8; x += 0.06) {
+      const px = toX(x), py = toY(x * Math.exp(-x) * ym);
+      if (x === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(toX(alpha), oy); ctx.lineTo(toX(alpha), toY(alpha * Math.exp(-alpha) * ym)); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#38bdf8'; ctx.fillText('α', toX(alpha) - 3, oy + 12);
+    ctx.fillStyle = '#fde047'; ctx.fillText('lim I(α) = 1 (x·e⁻ˣ)', toX(1.1), toY(2.1));
+
+  } else if (type === 'volume_cone_disc') {
+    // Rotating segment y = 2x on [0, 2] scaled vertically by 0.55 around (Ox)
+    const ys = 0.55;
+    ctx.fillStyle = 'rgba(56, 189, 248, 0.20)';
+    ctx.beginPath();
+    ctx.moveTo(ox, oy);
+    ctx.lineTo(toX(2), toY(4 * ys));
+    ctx.lineTo(toX(2), toY(-4 * ys));
+    ctx.closePath(); ctx.fill();
+
+    for (const sx of [0.8, 1.4, 2.0]) {
+      const ry = Math.abs(toY(2 * sx * ys) - oy);
+      ctx.strokeStyle = sx === 2.0 ? '#fde047' : 'rgba(251, 146, 60, 0.72)';
+      ctx.lineWidth = sx === 2.0 ? 2.0 : 1.3;
+      ctx.beginPath(); ctx.ellipse(toX(sx), oy, 6, ry, 0, 0, Math.PI * 2); ctx.stroke();
+    }
+    ctx.strokeStyle = '#fb923c';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath(); ctx.moveTo(ox, oy); ctx.lineTo(toX(2.4), toY(4.8 * ys)); ctx.stroke();
+    ctx.fillStyle = '#fde047'; ctx.fillText('y = 2x , [0,2]', toX(2.2), toY(2.3));
+    ctx.fillStyle = '#bae6fd'; ctx.fillText('V = (32π / 3) u.v', toX(1.3), toY(-1.8));
+
+  } else if (type === 'ode_damped_pos_disc') {
+    // Double root envelope (Ax + B)e^(2x) vs critical Δ=0 curve
+    const fnCrit = x => (1 + 2 * x) * Math.exp(-x * 0.9) * 1.1;
+    const fnExp = x => (Math.exp(-0.5 * x) + 0.6 * Math.exp(-1.6 * x));
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+    ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    for (let x = -0.3; x <= 3.8; x += 0.06) {
+      const px = toX(x), py = toY(fnExp(x));
+      if (x === -0.3) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    ctx.strokeStyle = '#ef4444';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    for (let x = -0.3; x <= 3.8; x += 0.06) {
+      const px = toX(x), py = toY(fnCrit(x));
+      if (x === -0.3) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+    ctx.fillStyle = '#fde047'; ctx.fillText('Δ = 0 ⟹ (Ax+B)·e^{r₀x}', toX(0.9), toY(2.1));
   }
 };
 

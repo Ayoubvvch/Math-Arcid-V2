@@ -68,10 +68,13 @@
   - 3 Foundry Enemy Archetypes (`drone_riemann`, `turret_flux`, `golem_ode` with Stagger/Execute), 6 PlayStation Mech Abilities (`✕` Magnetic Double-Jump, `◯` Area Slicer Cleave `|f-g|`, `▢` Seal Override / Golem Execute, `△` Chasles Thermal Aegis `∫_a^c + ∫_c^b`, `R2` Riemann Plasma Cannon, `L2` Volume of Revolution Shockwave `π∫f² dx`), and the 3-Phase **Differential Colossus Boss (`عملاق المعادلات التفاضلية`)** featuring a rotating Characteristic Root Window `r₀` in Phase 3.
   - Registered in `games.json` with bespoke area-under-curve, solid-of-revolution & harmonic-wave SVG artwork in `js/hub.js`.
 
-### [NEXT — Cycle 010 Omega (17:00 UTC)] Milestone 2.7: Deep Polish for Integral Forge
-* Refine integration-by-parts & volume-revolution `graphSpec` visuals, boss shield & slag/crane cues, expand parameter-integral & ODE National Exam questions, DualSense feedback & 60FPS audit in `games/integral-forge/`.
+### [COMPLETED — Cycle 010 Omega (17:00 UTC)] Milestone 2.7: Deep Polish for Integral Forge
+* **Integral Forge v1.1.0 (`games/integral-forge/`, 4,722 LOC)**:
+  - Upgraded `js/audio.js` with `playCraneDock()` hydraulic piston latch and `playBossPhaseShift()` foundry escalation synth; wired slag vaporization for enemy bolts, harmonic $y'' + \omega^2 y$ motion on `golem_ode`, alternating Phase 2/3 Boss spiral barrages, `L2` Volume Shockwave clearing enemy projectiles (`420px`), and DualSense confirmation haptics on correct Override answers.
+  - Upgraded `ipp_area_ln` (geometric bounding rectangle $e - (e - 1) = 1$) and `volume_revolution_ox` (3D-projected sliced cross-section discs $dV = \pi f(x)^2 dx$) in `js/renderer.js`, and fixed pure math canvas label direction in `integral_phi_deriv`.
+  - Expanded `js/curriculum.js` from 30 to **37 Moroccan 2BAC PC National Exam questions** (+7 covering sequence-integral bounding $0 \le I_n \le \frac{1}{n+1}$, parameter IPP $\int_0^\alpha x e^{-x} dx$, parameter $\ln x / x$ integral, cone volume & $u.v = \|\vec{i}\|^3$ unit trap, RC first-order relaxation ODE, and 2nd-order discriminant parameter $y'' - 4y' + my = 0$) with **13 live `graphSpec` plots** (`ipp_x_exp_area`, `volume_cone_disc`, `ode_damped_pos_disc`).
 
-### [UPCOMING — Cycle 011 Alpha (05:00 UTC)] Milestone 2.8: Launch Game 9 — `vector-odyssey` (أوديسا الفضاء المتجهي — Topics 91–102)
+### [NEXT — Cycle 011 Alpha (05:00 UTC)] Milestone 2.8: Launch Game 9 — `vector-odyssey` (أوديسا الفضاء المتجهي — Topics 91–102)
 * **Genre**: 2.5D Starfighter Trench & Sphere Raid (`2600 × 1700` 3D-projected space sector).
 * **Curriculum**: **Topics 91–102 (الهندسة الفضائية، الجداء السلمي والمتجهي، المستقيم والمستوى والفلكة $\mathbb{R}^3$)**.
 * **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 Orbital Seals + Sphere Core Boss.

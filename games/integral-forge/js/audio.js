@@ -176,6 +176,19 @@ window.ForgeAudio = {
     this.tone(295, 415, 0.12, 'sine', 0.06, 0.04);
   },
 
+  playCraneDock() {
+    this.init();
+    this.tone(145, 92, 0.15, 'sine', 0.075, 0);
+    this.noise(0.08, 560, 2.1, 0.045, 0);
+  },
+
+  playBossPhaseShift() {
+    this.init();
+    this.tone(110, 220, 0.34, 'sawtooth', 0.13, 0);
+    this.tone(165, 330, 0.34, 'triangle', 0.1, 0.05);
+    this.noise(0.28, 520, 1.1, 0.12, 0);
+  },
+
   playShieldDeflect() {
     this.init();
     this.tone(760, 1220, 0.095, 'triangle', 0.09, 0);

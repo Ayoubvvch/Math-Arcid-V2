@@ -3,6 +3,19 @@
 
 ---
 
+### [Cycle 010-OMEGA] 2026-11-18 17:05 UTC | Milestone: Integral Forge v1.1.0 Deep Polish & Curriculum Expansion
+* **Phase**: Omega (Boss Patterns, GraphSpec Visuals, Curriculum Expansion, Audio & DualSense Polish)
+* **Target**: `games/integral-forge/` (Topics 79–90)
+* **Changes Delivered**:
+  - **Integral Forge v1.1.0 (`games/integral-forge/`, 4,722 LOC)**:
+    - Added `playCraneDock()` and `playBossPhaseShift()` procedural audio cues in `js/audio.js`; wired enemy-bolt vaporization in molten slag pools, harmonic $y'' + \omega^2 y$ motion on `golem_ode`, alternating Phase 2/3 Boss spiral barrages, `L2` Volume Shockwave projectile clearing (`420px`), and DualSense confirmation haptics on Override success.
+    - Refined `ipp_area_ln` (IPP bounding rectangle $e - (e-1) = 1$) and `volume_revolution_ox` (3D-sliced cylindrical cross-section discs $dV = \pi f(x)^2 dx$) in `js/renderer.js`, and standardized pure-math LTR canvas labels in `integral_phi_deriv`.
+    - Expanded `js/curriculum.js` from 30 to **37 Moroccan 2BAC PC National Exam questions** (+7 parameter-integral, sequence-integral squeeze, $u.v = \|\vec{i}\|^3$ unit-trap, RC ODE, and 2nd-order discriminant parameter questions) and upgraded `js/renderer.js` to **13 live `graphSpec` visualizers** (`ipp_x_exp_area`, `volume_cone_disc`, `ode_damped_pos_disc`).
+* **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/37-question/13-graphSpec verification passed 100%.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 009-ALPHA] 2026-11-18 05:08 UTC | Milestone: Integral Forge (محرقة التكامل والمعادلات) Gold-Standard Launch
 * **Phase**: Alpha (New 6-Module Game Construction >= 2,800 LOC)
 * **Target**: `games/integral-forge/` (Topics 79–90: الدوال الأصلية، التكامل بالأجزاء، المساحات والحجوم، والمعادلات التفاضلية)

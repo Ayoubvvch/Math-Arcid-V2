@@ -323,13 +323,14 @@ window.damageForgeEnemy = function(state, enemy, dmg, forceKill = false, ignoreS
   enemy.hitFlash = 0.14;
   window.spawnForgeParticles(state, enemy.x, enemy.y, 8, enemy.color || '#f59e0b', 190);
 
-  // Boss Phase Escalation: Phase 2 (<= 65%) -> Phase 3 (<= 30%)
+    // Boss Phase Escalation: Phase 2 (<= 65%) -> Phase 3 (<= 30%)
   if (enemy.kind === 'boss' && enemy.hp > 0) {
     const frac = enemy.hp / enemy.maxHp;
     if (enemy.phase === 1 && frac <= 0.65) {
       enemy.phase = 2;
       enemy.beamTimer = 1.0;
-      window.ForgeAudio?.playBeamCharge?.();
+      window.ForgeAudio?.playBossPhaseShift?.();
+      window.triggerForgeHaptic?.(135, 0.55, 0.8);
       window.setForgeBanner(state, '⚠ الطور 2: أشعة محدّدات التكامل (x = a, y = b)!', 3.8);
       window.addForgeFloatText(state, enemy.x, enemy.y - 60, 'الطور 2: حزم التكامل!', '#fb923c', 1.8);
     }
@@ -338,7 +339,8 @@ window.damageForgeEnemy = function(state, enemy, dmg, forceKill = false, ignoreS
       enemy.shieldActive = true;
       enemy.shieldHp = enemy.shieldMaxHp;
       enemy.shieldRechargeTimer = 8.5;
-      window.ForgeAudio?.playOverdrive?.();
+      window.ForgeAudio?.playBossPhaseShift?.();
+      window.triggerForgeHaptic?.(160, 0.65, 0.9);
       window.setForgeBanner(state, '🔥 الطور 3: درع المميز Δ=0 الدوّار! اصب نافذة r₀ أو استعمل [△] / [L2]!', 4.6);
       window.addForgeFloatText(state, enemy.x, enemy.y - 62, 'درع Δ=0 نشط — فجوة r₀ أو [△/L2]!', '#38bdf8', 2.2);
     }
@@ -529,6 +531,15 @@ window.performForgeOverdrive = function(state) {
   window.setForgeBanner(state, '⚡ صدمة حجم الدوران (π∫f² dx)!', 2.2);
   window.addForgeFloatText(state, p.x, p.y - 38, '⚡ π ∫ f² dx', '#fed7aa', 1.25);
 
+  // Clear nearby enemy projectiles inside the Volume of Revolution shockwave
+  for (let i = state.enemyProjectiles.length - 1; i >= 0; i--) {
+    const ep = state.enemyProjectiles[i];
+    if (Math.hypot(ep.x - p.x, ep.y - p.y) <= 420) {
+      window.spawnForgeParticles(state, ep.x, ep.y, 4, '#fb923c', 130);
+      state.enemyProjectiles.splice(i, 1);
+    }
+  }
+
   for (let i = state.enemies.length - 1; i >= 0; i--) {
     const e = state.enemies[i];
     if (Math.hypot(e.x - p.x, e.y - p.y) <= 420) {
@@ -595,7 +606,7 @@ window.updateForgeWorld = function(state, rawDt, moveVec, aimVec, holdingDown = 
       const newDock = wave <= -0.995 ? -1 : (wave >= 0.995 ? 1 : 0);
       if (newDock !== 0 && newDock !== plat.dockSide && state.mode === 'play') {
         if (Math.hypot(p.x - (plat.x + plat.w * 0.5), p.y - plat.y) < 620) {
-          window.ForgeAudio?.playUiTick?.();
+          window.ForgeAudio?.playCraneDock?.();
           window.spawnForgeParticles(state, plat.x + plat.w * 0.5, plat.y + 6, 5, '#fbbf24', 95);
         }
       }
@@ -814,13 +825,22 @@ window.updateForgeWorld = function(state, rawDt, moveVec, aimVec, holdingDown = 
     if (rm) state.projectiles.splice(i, 1);
   }
 
-  // Enemy Projectiles (absorbed by Chasles Shield!)
+  // Enemy Projectiles (absorbed by Chasles Shield or vaporized in Molten Slag!)
   for (let i = state.enemyProjectiles.length - 1; i >= 0; i--) {
     const ep = state.enemyProjectiles[i];
     ep.x += ep.vx * dt;
     ep.y += ep.vy * dt;
     ep.life -= dt;
     let rm = ep.life <= 0;
+    if (!rm && ep.y >= 1612) {
+      for (const pool of state.slagPools) {
+        if (ep.x >= pool.x && ep.x <= pool.x + pool.w) {
+          window.spawnForgeParticles(state, ep.x, pool.y, 4, '#fb923c', 100);
+          rm = true;
+          break;
+        }
+      }
+    }
     const distP = Math.hypot(ep.x - p.x, ep.y - p.y);
     if (!rm && p.aegisTimer > 0 && distP <= 56) {
       window.spawnForgeParticles(state, ep.x, ep.y, 5, '#38bdf8', 120);
@@ -892,8 +912,10 @@ window.updateForgeWorld = function(state, rawDt, moveVec, aimVec, holdingDown = 
         e.x = Math.max(80, Math.min(W - 80, e.x + Math.cos(baseAng) * spd * moveDir * dt));
         e.y = Math.max(130, Math.min(H - 110, e.y + Math.sin(baseAng) * spd * moveDir * dt));
       } else {
-        // Golem or Boss
-        const bob = e.kind === 'boss' && e.phase >= 2 ? Math.sin(e.animPhase * 0.7) * 55 * dt : 0;
+        // Golem or Boss harmonic y'' + ω²y oscillation
+        const bob = e.kind === 'boss'
+          ? (e.phase >= 2 ? Math.sin(e.animPhase * 0.75) * 62 * dt : 0)
+          : Math.sin(e.animPhase * 1.35) * 38 * dt;
         e.x = Math.max(90, Math.min(W - 90, e.x + Math.cos(baseAng) * spd * dt));
         e.y = Math.max(130, Math.min(H - 110, e.y + Math.sin(baseAng) * spd * dt + bob));
       }
@@ -902,12 +924,13 @@ window.updateForgeWorld = function(state, rawDt, moveVec, aimVec, holdingDown = 
         e.shootTimer -= dt;
         if (e.shootTimer <= 0 && !e.staggered) {
           e.shootTimer = e.kind === 'boss' ? (e.phase === 3 ? 1.3 : 1.7) : (e.kind === 'turret_flux' ? 2.15 : 2.6);
+          const spiralShift = (e.kind === 'boss' && e.phase >= 2) ? Math.sin(e.animPhase * 0.9) * 0.16 : 0;
           const offsets = e.kind === 'boss' ? [-0.36, -0.18, 0, 0.18, 0.36] : [-0.16, 0.16];
           for (const off of offsets) {
             state.enemyProjectiles.push({
               x: e.x, y: e.y,
-              vx: Math.cos(baseAng + off) * 325,
-              vy: Math.sin(baseAng + off) * 325,
+              vx: Math.cos(baseAng + off + spiralShift) * 325,
+              vy: Math.sin(baseAng + off + spiralShift) * 325,
               life: 2.6,
               color: e.kind === 'boss' ? '#ef4444' : (e.kind === 'turret_flux' ? '#fb923c' : '#38bdf8')
             });
