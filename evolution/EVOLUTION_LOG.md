@@ -3,6 +3,20 @@
 
 ---
 
+### [Cycle 012-OMEGA] 2026-11-19 17:06 UTC | Milestone: Vector Odyssey v1.1.0 Deep Polish & 60FPS/DualSense Audit
+* **Phase**: Omega (3D Depth Cues, Parameter Curriculum, GraphSpecs, Boss/Combat Depth & DualSense Audit)
+* **Target**: `games/vector-odyssey/` (Topics 91–102)
+* **Changes Delivered**:
+  - **Vector Odyssey v1.1.0 (`games/vector-odyssey/`, 5,426 LOC)**:
+    - **3D Wireframe Depth Cues & Zero-Allocation 60FPS (`js/renderer.js`)**: Replaced per-frame `new Array` in `drawLandmarks3D` with pre-allocated `PROJ_POOL`, separated back-facing (`zMid < 0`, dashed/dim) from front-facing (`zMid >= 0`, solid/bright) wireframe edges + near vertex markers, added origin triad $(O,\vec{i},\vec{j},\vec{k})$, Boss beam plane equations (`x = ...` / `y = ...`), and back-dashed / front-solid 3D equator & intersection circle arcs.
+    - **Curriculum & 3D GraphSpec Expansion (`js/curriculum.js`, `js/renderer.js`)**: Expanded from 30 to **38 Moroccan 2BAC PC questions** (+8 parameter-in-space, line-in-plane, distance double-root, sphere radius parameter, twin tangent planes, circle radius parameter, `d(Ω,(D))` method, and tetrahedron height questions) and from 10 to **14 interactive 3D `graphSpec` plotters** (`sphere_tangent_plane_param_3d`, `sphere_circle_param_3d`, `sphere_line_dist_3d`, `tetrahedron_volume_3d`).
+    - **Combat & Audio Polish (`js/world.js`, `js/audio.js`)**: Turned trench laser pylons into projectile cover, added rotating tangent mini-shields to post-gate `cruiser_sphere` enemies, decoupled Boss AI from `dist > 1` with `H`-gap piercing feedback, capped dropped orbs at 14, and added `setCombatIntensity`, `playOrbPickup`, and `playComboChime`.
+    - **DualSense & UI/UX Fixes (`js/controls.js`, `js/game.js`, `index.html`, `games.json`)**: Fixed `.opt-correct`/`.opt-wrong`, `.highlight-ready`, `.gp-pill.disconnected`, bound HUD `#filterChip`, added `axes[9]` D-Pad hat fallback, aligned `Shift/K`, `F/R`, `R1` Hint, `L2` Bypass (`-40%`), and prevented Help modal from wiping active progress.
+* **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/38-question/14-graphSpec/DOM-keydown simulation passed 100%.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 011-ALPHA] 2026-11-19 05:09 UTC | Milestone: Vector Odyssey (أوديسا الفضاء المتجهي) Gold-Standard Launch
 * **Phase**: Alpha (New 6-Module Game Construction >= 3,200 LOC)
 * **Target**: `games/vector-odyssey/` (Topics 91–102: الهندسة الفضائية، الجداء السلمي والمتجهي، المستقيم والمستوى والفلكة $\mathbb{R}^3$)
@@ -144,17 +158,3 @@
   - Added navigation tick sounds, back sounds, and launch curtain transition.
   - Formulated the **Absolute Creative Sovereignty Charter**: game design liberated from dry academic constraints into thrilling, addictive genres (Horror, Platformers, Roguelites) powered by pure mathematical engines.
 * **Verification**: Quality gate passed 100%. GitHub Actions deployment successful.
-
----
-
-### [Cycle 002] 2026-11-13 23:20 UTC | Milestone: Calculus Showdown Modularization & HUD
-* **Phase**: Genesis / Modularization
-* **Target**: `games/math-battle/`
-* **Changes Delivered**:
-  - Decomposed raw monolithic HTML into 7 clean ES modules (`config.js`, `audio.js`, `calculus.js`, `controls.js`, `entities.js`, `renderer.js`, `game.js`).
-  - Solved Owner's artifact bug: eliminated tether line from `drawPopups` and implemented smooth float & dissolve.
-  - Added real-time **Calculus Derivation Lifecycle Bar** above arena ($x^3 \to 3x^2 \to 2x \to 1 \to 0$) explaining why orbs split and where they annihilate.
-  - Implemented strict PlayStation DualSense mapping (`✕`, `◯`, `▢`, `△`, L1/R1, L2/R2, twin sticks, rumble).
-  - Registered in `games.json` and deployed live to GitHub Pages.
-* **Verification**: `node -c` syntax check passed 100%. HTTP 200 confirmed.
-* **Author**: Autonomous AGY Core ("My Homie").

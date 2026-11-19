@@ -55,15 +55,18 @@
     }
   };
 
+  // Pre-allocated scratch pool (zero per-frame allocations in 60FPS loop)
+  const PROJ_POOL = Array.from({ length: 12 }, () => ({ x: 0, y: 0, z: 0 }));
+
   /**
-   * Rotate and project a 3D point around Y and X axes into 2D screen offsets.
+   * Rotate and project a 3D point around Y and X axes into a pre-allocated target object.
    * @param {number[]} v - 3D coordinates [x, y, z].
    * @param {number} ay - Y-axis angle (rad).
    * @param {number} ax - X-axis tilt (rad).
    * @param {number} scale - World radius multiplier.
-   * @returns {{x: number, y: number, z: number}} Projected 2D coordinates.
+   * @param {{x: number, y: number, z: number}} out - Output scratch object.
    */
-  function projectPolyVertex(v, ay, ax, scale) {
+  function projectPolyVertexInto(v, ay, ax, scale, out) {
     const cosY = Math.cos(ay);
     const sinY = Math.sin(ay);
     const x1 = v[0] * cosY - v[2] * sinY;
@@ -73,11 +76,9 @@
     const y2 = v[1] * cosX - z1 * sinX;
     const z2 = v[1] * sinX + z1 * cosX;
     const persp = 2.8 / (2.8 - z2 * 0.45);
-    return {
-      x: x1 * scale * persp,
-      y: y2 * scale * persp,
-      z: z2
-    };
+    out.x = x1 * scale * persp;
+    out.y = y2 * scale * persp;
+    out.z = z2;
   }
 
   /**
@@ -120,6 +121,29 @@
     }
     ctx.stroke();
 
+    // Sector quadrant crosshairs & Origin O(1300, 850) triad
+    if (isVisible(1300, 850, 140, cam, halfW, halfH)) {
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.25)';
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(1300, 850);
+      ctx.lineTo(1366, 850);
+      ctx.moveTo(1300, 850);
+      ctx.lineTo(1300, 784);
+      ctx.moveTo(1300, 850);
+      ctx.lineTo(1256, 894);
+      ctx.stroke();
+
+      ctx.direction = 'ltr';
+      ctx.font = '700 10.5px "JetBrains Mono", monospace';
+      ctx.fillStyle = 'rgba(186, 230, 253, 0.55)';
+      ctx.textAlign = 'left';
+      ctx.fillText('O(ℝ³)', 1306, 864);
+      ctx.fillText('j⃗', 1370, 854);
+      ctx.fillText('k⃗', 1304, 782);
+      ctx.fillText('i⃗', 1244, 902);
+    }
+
     // Sector perimeter border
     ctx.strokeStyle = 'rgba(167, 139, 250, 0.35)';
     ctx.lineWidth = 4;
@@ -145,39 +169,69 @@
   }
 
   /**
-   * Render 3D rotating wireframe polyhedral space landmarks with depth parallax.
+   * Render 3D rotating wireframe polyhedral space landmarks with depth cues
+   * (dashed/dim back-facing edges vs crisp front edges + near-vertex dots).
    */
   function drawLandmarks3D(ctx, state, halfW, halfH) {
     const cam = state.camera;
     const list = state.landmarks3D;
     for (let i = 0; i < list.length; i += 1) {
       const lm = list[i];
-      const px = lm.x + (cam.x - 1300) * (1 - lm.z) * 0.16;
-      const py = lm.y + (cam.y - 850) * (1 - lm.z) * 0.16;
-      if (!isVisible(px, py, lm.size + 40, cam, halfW, halfH)) continue;
+      const px = lm.x + (cam.x - 1300) * (1 - lm.z * 0.004) * 0.14;
+      const py = lm.y + (cam.y - 850) * (1 - lm.z * 0.004) * 0.14;
+      if (!isVisible(px, py, lm.size + 48, cam, halfW, halfH)) continue;
 
       const def = POLY_DEFS[lm.kind] || POLY_DEFS.octa;
       const ay = state.time * lm.rotSpeed + i * 0.8;
       const ax = 0.48 + Math.sin(state.time * 0.4 + i) * 0.25;
 
-      const proj = new Array(def.verts.length);
       for (let v = 0; v < def.verts.length; v += 1) {
-        proj[v] = projectPolyVertex(def.verts[v], ay, ax, lm.size);
+        projectPolyVertexInto(def.verts[v], ay, ax, lm.size, PROJ_POOL[v]);
       }
 
       ctx.save();
       ctx.translate(px, py);
       ctx.strokeStyle = lm.color;
-      ctx.globalAlpha = 0.28;
-      ctx.lineWidth = 1.6;
+
+      // Pass 1: Back-facing edges (zMid < 0) dashed & dim for 3D depth occlusion cue
+      ctx.setLineDash([4, 4]);
+      ctx.globalAlpha = 0.18;
+      ctx.lineWidth = 1.1;
       ctx.beginPath();
       for (let e = 0; e < def.edges.length; e += 1) {
-        const a = proj[def.edges[e][0]];
-        const b = proj[def.edges[e][1]];
-        ctx.moveTo(a.x, a.y);
-        ctx.lineTo(b.x, b.y);
+        const a = PROJ_POOL[def.edges[e][0]];
+        const b = PROJ_POOL[def.edges[e][1]];
+        if ((a.z + b.z) * 0.5 < 0) {
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+        }
       }
       ctx.stroke();
+
+      // Pass 2: Front-facing edges (zMid >= 0) solid & bright
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 0.52;
+      ctx.lineWidth = 2.0;
+      ctx.beginPath();
+      for (let e = 0; e < def.edges.length; e += 1) {
+        const a = PROJ_POOL[def.edges[e][0]];
+        const b = PROJ_POOL[def.edges[e][1]];
+        if ((a.z + b.z) * 0.5 >= 0) {
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(b.x, b.y);
+        }
+      }
+      ctx.stroke();
+
+      // Pass 3: Near-camera vertex nodes
+      ctx.fillStyle = '#e0f2fe';
+      ctx.globalAlpha = 0.42;
+      for (let v = 0; v < def.verts.length; v += 1) {
+        const pt = PROJ_POOL[v];
+        if (pt.z > 0.25) {
+          ctx.fillRect(pt.x - 1.8, pt.y - 1.8, 3.6, 3.6);
+        }
+      }
       ctx.restore();
     }
     ctx.globalAlpha = 1;
@@ -252,6 +306,15 @@
         ctx.strokeStyle = '#fecdd3';
         ctx.lineWidth = 6;
         ctx.stroke();
+      } else if (bm.eqLabel) {
+        ctx.setLineDash([]);
+        ctx.direction = 'ltr';
+        ctx.font = '800 11px "JetBrains Mono", monospace';
+        ctx.fillStyle = '#fda4af';
+        ctx.textAlign = 'center';
+        const lx = bm.axis === 'x' ? bm.pos + 38 : state.camera.x;
+        const ly = bm.axis === 'y' ? bm.pos - 10 : state.camera.y - 60;
+        ctx.fillText(bm.eqLabel, lx, ly);
       }
       ctx.restore();
     }
@@ -808,7 +871,7 @@
   }
 
   /**
-   * Draw a 3D wireframe sphere with equator and meridian ellipses.
+   * Draw a 3D wireframe sphere with front-solid / back-dashed equator and meridian arcs.
    */
   function drawSphereWireframe(ctx, cx, cy, r, color) {
     ctx.fillStyle = 'rgba(167, 139, 250, 0.11)';
@@ -819,13 +882,21 @@
     ctx.fill();
     ctx.stroke();
 
-    ctx.strokeStyle = 'rgba(196, 181, 253, 0.45)';
+    // Back-half equator (dashed for 3D depth)
+    ctx.strokeStyle = 'rgba(196, 181, 253, 0.4)';
     ctx.lineWidth = 1.2;
-    ctx.setLineDash([5, 4]);
+    ctx.setLineDash([4, 4]);
     ctx.beginPath();
-    ctx.ellipse(cx, cy, r, r * 0.34, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy, r, r * 0.34, 0, Math.PI, Math.PI * 2);
     ctx.stroke();
+
+    // Front-half equator (solid & brighter)
     ctx.setLineDash([]);
+    ctx.strokeStyle = 'rgba(221, 214, 254, 0.72)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r, r * 0.34, 0, 0, Math.PI);
+    ctx.stroke();
   }
 
   /**
@@ -928,38 +999,160 @@
       drawDot(ctx, cx + 52, cy - 36, '#4ade80', 'B', 12, -6);
       drawDot(ctx, cx, cy - 14, '#fbbf24', 'Ω', -8, -10);
     } else if (t === 'sphere_plane_tan_3d') {
-      drawTiltedPlane(ctx, cx, cy + 32, 230, 42, '(P)');
+      drawTiltedPlane(ctx, cx, cy + 32, 240, 42, '(P)');
       drawSphereWireframe(ctx, cx, cy - 22, 50, '#fb7185');
       drawDot(ctx, cx, cy - 22, '#fbbf24', 'Ω', -14, -4);
+      drawVectorArrow(ctx, cx, cy - 22, cx, cy + 28, '#4ade80', 'R = d', cx + 26, cy + 2);
       ctx.strokeStyle = '#4ade80';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - 22);
-      ctx.lineTo(cx, cy + 28);
-      ctx.stroke();
-      drawDot(ctx, cx, cy + 28, '#4ade80', 'H (d=R)', 34, 14);
+      ctx.lineWidth = 1.4;
+      ctx.strokeRect(cx, cy + 19, 8, 8);
+      drawDot(ctx, cx, cy + 28, '#4ade80', 'H', -12, 13);
     } else if (t === 'sphere_plane_circle_3d') {
       drawSphereWireframe(ctx, cx, cy - 16, 62, '#38bdf8');
-      drawTiltedPlane(ctx, cx, cy + 12, 240, 44, '(P)');
-      ctx.strokeStyle = '#4ade80';
-      ctx.lineWidth = 2.4;
+      drawTiltedPlane(ctx, cx, cy + 12, 244, 44, '(P)');
+      // Back half of intersection circle (dashed)
+      ctx.strokeStyle = 'rgba(74, 222, 128, 0.45)';
+      ctx.lineWidth = 1.8;
+      ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.ellipse(cx, cy + 12, 46, 15, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, cy + 12, 46, 15, 0, Math.PI, Math.PI * 2);
       ctx.stroke();
+      // Front half of intersection circle (solid)
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 2.6;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy + 12, 46, 15, 0, 0, Math.PI);
+      ctx.stroke();
+
       drawDot(ctx, cx, cy - 16, '#fbbf24', 'Ω', -14, -6);
       drawDot(ctx, cx, cy + 12, '#4ade80', 'H', -12, 12);
+      drawDot(ctx, cx + 46, cy + 12, '#38bdf8', 'M', 12, 4);
       ctx.strokeStyle = '#f43f5e';
+      ctx.lineWidth = 1.8;
       ctx.beginPath();
       ctx.moveTo(cx, cy - 16);
       ctx.lineTo(cx, cy + 12);
       ctx.lineTo(cx + 46, cy + 12);
       ctx.closePath();
       ctx.stroke();
+      ctx.strokeRect(cx, cy + 4, 8, 8);
       ctx.direction = 'ltr';
       ctx.font = '800 10.5px "JetBrains Mono", monospace';
       ctx.fillStyle = '#fde047';
       ctx.textAlign = 'left';
-      ctx.fillText('r² = R² - d²', cx + 56, cy - 6);
+      ctx.fillText('r² = R² - d²', cx + 58, cy - 8);
+    } else if (t === 'sphere_tangent_plane_param_3d') {
+      // Twin parallel tangent planes on both sides of sphere (d(Ω, P_m) = R)
+      drawTiltedPlane(ctx, cx, cy - 52, 224, 34, '(P_m1)');
+      drawSphereWireframe(ctx, cx, cy - 4, 46, '#fb7185');
+      drawTiltedPlane(ctx, cx, cy + 44, 224, 34, '(P_m2)');
+      drawDot(ctx, cx, cy - 4, '#fbbf24', 'Ω', -14, -4);
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 50);
+      ctx.lineTo(cx, cy + 42);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      drawDot(ctx, cx, cy - 50, '#4ade80', 'H₁', 14, -2);
+      drawDot(ctx, cx, cy + 42, '#4ade80', 'H₂', 14, 12);
+      drawVectorArrow(ctx, cx + 52, cy - 4, cx + 52, cy - 40, '#38bdf8', 'n⃗', cx + 66, cy - 22);
+    } else if (t === 'sphere_circle_param_3d') {
+      // Twin parallel secant planes cutting circle (C) of radius r
+      drawSphereWireframe(ctx, cx, cy - 6, 56, '#38bdf8');
+      drawTiltedPlane(ctx, cx, cy - 34, 224, 30, '(P_k1)');
+      drawTiltedPlane(ctx, cx, cy + 22, 224, 30, '(P_k2)');
+      for (const py of [cy - 34, cy + 22]) {
+        ctx.strokeStyle = '#4ade80';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.ellipse(cx, py, 38, 11, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      drawDot(ctx, cx, cy - 6, '#fbbf24', 'Ω', -14, 4);
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - 6);
+      ctx.lineTo(cx, cy + 22);
+      ctx.lineTo(cx + 38, cy + 22);
+      ctx.stroke();
+      drawDot(ctx, cx, cy + 22, '#4ade80', 'H', -12, 12);
+    } else if (t === 'sphere_line_dist_3d') {
+      drawSphereWireframe(ctx, cx - 12, cy - 10, 56, '#a78bfa');
+      drawVectorArrow(ctx, cx - 120, cy + 14, cx + 115, cy - 44, '#38bdf8', '(D), u⃗', cx + 92, cy - 50);
+      drawDot(ctx, cx - 12, cy - 10, '#fbbf24', 'Ω', -14, 8);
+      drawDot(ctx, cx - 64, cy, '#cbd5e1', 'A', -10, 14);
+      drawDot(ctx, cx - 4, cy - 15, '#4ade80', 'H', 10, 12);
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = '#fb7185';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(cx - 12, cy - 10);
+      ctx.lineTo(cx - 4, cy - 15);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.direction = 'ltr';
+      ctx.font = '800 10.5px "JetBrains Mono", monospace';
+      ctx.fillStyle = '#4ade80';
+      ctx.textAlign = 'left';
+      ctx.fillText('d(Ω,(D)) < R ⇒ 2 pts', cx + 32, cy + 36);
+    } else if (t === 'tetrahedron_volume_3d') {
+      const ax = cx - 72;
+      const ay = cy + 30;
+      const bx = cx + 68;
+      const by = cy + 36;
+      const cxp = cx + 18;
+      const cyp = cy + 6;
+      const dx = cx - 4;
+      const dy = cy - 58;
+      // Shaded base triangle ABC
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.16)';
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.lineTo(cxp, cyp);
+      ctx.closePath();
+      ctx.fill();
+      // Back edge AC dashed
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(cxp, cyp);
+      ctx.stroke();
+      // Front edges solid
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.lineTo(cxp, cyp);
+      ctx.moveTo(dx, dy);
+      ctx.lineTo(ax, ay);
+      ctx.moveTo(dx, dy);
+      ctx.lineTo(bx, by);
+      ctx.moveTo(dx, dy);
+      ctx.lineTo(cxp, cyp);
+      ctx.stroke();
+      // Altitude h = d(D, ABC)
+      ctx.setLineDash([3, 3]);
+      ctx.strokeStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.moveTo(dx, dy);
+      ctx.lineTo(dx, cy + 24);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.strokeRect(dx, cy + 16, 7, 7);
+      drawDot(ctx, ax, ay, '#f8fafc', 'A', -10, 12);
+      drawDot(ctx, bx, by, '#f8fafc', 'B', 10, 12);
+      drawDot(ctx, cxp, cyp, '#cbd5e1', 'C', 14, -4);
+      drawDot(ctx, dx, dy, '#fbbf24', 'D', -12, -4);
+      drawVectorArrow(ctx, dx + 38, cy + 22, dx + 38, cy - 26, '#4ade80', 'AB∧AC', dx + 68, cy - 8);
     } else {
       // sphere_line_3d
       drawSphereWireframe(ctx, cx, cy - 16, 56, '#a78bfa');

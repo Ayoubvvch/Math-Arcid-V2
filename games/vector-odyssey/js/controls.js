@@ -169,11 +169,11 @@
     gpState.lastShownConnected = gpState.connected;
     gpState.lastShownLabel = gpState.idLabel;
 
+    cache.gamepadPill.classList.toggle('connected', gpState.connected);
+    cache.gamepadPill.classList.toggle('disconnected', !gpState.connected);
     if (gpState.connected) {
-      cache.gamepadPill.classList.add('connected');
       cache.gamepadStatusText.textContent = gpState.idLabel || 'DualSense متصل';
     } else {
-      cache.gamepadPill.classList.remove('connected');
       cache.gamepadStatusText.textContent = 'يد التحكم: لوحة المفاتيح / DualSense';
     }
   }
@@ -237,6 +237,24 @@
   }
 
   /**
+   * Decode standard Linux/Chrome D-Pad hat axis (axes[9]) when present.
+   * @param {Gamepad} gp - Browser Gamepad object.
+   * @returns {{up: boolean, down: boolean, left: boolean, right: boolean}} Hat directions.
+   */
+  function decodeDpadHat(gp) {
+    const hat = gp && typeof gp.axes?.[9] === 'number' ? gp.axes[9] : null;
+    if (hat === null || hat > 1.1) {
+      return { up: false, down: false, left: false, right: false };
+    }
+    return {
+      up: hat >= -1.05 && hat <= -0.78,
+      right: hat >= -0.65 && hat <= -0.22,
+      down: hat >= -0.15 && hat <= 0.35,
+      left: hat >= 0.45 && hat <= 0.95
+    };
+  }
+
+  /**
    * Compute combined normalized flight movement vector from keyboard, touch stick, and Left Stick.
    * @returns {{x: number, y: number}} Normalized 2D thrust vector.
    */
@@ -260,11 +278,11 @@
       vx += lStick.x;
       vy += lStick.y;
 
-      // Also honor D-pad micro-maneuvering during active combat
-      if (gp.buttons[14]?.pressed) vx -= 0.75;
-      if (gp.buttons[15]?.pressed) vx += 0.75;
-      if (gp.buttons[12]?.pressed) vy -= 0.75;
-      if (gp.buttons[13]?.pressed) vy += 0.75;
+      const hat = decodeDpadHat(gp);
+      if (gp.buttons[14]?.pressed || hat.left) vx -= 0.75;
+      if (gp.buttons[15]?.pressed || hat.right) vx += 0.75;
+      if (gp.buttons[12]?.pressed || hat.up) vy -= 0.75;
+      if (gp.buttons[13]?.pressed || hat.down) vy += 0.75;
     }
 
     const mag = Math.hypot(vx, vy);
@@ -336,9 +354,9 @@
       if (typeof window.submitOdysseyOption === 'function') window.submitOdysseyOption(2);
     } else if (justPressed(gp, 3)) {
       if (typeof window.submitOdysseyOption === 'function') window.submitOdysseyOption(3);
-    } else if (justPressed(gp, 4)) {
+    } else if (justPressed(gp, 5) || justPressed(gp, 4)) {
       if (typeof window.toggleOdysseyHint === 'function') window.toggleOdysseyHint();
-    } else if (justPressed(gp, 5)) {
+    } else if (justPressed(gp, 6)) {
       if (typeof window.triggerOdysseyOverdriveBypass === 'function') {
         window.triggerOdysseyOverdriveBypass();
       }
@@ -423,11 +441,12 @@
     const now = performance.now();
     const ax = gp.axes[0] || 0;
     const ay = gp.axes[1] || 0;
+    const hat = decodeDpadHat(gp);
 
-    const axisLeftNow = ax < -0.55;
-    const axisRightNow = ax > 0.55;
-    const axisUpNow = ay < -0.55;
-    const axisDownNow = ay > 0.55;
+    const axisLeftNow = ax < -0.55 || hat.left;
+    const axisRightNow = ax > 0.55 || hat.right;
+    const axisUpNow = ay < -0.55 || hat.up;
+    const axisDownNow = ay > 0.55 || hat.down;
 
     const dLeft = justPressed(gp, 14) || (axisLeftNow && !gpState.axisLeftHeld);
     const dRight = justPressed(gp, 15) || (axisRightNow && !gpState.axisRightHeld);
@@ -531,19 +550,31 @@
       return;
     }
 
+    if (state.mode === 'end') {
+      const cache = getDomCache();
+      if (e.code === 'ArrowLeft' || e.code === 'ArrowRight') {
+        gpState.endFocusIdx = (gpState.endFocusIdx + 1) % Math.max(1, cache.endBtns.length);
+        window.applyOdysseyEndFocus?.();
+      } else if (e.code === 'Enter' || e.code === 'Space') {
+        e.preventDefault();
+        (cache.endBtns[gpState.endFocusIdx] || cache.endBtns[0])?.click();
+      }
+      return;
+    }
+
     if (state.mode !== 'play') return;
 
     const moveVec = window.getOdysseyMoveVec();
-    if (e.code === 'Space' || e.code === 'ShiftLeft') {
+    if (e.code === 'Space') {
       e.preventDefault();
       window.performOdysseyBoost?.(state, moveVec);
-    } else if (e.code === 'KeyK') {
+    } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyK') {
       window.performOdysseyRoll?.(state, moveVec);
     } else if (e.code === 'KeyE') {
       window.triggerNearestOdysseyGate?.(state);
     } else if (e.code === 'KeyL' || e.code === 'KeyQ') {
       window.performOdysseyAegis?.(state);
-    } else if (e.code === 'KeyR') {
+    } else if (e.code === 'KeyF' || e.code === 'KeyR') {
       window.performOdysseyOverdrive?.(state);
     } else if (e.code === 'KeyJ') {
       window.performOdysseyRailgun?.(state);

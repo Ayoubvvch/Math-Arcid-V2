@@ -238,6 +238,7 @@ window.spawnOdysseyEnemy = function(state, forceKind = null, forceX = null, forc
     boss: { r: 56, hp: 680, speed: 130, dmg: 22, label: 'النواة الفلكية العظمى', color: '#a855f7' }
   }[kind];
 
+  const cruiserShield = kind === 'cruiser_sphere' && broken >= 1;
   state.enemies.push({
     id: state.nextEnemyId++,
     kind,
@@ -255,11 +256,11 @@ window.spawnOdysseyEnemy = function(state, forceKind = null, forceX = null, forc
     dmg: cfg.dmg,
     hitFlash: 0,
     staggered: false,
-    shieldActive: false,
-    shieldHp: 0,
-    shieldMaxHp: 150,
-    shieldAngle: 0,
-    shieldGapHalf: 0.48,
+    shieldActive: cruiserShield,
+    shieldHp: cruiserShield ? 55 : 0,
+    shieldMaxHp: kind === 'boss' ? 150 : 55,
+    shieldAngle: Math.random() * Math.PI * 2,
+    shieldGapHalf: kind === 'boss' ? 0.48 : 0.72,
     shieldRechargeTimer: 0,
     stunTimer: 0,
     phase: 1,
@@ -284,17 +285,25 @@ window.spawnHyperSphereBoss = function(state) {
 };
 
 window.damageOdysseyEnemy = function(state, enemy, dmg, forceKill = false, ignoreShield = false) {
-  if (enemy.kind === 'boss' && enemy.shieldActive && !ignoreShield && !forceKill) {
+  if (enemy.shieldActive && !ignoreShield && !forceKill) {
     enemy.shieldHp = Math.max(0, enemy.shieldHp - dmg * 0.65);
     enemy.hitFlash = 0.08;
     window.OdysseyAudio?.playShieldDeflect?.();
     window.spawnOdysseyParticles(state, enemy.x, enemy.y, 5, '#38bdf8', 140);
     if (enemy.shieldHp <= 0) {
       enemy.shieldActive = false;
-      enemy.stunTimer = 2.6;
+      enemy.stunTimer = enemy.kind === 'boss' ? 2.6 : 1.5;
       enemy.shieldRechargeTimer = 8.5;
+      if (enemy.kind !== 'boss') enemy.staggered = true;
       window.OdysseyAudio?.playAegis?.();
-      window.addOdysseyFloatText(state, enemy.x, enemy.y - enemy.radius - 18, 'انكسر درع المماس مؤقتاً! أطلق [R2]', '#fde047', 1.8);
+      window.addOdysseyFloatText(
+        state,
+        enemy.x,
+        enemy.y - enemy.radius - 18,
+        enemy.kind === 'boss' ? 'انكسر درع المماس مؤقتاً! أطلق [R2]' : 'انكسر درع الفلكة! [▢ / E]',
+        '#fde047',
+        1.8
+      );
     }
     return false;
   }
@@ -342,6 +351,9 @@ window.damageOdysseyEnemy = function(state, enemy, dmg, forceKill = false, ignor
     state.stats.kills++;
     state.stats.combo++;
     state.stats.comboTimer = 4.2;
+    if (state.stats.combo >= 2) {
+      window.OdysseyAudio?.playComboChime?.(state.stats.combo);
+    }
     const mult = Math.min(5, 1 + Math.floor(state.stats.combo / 3));
     const pts = (enemy.kind === 'boss' ? 2000 : enemy.kind === 'cruiser_sphere' ? 190 : 95) * mult;
     state.stats.score += pts;
@@ -350,7 +362,7 @@ window.damageOdysseyEnemy = function(state, enemy, dmg, forceKill = false, ignor
     window.spawnOdysseyParticles(state, enemy.x, enemy.y, enemy.kind === 'boss' ? 48 : 16, '#38bdf8', 290);
     window.addOdysseyFloatText(state, enemy.x, enemy.y - 18, `+${pts}`, '#38bdf8', 0.95);
 
-    if (enemy.kind !== 'boss' && Math.random() < 0.38) {
+    if (enemy.kind !== 'boss' && state.orbs.length < 14 && Math.random() < 0.38) {
       state.orbs.push({
         id: Date.now() + Math.random(),
         x: enemy.x,
@@ -438,10 +450,10 @@ window.performOdysseyAegis = function(state) {
   for (let i = state.enemies.length - 1; i >= 0; i--) {
     const e = state.enemies[i];
     if (Math.hypot(e.x - p.x, e.y - p.y) <= 275) {
-      if (e.kind === 'boss' && e.shieldActive) {
+      if (e.shieldActive) {
         e.shieldActive = false;
         e.shieldHp = 0;
-        e.stunTimer = 2.6;
+        e.stunTimer = e.kind === 'boss' ? 2.6 : 1.6;
         e.shieldRechargeTimer = 8.5;
         window.addOdysseyFloatText(state, e.x, e.y - 68, 'تحطّم درع الفلكة!', '#fde047', 1.5);
       }
@@ -499,10 +511,10 @@ window.performOdysseyOverdrive = function(state) {
   for (let i = state.enemies.length - 1; i >= 0; i--) {
     const e = state.enemies[i];
     if (Math.hypot(e.x - p.x, e.y - p.y) <= 420) {
-      if (e.kind === 'boss' && e.shieldActive) {
+      if (e.shieldActive) {
         e.shieldActive = false;
         e.shieldHp = 0;
-        e.stunTimer = 2.8;
+        e.stunTimer = e.kind === 'boss' ? 2.8 : 1.8;
         e.shieldRechargeTimer = 8.5;
       }
       window.damageOdysseyEnemy(state, e, 155, e.kind !== 'boss', true);
@@ -607,6 +619,7 @@ window.updateOdysseyWorld = function(state, rawDt, moveVec, aimVec) {
       if (spd > 24) {
         p.shipAngle = Math.atan2(p.vy, p.vx);
       }
+      window.OdysseyAudio?.setCombatIntensity?.(spd / window.ODYSSEY_WORLD.MAX_SPEED, state.bossSpawned);
     }
 
     if (aimVec && Math.hypot(aimVec.x, aimVec.y) > 0.16) {
@@ -639,7 +652,7 @@ window.updateOdysseyWorld = function(state, rawDt, moveVec, aimVec) {
           p.energy = Math.min(p.maxEnergy, p.energy + 35);
           window.addOdysseyFloatText(state, p.x, p.y - 24, '+35% طاقة (S)', '#a855f7', 1.0);
         }
-        window.OdysseyAudio?.playUiTick?.();
+        window.OdysseyAudio?.playOrbPickup?.(o.kind);
         state.orbs.splice(i, 1);
       }
     }
@@ -663,14 +676,17 @@ window.updateOdysseyWorld = function(state, rawDt, moveVec, aimVec) {
     if (!rm) {
       for (let j = state.enemies.length - 1; j >= 0; j--) {
         const e = state.enemies[j];
-        const hitDist = (e.kind === 'boss' && e.shieldActive) ? (e.radius + 24) : (e.radius + 9);
+        const hitDist = e.shieldActive ? (e.radius + 20) : (e.radius + 9);
         if (Math.hypot(e.x - b.x, e.y - b.y) <= hitDist) {
-          if (e.kind === 'boss' && e.shieldActive) {
+          if (e.shieldActive) {
             const ang = Math.atan2(b.y - e.y, b.x - e.x);
             const diff = Math.abs(Math.atan2(Math.sin(ang - e.shieldAngle), Math.cos(ang - e.shieldAngle)));
             if (diff <= e.shieldGapHalf) {
               window.damageOdysseyEnemy(state, e, Math.round(b.dmg * 1.25), false, true);
-              window.spawnOdysseyParticles(state, b.x, b.y, 7, '#fde047', 165);
+              window.spawnOdysseyParticles(state, b.x, b.y, 7, '#fde047', 175);
+              if (e.kind === 'boss' && Math.random() < 0.32) {
+                window.addOdysseyFloatText(state, b.x, b.y - 16, 'اختراق H!', '#4ade80', 0.65);
+              }
             } else {
               window.damageOdysseyEnemy(state, e, b.dmg, false, false);
             }
@@ -685,13 +701,23 @@ window.updateOdysseyWorld = function(state, rawDt, moveVec, aimVec) {
     if (rm) state.projectiles.splice(i, 1);
   }
 
-  // Enemy Projectiles (absorbed by Cross-Product Vector Shield!)
+  // Enemy Projectiles (absorbed by Cross-Product Vector Shield or Trench Deflector Pylons!)
   for (let i = state.enemyProjectiles.length - 1; i >= 0; i--) {
     const ep = state.enemyProjectiles[i];
     ep.x += ep.vx * dt;
     ep.y += ep.vy * dt;
     ep.life -= dt;
     let rm = ep.life <= 0;
+    if (!rm) {
+      for (let t = 0; t < state.trenchBarriers.length; t++) {
+        const bar = state.trenchBarriers[t];
+        if (Math.abs(ep.x - bar.x1) <= 9 && ep.y >= bar.y1 && ep.y <= bar.y2) {
+          window.spawnOdysseyParticles(state, ep.x, ep.y, 3, '#7dd3fc', 95);
+          rm = true;
+          break;
+        }
+      }
+    }
     const distP = Math.hypot(ep.x - p.x, ep.y - p.y);
     if (!rm && p.aegisTimer > 0 && distP <= 56) {
       window.spawnOdysseyParticles(state, ep.x, ep.y, 5, '#34d399', 120);
@@ -730,6 +756,9 @@ window.updateOdysseyWorld = function(state, rawDt, moveVec, aimVec) {
   for (const e of state.enemies) {
     e.hitFlash = Math.max(0, e.hitFlash - dt);
     e.animPhase += rawDt * 4.0;
+    if (e.shieldActive && e.kind !== 'boss') {
+      e.shieldAngle = (e.shieldAngle + dt * 1.1) % (Math.PI * 2);
+    }
     if (e.kind === 'boss' && e.phase >= 3) {
       e.shieldAngle = (e.shieldAngle + dt * 1.45) % (Math.PI * 2);
       if (e.stunTimer > 0) e.stunTimer = Math.max(0, e.stunTimer - dt);
@@ -748,23 +777,25 @@ window.updateOdysseyWorld = function(state, rawDt, moveVec, aimVec) {
     const dy = p.y - e.y;
     const dist = Math.hypot(dx, dy);
 
-    if (state.mode === 'play' && dist > 1) {
+    if (state.mode === 'play') {
       const stunned = e.stunTimer > 0;
       const spd = (e.staggered || stunned ? e.speed * 0.25 : e.speed) * slowMul;
-      const baseAng = Math.atan2(dy, dx);
+      const baseAng = dist > 0.01 ? Math.atan2(dy, dx) : 0;
 
-      if (e.kind === 'interceptor_vec') {
-        const moveAng = baseAng + Math.sin(e.animPhase) * 0.55;
-        e.x = Math.max(70, Math.min(W - 70, e.x + Math.cos(moveAng) * spd * dt));
-        e.y = Math.max(90, Math.min(H - 90, e.y + Math.sin(moveAng) * spd * dt));
-      } else if (e.kind === 'turret_plane') {
-        const moveDir = dist > 320 ? 1 : (dist < 180 ? -0.7 : 0);
-        e.x = Math.max(80, Math.min(W - 80, e.x + Math.cos(baseAng) * spd * moveDir * dt));
-        e.y = Math.max(100, Math.min(H - 100, e.y + Math.sin(baseAng) * spd * moveDir * dt));
-      } else {
-        const orbit = e.kind === 'boss' && e.phase >= 2 ? Math.sin(e.animPhase * 0.7) * 58 * dt : 0;
-        e.x = Math.max(90, Math.min(W - 90, e.x + Math.cos(baseAng) * spd * dt));
-        e.y = Math.max(100, Math.min(H - 100, e.y + Math.sin(baseAng) * spd * dt + orbit));
+      if (dist > 1) {
+        if (e.kind === 'interceptor_vec') {
+          const moveAng = baseAng + Math.sin(e.animPhase) * 0.55;
+          e.x = Math.max(70, Math.min(W - 70, e.x + Math.cos(moveAng) * spd * dt));
+          e.y = Math.max(90, Math.min(H - 90, e.y + Math.sin(moveAng) * spd * dt));
+        } else if (e.kind === 'turret_plane') {
+          const moveDir = dist > 320 ? 1 : (dist < 180 ? -0.7 : 0);
+          e.x = Math.max(80, Math.min(W - 80, e.x + Math.cos(baseAng) * spd * moveDir * dt));
+          e.y = Math.max(100, Math.min(H - 100, e.y + Math.sin(baseAng) * spd * moveDir * dt));
+        } else {
+          const orbit = e.kind === 'boss' && e.phase >= 2 ? Math.sin(e.animPhase * 0.7) * 58 * dt : 0;
+          e.x = Math.max(90, Math.min(W - 90, e.x + Math.cos(baseAng) * spd * dt));
+          e.y = Math.max(100, Math.min(H - 100, e.y + Math.sin(baseAng) * spd * dt + orbit));
+        }
       }
 
       if ((e.kind === 'turret_plane' || e.kind === 'cruiser_sphere' || e.kind === 'boss') && !stunned) {
@@ -792,15 +823,18 @@ window.updateOdysseyWorld = function(state, rawDt, moveVec, aimVec) {
           window.OdysseyAudio?.playBeamCharge?.();
           if (e.phase === 3) {
             state.bossBeams.push(
-              { axis: 'x', pos: p.x, warnTimer: 1.15, activeTimer: 0.6 },
-              { axis: 'y', pos: p.y, warnTimer: 1.15, activeTimer: 0.6 }
+              { axis: 'x', pos: p.x, warnTimer: 1.15, activeTimer: 0.6, eqLabel: `x = ${Math.round(p.x)}` },
+              { axis: 'y', pos: p.y, warnTimer: 1.15, activeTimer: 0.6, eqLabel: `y = ${Math.round(p.y)}` }
             );
           } else {
+            const ax = Math.random() < 0.5 ? 'x' : 'y';
+            const beamPos = ax === 'x' ? p.x : p.y;
             state.bossBeams.push({
-              axis: Math.random() < 0.5 ? 'x' : 'y',
-              pos: Math.random() < 0.5 ? p.x : p.y,
+              axis: ax,
+              pos: beamPos,
               warnTimer: 1.05,
-              activeTimer: 0.65
+              activeTimer: 0.65,
+              eqLabel: `${ax} = ${Math.round(beamPos)}`
             });
           }
         }

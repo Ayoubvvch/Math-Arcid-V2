@@ -31,6 +31,7 @@
   let activeQuestion = null;
   let recentQuestionIds = [];
   let hintRevealed = false;
+  let introOpenedAsHelp = false;
   let rafId = null;
   let lastFrameMs = 0;
 
@@ -76,6 +77,7 @@
       scoreValue: document.getElementById('scoreValue'),
       comboBadge: document.getElementById('comboBadge'),
       comboCount: document.getElementById('comboCount'),
+      filterChip: document.getElementById('filterChip'),
       filterChipLabel: document.getElementById('filterChipLabel'),
       sectorBanner: document.getElementById('sectorBanner'),
       btnAudioToggle: document.getElementById('btnAudioToggle'),
@@ -210,6 +212,7 @@
     activeQuestion = null;
     recentQuestionIds = [];
     hintRevealed = false;
+    introOpenedAsHelp = false;
     handleResize();
 
     const els = getHudEls();
@@ -266,12 +269,19 @@
   };
 
   /**
-   * Start mission from Intro Modal.
+   * Start mission from Intro Modal (or resume if Intro was opened mid-run via Help button).
    */
   window.startOdysseyFromIntro = function startOdysseyFromIntro() {
     window.OdysseyAudio?.init();
     window.OdysseyAudio?.playUiTick();
     window.lockOdysseyInputBriefly?.(220);
+    if (introOpenedAsHelp && state) {
+      introOpenedAsHelp = false;
+      setModalOpen(getHudEls().introModal, false);
+      state.mode = 'play';
+      syncHUD(state);
+      return;
+    }
     resetMissionState(true);
   };
 
@@ -363,7 +373,7 @@
     for (let i = 0; i < 4; i += 1) {
       const btn = els.seqOpts[i];
       if (!btn) continue;
-      btn.classList.remove('correct', 'wrong');
+      btn.classList.remove('opt-correct', 'opt-wrong');
       const keyTag = ['×', '○', '□', '△'][i];
       btn.textContent = '';
       const badge = document.createElement('span');
@@ -439,12 +449,12 @@
       : activeQuestion.answerIndex;
     if (idx === correctIdx) {
       state.stats.questionsCorrect += 1;
-      if (btn) btn.classList.add('correct');
+      if (btn) btn.classList.add('opt-correct');
       window.OdysseyAudio?.playGateBreak();
       window.triggerOdysseyHaptic?.(120, 0.45, 0.75);
       completeGateUnlock(false);
     } else {
-      if (btn) btn.classList.add('wrong');
+      if (btn) btn.classList.add('opt-wrong');
       state.player.hp = Math.max(0, state.player.hp - 12);
       state.stats.combo = 0;
       state.screenShake = Math.max(state.screenShake || 0, 9);
@@ -599,6 +609,7 @@
       hudCache.bannerText = bannerStr;
       els.sectorBanner.textContent = bannerStr;
       els.sectorBanner.classList.toggle('hidden', !bannerStr);
+      els.sectorBanner.classList.toggle('visible', Boolean(bannerStr));
     }
 
     // Cooldown indicators on bottom action deck
@@ -625,7 +636,7 @@
     const nearGate = Boolean(window.findNearestOdysseyInteract?.(s));
     if (hudCache.nearGate !== nearGate && els.actOverride) {
       hudCache.nearGate = nearGate;
-      els.actOverride.classList.toggle('ready-pulse', nearGate);
+      els.actOverride.classList.toggle('highlight-ready', nearGate);
     }
   }
 
@@ -674,11 +685,14 @@
       }
     };
 
+    els.filterChip?.addEventListener('click', () => window.cycleOdysseyFilter(1));
     els.btnAudioToggle?.addEventListener('click', toggleMute);
     els.btnToggleSoundPause?.addEventListener('click', toggleMute);
     els.btnHelpToggle?.addEventListener('click', () => {
       if (!state) return;
+      introOpenedAsHelp = state.mode === 'play' || state.mode === 'pause';
       state.mode = 'intro';
+      setModalOpen(els.pauseModal, false);
       setModalOpen(els.introModal, true);
       window.lockOdysseyInputBriefly?.(200);
     });

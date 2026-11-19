@@ -198,5 +198,32 @@ window.OdysseyAudio = {
   playUiTick() {
     this.init();
     this.tone(620, 820, 0.05, 'triangle', 0.06);
+  },
+
+  playOrbPickup(kind = 'energy') {
+    this.init();
+    if (kind === 'hp') {
+      this.tone(520, 780, 0.14, 'sine', 0.1, 0);
+      this.tone(780, 1040, 0.14, 'triangle', 0.08, 0.05);
+    } else {
+      this.tone(440, 880, 0.12, 'triangle', 0.1, 0);
+    }
+  },
+
+  playComboChime(combo = 2) {
+    this.init();
+    const base = Math.min(980, 440 + combo * 55);
+    this.tone(base, base * 1.25, 0.11, 'sine', 0.08);
+  },
+
+  setCombatIntensity(speedNorm = 0, bossActive = false) {
+    if (!this.ctx || !this.humOsc || !this.humGain || this.muted) return;
+    try {
+      const now = this.ctx.currentTime;
+      const targetFreq = (bossActive ? 64 : 50) + Math.min(1, Math.max(0, speedNorm)) * 22;
+      const targetGain = bossActive ? 0.055 : 0.038;
+      this.humOsc.frequency.setTargetAtTime(targetFreq, now, 0.12);
+      this.humGain.gain.setTargetAtTime(targetGain, now, 0.15);
+    } catch (_) {}
   }
 };

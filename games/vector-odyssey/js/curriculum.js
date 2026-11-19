@@ -492,6 +492,132 @@ window.ODYSSEY_QUESTION_BANK = [
       'AB⃗ + AC⃗ = 0⃗'
     ],
     correctIndex: 0
+  },
+
+  // ================= CYCLE 012-OMEGA: PARAMETER-IN-SPACE & NATIONAL EXAM SYNTHESIS (+8 QUESTIONS) =================
+  {
+    id: 't93_param_line_in_plane',
+    section: 'A',
+    sector: 1,
+    topic: 93,
+    prompt: 'وسيط فضائي: ما قيمتا a, b ∈ ℝ لكي يكون المستقيم (D): x = 1 + t, y = 2 - t, z = a + 2t (t ∈ ℝ) محتوى بالكامل في المستوى (P): 2x + b·y - z + 3 = 0؟',
+    hint: 'شرط الاحتواء (D) ⊂ (P) مزدوج: أولاً u⃗(1, -1, 2) ⊥ n⃗(2, b, -1) يعطي 2 - b - 2 = 0؛ ثانياً النقطة M₀(1, 2, a) ∈ (P) يعطي 2 + 0 - a + 3 = 0.',
+    options: [
+      'a = 5   و   b = 0',
+      'a = 0   و   b = 5',
+      'a = -5   و   b = 2',
+      'a = 3   و   b = -1'
+    ],
+    correctIndex: 0
+  },
+  {
+    id: 't94_param_dist_plane',
+    section: 'A',
+    sector: 2,
+    topic: 94,
+    prompt: 'وسيط وطني: نعتبر النقطة المتحركة A_m(1, m, 1) والمستوى (P): 2x - y + 2z - 1 = 0. ما قيمتا m ∈ ℝ اللتان تحققان d(A_m, (P)) = 2؟',
+    hint: 'احسب d(A_m, (P)) = |2(1) - m + 2(1) - 1| / √(4 + 1 + 4) = |3 - m| / 3 = 2، إذن |3 - m| = 6 (حلان متمايزان!).',
+    options: [
+      'm = -3   أو   m = 9',
+      'm = -3   فقط',
+      'm = 3   أو   m = -9',
+      'm = 5   أو   m = -1'
+    ],
+    correctIndex: 0
+  },
+  {
+    id: 't96_param_cross_area',
+    section: 'A',
+    sector: 2,
+    topic: 96,
+    prompt: 'لتكن النقط A(1, 0, 1) و B(2, 1, 1) و C_m(1, m, 3). ما قيمتا الوسيط m ∈ ℝ بحيث تكون مساحة المثلث ABC_m مساوية لـ 3/2؟',
+    hint: 'لدينا AB⃗(1, 1, 0) و AC_m⃗(0, m, 2)، إذن AB⃗ ∧ AC_m⃗ = (2, -2, m). ومنه (1/2)√(4 + 4 + m²) = 3/2 ⟺ 8 + m² = 9.',
+    options: [
+      'm = 1   أو   m = -1',
+      'm = 3   أو   m = -3',
+      'm = 1   فقط',
+      'm = √7   أو   m = -√7'
+    ],
+    correctIndex: 0
+  },
+  {
+    id: 't97_param_sphere_radius',
+    section: 'B',
+    sector: 3,
+    topic: 97,
+    prompt: 'وسيط فضائي: لتكن المجموعة (S_m): x² + y² + z² - 2m·x + 2m·y + 2z - 7 = 0. ما قيمتا m ∈ ℝ اللتان تكون عندهما (S_m) فلكة شعاعها R = 4؟',
+    hint: 'بإتمام المربعات: (x - m)² + (y + m)² + (z + 1)² = m² + m² + 1 + 7 = 2m² + 8. نساوي 2m² + 8 = R² = 16.',
+    options: [
+      'm = 2   أو   m = -2',
+      'm = 4   أو   m = -4',
+      'm = √8   أو   m = -√8',
+      'm = 2   فقط'
+    ],
+    correctIndex: 0
+  },
+  {
+    id: 't99_param_tangent_planes',
+    section: 'B',
+    sector: 3,
+    topic: 99,
+    prompt: 'لاحظ المبيان ثلاثي الأبعاد المرفق. نعتبر الفلكة (S) مركزها Ω(2, -1, 1) وشعاعها R = 2، وعائلة المستويات المتوازية (P_m): x + 2y - 2z + m = 0. ما قيمتا m اللتان يكون عندهما (P_m) مماساً لـ (S)؟',
+    hint: 'المستوى (P_m) مماس لـ (S) إذا وفقط إذا كان d(Ω, (P_m)) = R: |2 + 2(-1) - 2(1) + m| / √(1 + 4 + 4) = 2 ⟺ |m - 2| / 3 = 2.',
+    options: [
+      'm = 8   أو   m = -4',
+      'm = 4   أو   m = -8',
+      'm = 6   أو   m = -6',
+      'm = 8   فقط'
+    ],
+    correctIndex: 0,
+    graphSpec: { type: 'sphere_tangent_plane_param_3d', label: 'd(Ω, P_m) = R  ⇒  Twin Tangent Planes' }
+  },
+  {
+    id: 't100_param_circle_radius',
+    section: 'B',
+    sector: 4,
+    topic: 100,
+    prompt: 'لاحظ الشكل المرفق. الفلكة (S) مركزها Ω(1, 0, -1) وشعاعها R = 5، يقطعها المستوى (P_k): 2x - 2y + z + k = 0 وفق دائرة (C) شعاعها r = 4. ما قيمتا الوسيط k ∈ ℝ؟',
+    hint: 'من r² = R² - d² نجد d = √(25 - 16) = 3. إذن |2(1) - 0 + (-1) + k| / 3 = 3 ⟺ |k + 1| = 9.',
+    options: [
+      'k = 8   أو   k = -10',
+      'k = 10   أو   k = -8',
+      'k = 4   أو   k = -6',
+      'k = 9   أو   k = -9'
+    ],
+    correctIndex: 0,
+    graphSpec: { type: 'sphere_circle_param_3d', label: 'r = √(R² - d²) = 4  ⇒  d = 3' }
+  },
+  {
+    id: 't101_sphere_line_dist_method',
+    section: 'B',
+    sector: 4,
+    topic: 101,
+    prompt: 'لاحظ الشكل المرفق. باستعمال صيغة المسافة d(Ω, (D)) = ||ΩA⃗ ∧ u⃗|| / ||u⃗||، نعتبر (S) مركزها Ω(1, 1, 0) وشعاعها R = 2، والمستقيم (D) المار من A(2, 1, 2) والموجه بـ u⃗(2, -1, 2). ما الوضع النسبي لـ (D) و (S)؟',
+    hint: 'احسب ΩA⃗ = (1, 0, 2) ثم ΩA⃗ ∧ u⃗ = (2, 2, -1) ومنه ||ΩA⃗ ∧ u⃗|| = 3 و ||u⃗|| = 3، إذن d(Ω, (D)) = 1 < R.',
+    options: [
+      '(D) يقطع الفلكة (S) في نقطتين متمايزتين (d = 1 < R)',
+      '(D) مماس للفلكة (S) في نقطة وحيدة (d = R)',
+      '(D) لا يقطع الفلكة (S) أبداً (d > R)',
+      '(D) يمر مباشرة من مركز الفلكة Ω'
+    ],
+    correctIndex: 0,
+    graphSpec: { type: 'sphere_line_dist_3d', label: 'd(Ω, (D)) = ||ΩA ∧ u|| / ||u|| < R' }
+  },
+  {
+    id: 't102_tetrahedron_height',
+    section: 'B',
+    sector: 4,
+    topic: 102,
+    prompt: 'لاحظ الشكل المرفق. في رباعي الأوجه ABCD لدينا AB⃗ ∧ AC⃗ = (2, -1, 2) و AD⃗ = (3, 0, 3). احسب مساحة القاعدة ABC والارتفاع h = d(D, (ABC)):',
+    hint: 'مساحة القاعدة A_ABC = (1/2)||AB⃗ ∧ AC⃗|| = 3/2، والحجم V = (1/6)|(AB⃗ ∧ AC⃗)·AD⃗| = 2، والارتفاع h = |(AB⃗ ∧ AC⃗)·AD⃗| / ||AB⃗ ∧ AC⃗||.',
+    options: [
+      'A_ABC = 3/2   و   h = 4',
+      'A_ABC = 3   و   h = 2',
+      'A_ABC = 3/2   و   h = 12',
+      'A_ABC = 9/2   و   h = 4/3'
+    ],
+    correctIndex: 0,
+    graphSpec: { type: 'tetrahedron_volume_3d', label: 'V = (1/6)|(AB ∧ AC)·AD| = (1/3)A·h' }
   }
 ];
 

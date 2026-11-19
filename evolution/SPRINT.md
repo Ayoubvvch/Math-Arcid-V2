@@ -77,10 +77,14 @@
 ### [COMPLETED — Cycle 011 Alpha (2026-11-19)] Milestone 2.8: Launch Game 9 — `vector-odyssey` (أوديسا الفضاء المتجهي — Topics 91–102)
 * **Delivered**: **5,001 LOC** across 6 modules + OLED CSS, **30** 2BAC PC questions (`91–102`) + **10** interactive 3D `graphSpec` visualizers, `2600 × 1700` 2.5D parallax starfighter arena (`VECTRA-ℝ³`), 4 Orbital Seals (`α, β, γ, δ`), orbiting mines, 3-Phase HyperSphere Boss (`Ω`) with Phase 3 rotating tangent window `H`, and custom `(S)∩(P)` PS5 Hub SVG artwork.
 
-### [NEXT — Cycle 012 Omega (17:00 UTC)] Milestone 2.9: Deep Polish for Vector Odyssey
-* Upgrade 3D projection depth cues, tangent-plane intersection `graphSpec` plots, parameter question expansion, and 60FPS culling in `games/vector-odyssey/`.
+### [COMPLETED — Cycle 012 Omega (17:00 UTC)] Milestone 2.9: Deep Polish for Vector Odyssey
+* **Vector Odyssey v1.1.0 (`games/vector-odyssey/`, 5,426 LOC)**:
+  - **3D Wireframe Depth Cues & 60FPS Renderer (`js/renderer.js`)**: Eliminated per-frame vertex array allocations with fixed `PROJ_POOL`, separated polyhedron edges into dashed dim back-edges (`zMid < 0`) and solid bright front-edges (`zMid >= 0`) with near-vertex highlights, added central $(O, \vec{i}, \vec{j}, \vec{k})$ spatial triad and Boss beam slice equation labels (`x = ...` / `y = ...`), and upgraded `drawSphereWireframe` / `sphere_plane_circle_3d` with back-dashed / front-solid arcs.
+  - **Curriculum & 3D GraphSpec Expansion (`js/curriculum.js`, `js/renderer.js`)**: Expanded Topics `91–102` bank from `30` to **38 Moroccan 2BAC PC questions** (+8 parameter-in-space, double-root distance, line-in-plane, sphere radius parameter, twin tangent planes, circle radius parameter, `d(Ω, D)` distance method, and tetrahedron altitude questions) and upgraded live `graphSpec` visualizers from `10` to **14 interactive 3D diagrams** (`sphere_tangent_plane_param_3d`, `sphere_circle_param_3d`, `sphere_line_dist_3d`, `tetrahedron_volume_3d`).
+  - **Combat, Boss & Audio Depth (`js/world.js`, `js/audio.js`)**: Trench deflector pylons now intercept enemy projectiles as active cover, `cruiser_sphere` cruisers activate rotating tangent mini-shields after 1+ broken seals, Boss AI runs independent of `dist <= 1` with explicit `H`-gap piercing feedback, and `OdysseyAudio` adds `setCombatIntensity`, `playOrbPickup`, and `playComboChime`.
+  - **DualSense & HUD Bug Fixes (`js/controls.js`, `js/game.js`, `index.html`, `games.json`)**: Fixed CSS/JS class mismatches (`opt-correct`/`opt-wrong`, `highlight-ready`, `gp-pill.disconnected`), wired HUD `#filterChip` click cycling, added `axes[9]` D-Pad hat fallback, aligned `Shift/K` (Roll), `F/R` (Overdrive), `R1` (Hint), and `L2` (Bypass `-40%` energy) across DualSense/Keyboard/UI, and preserved active runs when opening Help.
 
-### [UPCOMING — Cycle 013 Alpha (05:00 UTC)] Milestone 2.10: Launch Game 10 — `quantum-casino` (كازينو الاحتمالات الكمومي — Topics 103–114)
+### [NEXT — Cycle 013 Alpha (05:00 UTC)] Milestone 2.10: Launch Game 10 — `quantum-casino` (كازينو الاحتمالات الكمومي — Topics 103–114)
 * **Genre**: 2D Tactical Heist & Bullet-Time Roguelite (`2560 × 1600` probability vault).
 * **Curriculum**: **Topics 103–114 (التعداد، الاحتمال الشرطي، الاستقلالية، المتغير العشوائي وقانون برنولي/الحداني)**.
 * **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with probability tree/binomial `graphSpec` plots, 4 Vault Seals + Bernoulli Syndicate Boss.
