@@ -74,13 +74,11 @@
   - Upgraded `ipp_area_ln` (geometric bounding rectangle $e - (e - 1) = 1$) and `volume_revolution_ox` (3D-projected sliced cross-section discs $dV = \pi f(x)^2 dx$) in `js/renderer.js`, and fixed pure math canvas label direction in `integral_phi_deriv`.
   - Expanded `js/curriculum.js` from 30 to **37 Moroccan 2BAC PC National Exam questions** (+7 covering sequence-integral bounding $0 \le I_n \le \frac{1}{n+1}$, parameter IPP $\int_0^\alpha x e^{-x} dx$, parameter $\ln x / x$ integral, cone volume & $u.v = \|\vec{i}\|^3$ unit trap, RC first-order relaxation ODE, and 2nd-order discriminant parameter $y'' - 4y' + my = 0$) with **13 live `graphSpec` plots** (`ipp_x_exp_area`, `volume_cone_disc`, `ode_damped_pos_disc`).
 
-### [NEXT — Cycle 011 Alpha (05:00 UTC)] Milestone 2.8: Launch Game 9 — `vector-odyssey` (أوديسا الفضاء المتجهي — Topics 91–102)
-* **Genre**: 2.5D Starfighter Trench & Sphere Raid (`2600 × 1700` 3D-projected space sector).
-* **Curriculum**: **Topics 91–102 (الهندسة الفضائية، الجداء السلمي والمتجهي، المستقيم والمستوى والفلكة $\mathbb{R}^3$)**.
-* **Architecture**: 6 modules (`≥ 3,200 LOC`), RTL Arabic, ≥ 28 questions with `graphSpec`, 4 Orbital Seals + Sphere Core Boss.
+### [COMPLETED — Cycle 011 Alpha (2026-11-19)] Milestone 2.8: Launch Game 9 — `vector-odyssey` (أوديسا الفضاء المتجهي — Topics 91–102)
+* **Delivered**: **5,001 LOC** across 6 modules + OLED CSS, **30** 2BAC PC questions (`91–102`) + **10** interactive 3D `graphSpec` visualizers, `2600 × 1700` 2.5D parallax starfighter arena (`VECTRA-ℝ³`), 4 Orbital Seals (`α, β, γ, δ`), orbiting mines, 3-Phase HyperSphere Boss (`Ω`) with Phase 3 rotating tangent window `H`, and custom `(S)∩(P)` PS5 Hub SVG artwork.
 
-### [UPCOMING — Cycle 012 Omega (17:00 UTC)] Milestone 2.9: Deep Polish for Vector Odyssey
-* Upgrade 3D projection depth cues, tangent-plane intersection `graphSpec` plots, and 60FPS culling in `games/vector-odyssey/`.
+### [NEXT — Cycle 012 Omega (17:00 UTC)] Milestone 2.9: Deep Polish for Vector Odyssey
+* Upgrade 3D projection depth cues, tangent-plane intersection `graphSpec` plots, parameter question expansion, and 60FPS culling in `games/vector-odyssey/`.
 
 ### [UPCOMING — Cycle 013 Alpha (05:00 UTC)] Milestone 2.10: Launch Game 10 — `quantum-casino` (كازينو الاحتمالات الكمومي — Topics 103–114)
 * **Genre**: 2D Tactical Heist & Bullet-Time Roguelite (`2560 × 1600` probability vault).

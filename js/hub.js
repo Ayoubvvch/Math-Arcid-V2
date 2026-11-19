@@ -233,6 +233,42 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'vector-odyssey') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect width="320" height="200" fill="#040817" />
+        <g stroke="#38bdf8" stroke-opacity="0.16" stroke-width="1">
+          <line x1="20" y1="150" x2="300" y2="150" /><line x1="20" y1="120" x2="300" y2="120" />
+          <line x1="65" y1="25" x2="65" y2="180" /><line x1="255" y1="25" x2="255" y2="180" />
+        </g>
+        <!-- 3D Coordinate Axes O, i, j, k -->
+        <g stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3">
+          <line x1="78" y1="138" x2="78" y2="48" />
+          <line x1="78" y1="138" x2="220" y2="138" />
+          <line x1="78" y1="138" x2="42" y2="168" />
+        </g>
+        <!-- Tilted Plane (P) and Wireframe Sphere (S) -->
+        <polygon points="82,118 242,118 212,150 52,150" fill="#38bdf8" fill-opacity="0.14" stroke="#7dd3fc" stroke-width="1.5" />
+        <circle cx="164" cy="96" r="46" fill="#818cf8" fill-opacity="0.14" stroke="#a78bfa" stroke-width="2.2" />
+        <ellipse cx="164" cy="96" rx="46" ry="15" fill="none" stroke="#c4b5fd" stroke-opacity="0.55" stroke-width="1.2" stroke-dasharray="4 3" />
+        <!-- Section Circle (C) = (S) ∩ (P) -->
+        <ellipse cx="164" cy="126" rx="34" ry="11" fill="#4ade80" fill-opacity="0.18" stroke="#4ade80" stroke-width="2" />
+        <!-- Cross-Product Normal Vector u ∧ v -->
+        <line x1="164" y1="126" x2="164" y2="30" stroke="#fbbf24" stroke-width="2.4" />
+        <polygon points="164,22 159,34 169,34" fill="#fbbf24" />
+        <line x1="164" y1="96" x2="198" y2="126" stroke="#f472b6" stroke-width="1.6" stroke-dasharray="3 2" />
+        <!-- Markers Omega, H, Starfighter silhouette -->
+        <circle cx="164" cy="96" r="3.4" fill="#fbbf24" />
+        <circle cx="164" cy="126" r="3.2" fill="#4ade80" />
+        <polygon points="274,64 252,54 258,64 252,74" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1.2" />
+        <text x="176" y="42" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">u ∧ v</text>
+        <text x="150" y="92" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">Ω</text>
+        <text x="206" y="138" fill="#4ade80" font-family="JetBrains Mono, monospace" font-weight="800" font-size="10">H | r²=R²-d²</text>
+        <text x="160" y="188" text-anchor="middle" fill="#7dd3fc" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11.5">(S) ∩ (P) &amp; d(Ω,(P)) | ℝ³ (91..102)</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />
