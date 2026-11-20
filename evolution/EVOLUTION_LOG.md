@@ -3,6 +3,21 @@
 
 ---
 
+### [Cycle 013-ALPHA] 2026-11-20 05:06 UTC | Milestone: Quantum Casino (كازينو الاحتمالات الكمومي) Gold-Standard Launch
+* **Phase**: Alpha (New 6-Module Game Construction >= 3,200 LOC)
+* **Target**: `games/quantum-casino/` (Topics 103–114: التعداد، السحب، الاحتمال الشرطي، شجرة الاحتمالات، المتغير العشوائي وقانون برنولي $B(n,p)$)
+* **Changes Delivered**:
+  - Engineered **كازينو الاحتمالات الكمومي — Quantum Casino v1.0.0** (**4,933 Lines of Code** across 6 modules + Emerald Felt/Roulette Gold CSS):
+    - Full-Screen 100vw × 100dvh 60FPS **2D Tactical Heist & Bullet-Time Probability Vault** (`2560 × 1600`) starring `QUANTUM-Ω`, 4 Casino Wings (`α, β, γ, δ`), solid poker-table heist cover with circle-AABB collision (and Bullet-Time chip ricochets), orbiting Roulette Laser Guard Mines, bottom-left Vault Mini-Radar, and zero `backdrop-filter` / zero `shadowBlur`.
+    - Complete **Topics 103–114 Curriculum Engine** (`js/curriculum.js`): **32 Moroccan 2BAC PC National Exam questions** covering every topic from `103` to `114`, `setBidiSafeMath` bidirectional formula isolation, topic filter isolation (`all`, `sectionA`, `sectionB`), and Fisher-Yates shuffled options (`pickCasinoChallenge`).
+    - **12 Interactive HTML5 Canvas `graphSpec` Visualizations** (`sampling_modes_table`, `order_coeff_slots`, `urn_balls_draw`, `venn_complement_union`, `conditional_subspace`, `weighted_prob_tree`, `two_urns_transfer`, `independence_matrix`, `random_var_pmf`, `variance_spread_axis`, `binomial_dist_bars`) with `drawSequenceGraph` compatibility alias.
+    - 3 Vault Enemy Archetypes (`guard_card`, `turret_dice`, `enforcer_markov` with Stagger/Execute `[▢ / E]`), 6 PlayStation Abilities (`✕` Quantum Blink `n!`, `◯` Card-Slice Evade `Cₙᵖ`, `▢` Vault Seal Override / Stagger Execute, `△ / L1` **Bullet-Time Quantum Dilation `0.28x`** slowing enemies & bullets while granting ricochet shots, `R2 / J` Prism Chip Blaster `P(A)`, `R1 / L2` Bernoulli Jackpot Shockwave `B(n,p)`), and the 3-Phase **Bernoulli Syndicate Core Boss (`نواة نقابة برنولي`)** with Phase 2 Roulette Laser Sweeps and Phase 3 rotating green success arc `p`.
+    - Full DualSense/DualShock gameplay + modal polling + haptics (`js/controls.js`), procedural Web Audio heist & Bullet-Time synthesizer (`js/audio.js`), bespoke Tree + Binomial SVG tile in `js/hub.js`, and registration in `games.json`.
+* **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Bullet-Time/Boss/32-question/12-graphSpec runtime simulation passed 100%.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 012-OMEGA] 2026-11-19 17:06 UTC | Milestone: Vector Odyssey v1.1.0 Deep Polish & 60FPS/DualSense Audit
 * **Phase**: Omega (3D Depth Cues, Parameter Curriculum, GraphSpecs, Boss/Combat Depth & DualSense Audit)
 * **Target**: `games/vector-odyssey/` (Topics 91–102)

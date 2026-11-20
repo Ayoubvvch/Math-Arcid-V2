@@ -269,6 +269,46 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'quantum-casino') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="qcGlow" cx="50%" cy="48%" r="58%">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.34" />
+            <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.14" />
+            <stop offset="100%" stop-color="#030907" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#030907" />
+        <circle cx="160" cy="96" r="90" fill="url(#qcGlow)" />
+        <!-- Roulette Ring -->
+        <circle cx="160" cy="94" r="64" fill="none" stroke="#fbbf24" stroke-opacity="0.32" stroke-dasharray="6 5" stroke-width="1.6" />
+        <circle cx="160" cy="94" r="46" fill="none" stroke="#34d399" stroke-opacity="0.45" stroke-width="1.6" />
+        <!-- Weighted Probability Tree -->
+        <g stroke="#34d399" stroke-width="1.8">
+          <line x1="50" y1="94" x2="112" y2="58" />
+          <line x1="50" y1="94" x2="112" y2="130" />
+          <line x1="112" y1="58" x2="162" y2="42" />
+          <line x1="112" y1="58" x2="162" y2="74" />
+        </g>
+        <circle cx="50" cy="94" r="4" fill="#fbbf24" />
+        <circle cx="112" cy="58" r="3.5" fill="#34d399" />
+        <circle cx="112" cy="130" r="3.5" fill="#f43f5e" />
+        <!-- Binomial Distribution B(n,p) Bars -->
+        <rect x="192" y="106" width="14" height="32" rx="2" fill="#a855f7" fill-opacity="0.82" />
+        <rect x="212" y="78" width="14" height="60" rx="2" fill="#fbbf24" fill-opacity="0.92" />
+        <rect x="232" y="64" width="14" height="74" rx="2" fill="#34d399" fill-opacity="0.92" />
+        <rect x="252" y="92" width="14" height="46" rx="2" fill="#22d3ee" fill-opacity="0.82" />
+        <rect x="272" y="118" width="14" height="20" rx="2" fill="#a855f7" fill-opacity="0.72" />
+        <!-- Card & Dice Accents -->
+        <text x="90" y="112" fill="#34d399" font-family="JetBrains Mono, monospace" font-weight="900" font-size="16">♠</text>
+        <text x="164" y="104" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="900" font-size="11">P_A(B)</text>
+        <text x="239" y="52" text-anchor="middle" fill="#fde68a" font-family="JetBrains Mono, monospace" font-weight="800" font-size="10.5">B(n,p) | E=np</text>
+        <text x="160" y="185" text-anchor="middle" fill="#a7f3d0" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11.5">Cₙᵖ, Aₙᵖ &amp; P(X=k) | (103..114)</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />
