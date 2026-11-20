@@ -51,10 +51,12 @@
     comboText: '',
     comboVisible: null,
     bulletVisible: null,
+    bulletText: '',
     filterText: '',
     bannerText: '',
     dashCd: null,
     sliceCd: null,
+    shootCd: null,
     bulletCd: null,
     jackpotCd: null,
     nearGate: null
@@ -85,6 +87,7 @@
       actSlice: document.getElementById('actSlice'),
       actOverride: document.getElementById('actOverride'),
       actBulletTime: document.getElementById('actBulletTime'),
+      actShoot: document.getElementById('actShoot'),
       actJackpot: document.getElementById('actJackpot'),
       introModal: document.getElementById('introModal'),
       btnStartCasino: document.getElementById('btnStartCasino'),
@@ -132,7 +135,7 @@
     const raw = String(text ?? '');
     el.textContent = '';
 
-    const mathSegmentRegex = /([A-Za-z0-9ℝΩĀB̄D̄M̄∑∏∫√°±≤≥≠≈≡×÷→⇒⇔∪∩∈∉∅∞ₙᵖᵏᵢ₁₂+\-*/=^_{}()[\]|.,:;<>'"]+(?:\s+[A-Za-z0-9ℝΩĀB̄D̄M̄∑∏∫√°±≤≥≠≈≡×÷→⇒⇔∪∩∈∉∅∞ₙᵖᵏᵢ₁₂+\-*/=^_{}()[\]|.,:;<>'"]+)*)/g;
+    const mathSegmentRegex = /([A-Za-z0-9\u0304ℝΩĀB̄D̄M̄σμλπ∑∏∫√°±≤≥≠≈≡×÷→⇒⇔∪∩∈∉∅∞ₙᵖᵏᵢ₀₁₂₃₄₅₆₇₈₉⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺+\-*/=^_{}()[\]|.,:;<>'"]+(?:\s+[A-Za-z0-9\u0304ℝΩĀB̄D̄M̄σμλπ∑∏∫√°±≤≥≠≈≡×÷→⇒⇔∪∩∈∉∅∞ₙᵖᵏᵢ₀₁₂₃₄₅₆₇₈₉⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺+\-*/=^_{}()[\]|.,:;<>'"]+)*)/g;
     let lastIdx = 0;
     let match = mathSegmentRegex.exec(raw);
     while (match !== null) {
@@ -277,7 +280,7 @@
       s.player.energy = Math.min(s.player.maxEnergy, s.player.energy + 25);
       s.player.hp = Math.min(s.player.maxHp, s.player.hp + 15);
       window.damageCasinoEnemy?.(s, nearest.enemy, 9999, true, true);
-      window.CasinoAudio?.playVaultUnlock?.();
+      window.CasinoAudio?.playExecute?.();
       window.triggerCasinoHaptic?.(140, 0.55, 0.85);
       window.addCasinoFloatText(s, s.player.x, s.player.y - 32, 'تصفية كمومية!', '#34d399', 1.2);
       syncHUD(s);
@@ -318,6 +321,7 @@
       els.seqHintBox.classList.add('hidden');
     }
 
+    const psClasses = ['ps-x', 'ps-o', 'ps-sq', 'ps-tri'];
     for (let i = 0; i < 4; i += 1) {
       const btn = els.seqOpts[i];
       if (!btn) continue;
@@ -325,12 +329,16 @@
       const keyTag = ['✕', '◯', '▢', '△'][i];
       btn.textContent = '';
       const badge = document.createElement('span');
-      badge.className = 'opt-gp-badge';
-      badge.textContent = `${keyTag} / ${i + 1}`;
+      badge.className = `ps-badge ${psClasses[i]}`;
+      badge.textContent = keyTag;
+      const numTag = document.createElement('span');
+      numTag.className = 'opt-gp-badge';
+      numTag.textContent = `${i + 1}`;
       const body = document.createElement('span');
       body.className = 'opt-body';
       setBidiSafeMath(body, activeQuestion.options[i] || '');
       btn.appendChild(badge);
+      btn.appendChild(numTag);
       btn.appendChild(body);
     }
 
@@ -518,6 +526,13 @@
       hudCache.bulletVisible = showBullet;
       els.bulletBadge.classList.toggle('hidden', !showBullet);
     }
+    if (showBullet && els.bulletBadge) {
+      const btStr = `⏱ ${p.bulletTimeTimer.toFixed(1)}s`;
+      if (hudCache.bulletText !== btStr) {
+        hudCache.bulletText = btStr;
+        els.bulletBadge.textContent = btStr;
+      }
+    }
 
     const showCombo = s.stats.combo > 1;
     const comboStr = `×${s.stats.combo}`;
@@ -547,6 +562,11 @@
     if (hudCache.sliceCd !== sliceCd && els.actSlice) {
       hudCache.sliceCd = sliceCd;
       els.actSlice.classList.toggle('cooldown', sliceCd);
+    }
+    const shootCd = p.shootCooldown > 0.05;
+    if (hudCache.shootCd !== shootCd && els.actShoot) {
+      hudCache.shootCd = shootCd;
+      els.actShoot.classList.toggle('cooldown', shootCd);
     }
     const bulletCd = p.bulletTimeCooldown > 0.05;
     if (hudCache.bulletCd !== bulletCd && els.actBulletTime) {

@@ -557,8 +557,145 @@ window.CASINO_QUESTION_BANK = [
     ],
     correctIndex: 0,
     graphSpec: {
-      type: 'binomial_dist_bars',
-      label: 'V(X)/E(X) = 1 - p ⇒ p = 0.3, n = 10'
+      type: 'binomial_np_solver',
+      label: 'V(X)/E(X) = 1 - p = 0.7 ⇒ p = 0.3, n = 10'
+    }
+  },
+  // ================= OMEGA EXPANSION: NATIONAL EXAM TRAPS & PARAMETER PROBLEMS =================
+  {
+    id: 't104_simultaneous_at_most',
+    section: 'A',
+    sector: 1,
+    topic: 104,
+    prompt: 'يحتوي صندوق على 4 كرات حمراء و5 كرات بيضاء (9 كرات). نسحب في آن واحد 3 كرات. ما احتمال الحصول على كرة حمراء واحدة على الأكثر؟',
+    hint: '«كرة حمراء واحدة على الأكثر» تعني (0 حمراء و3 بيضاء) أو (1 حمراء و2 بيضاء): (C₅³ + C₄¹·C₅²) / C₉³ = (10 + 40) / 84.',
+    options: [
+      '25 / 42',
+      '10 / 21',
+      '5 / 42',
+      '17 / 42'
+    ],
+    correctIndex: 0
+  },
+  {
+    id: 't105_order_with_replacement',
+    section: 'A',
+    sector: 1,
+    topic: 105,
+    prompt: 'يضم كيس 4 كرات خضراء و3 كرات صفراء. نسحب بالتتابع وبإحلال 3 كرات. ما عدد السحبات التي تحتوي على كرتين خضراوين وكرة صفراء؟',
+    hint: 'السحب بالتتابع وبإحلال يوظف القوى مع معامل الترتيب: (3! / (2!·1!)) × 4² × 3¹ = 3 × 16 × 3.',
+    options: [
+      '144',
+      '48',
+      '108',
+      '288'
+    ],
+    correctIndex: 0
+  },
+  {
+    id: 't108_cond_bayes_reverse',
+    section: 'A',
+    sector: 2,
+    topic: 108,
+    prompt: 'لاحظ مخطط التجزيء العكسي. ليكن P(A) = 0.4 و P_A(B) = 0.7 و P_Ā(B) = 0.2. احسب P(B) والاحتمال الشرطي العكسي P_B(A):',
+    hint: 'أولاً P(B) = P(A)·P_A(B) + P(Ā)·P_Ā(B) = 0.4×0.7 + 0.6×0.2 = 0.40، ثم P_B(A) = P(A∩B)/P(B) = 0.28/0.40.',
+    options: [
+      'P(B) = 0.40   و   P_B(A) = 0.7',
+      'P(B) = 0.40   و   P_B(A) = 0.3',
+      'P(B) = 0.90   و   P_B(A) = 0.28',
+      'P(B) = 0.50   و   P_B(A) = 0.56'
+    ],
+    correctIndex: 0,
+    graphSpec: {
+      type: 'bayes_reverse_partition',
+      label: 'Bayes: P_B(A) = (P(A)·P_A(B)) / P(B)'
+    }
+  },
+  {
+    id: 't109_tree_param_p',
+    section: 'B',
+    sector: 3,
+    topic: 109,
+    prompt: 'لاحظ الشجرة الوسيطية. نعتبر p ∈ ]0, 1[ بحيث P(A) = p و P_A(B) = p و P_Ā(B) = 0.3. إذا علمت أن P(B) = 0.40، فما قيمة الوسيط p؟',
+    hint: 'حسب الاحتمالات الكلية: p² + 0.3(1 - p) = 0.40 ⟺ p² - 0.3p - 0.10 = 0 ⟺ (p - 0.5)(p + 0.2) = 0.',
+    options: [
+      'p = 0.5',
+      'p = 0.2',
+      'p = 0.4',
+      'p = 0.7'
+    ],
+    correctIndex: 0,
+    graphSpec: {
+      type: 'weighted_prob_tree_param',
+      label: 'p² + 0.3(1-p) = 0.40 ⇒ p = 0.5'
+    }
+  },
+  {
+    id: 't111_indep_complement_events',
+    section: 'B',
+    sector: 3,
+    topic: 111,
+    prompt: 'حدثان A و B مستقلان بحيث P(A) = 0.3 و P(B) = 0.6. ما قيمة الاحتمال P(Ā ∩ B)؟',
+    hint: 'إذا كان A و B مستقلين فإن Ā و B مستقلان أيضاً! إذن P(Ā∩B) = P(Ā)·P(B) = (1 - 0.3) × 0.6.',
+    options: [
+      '0.42',
+      '0.18',
+      '0.28',
+      '0.30'
+    ],
+    correctIndex: 0
+  },
+  {
+    id: 't112_random_var_abs_diff',
+    section: 'B',
+    sector: 4,
+    topic: 112,
+    prompt: 'لاحظ شبكة الأزواج المرقمة. نسحب تزامنياً كرتين من كيس يحوي {1, 2, 3, 4}، وليكن X القيمة المطلقة لفرق الرقمين |a - b|. حدد X(Ω) و P(X = 1):',
+    hint: 'الأزواج الستة هي {1,2},{2,3},{3,4} (فرقها 1)، {1,3},{2,4} (فرقها 2)، و {1,4} (فرقها 3). إذن P(X=1) = 3/6.',
+    options: [
+      'X(Ω) = {1, 2, 3}   و   P(X = 1) = 1 / 2',
+      'X(Ω) = {0, 1, 2, 3}   و   P(X = 1) = 1 / 3',
+      'X(Ω) = {1, 2, 3}   و   P(X = 1) = 1 / 3',
+      'X(Ω) = {1, 2, 3}   و   P(X = 1) = 1 / 6'
+    ],
+    correctIndex: 0,
+    graphSpec: {
+      type: 'dice_diff_grid',
+      label: 'C₄² = 6 paires | X = |a - b| ∈ {1, 2, 3}'
+    }
+  },
+  {
+    id: 't113_variance_param_solve',
+    section: 'B',
+    sector: 4,
+    topic: 113,
+    prompt: 'يأخذ X القيم {-1, 1, 3} بحيث P(X=-1)=a, P(X=1)=0.5, P(X=3)=b، وأمله الرياضي E(X) = 1.2. ما قيم (a, b) والانحراف الطرازي σ(X)؟',
+    hint: 'من a+b=0.5 و -a+0.5+3b=1.2 نجد a=0.2 و b=0.3. ثم E(X²) = 0.2 + 0.5 + 9(0.3) = 3.4 ⟹ V(X) = 3.4 - 1.44 = 1.96.',
+    options: [
+      'a = 0.2 , b = 0.3   و   σ(X) = 1.4',
+      'a = 0.3 , b = 0.2   و   σ(X) = 1.4',
+      'a = 0.2 , b = 0.3   و   σ(X) = 1.96',
+      'a = 0.25 , b = 0.25   و   σ(X) = 1.2'
+    ],
+    correctIndex: 0
+  },
+  {
+    id: 't114_binomial_at_least_one_n',
+    section: 'B',
+    sector: 4,
+    topic: 114,
+    prompt: 'لاحظ عتبة التكرار n. نكرر تجربة مستقلة n مرة باحتمال نجاح p = 0.25. ما أصغر عدد صحيح طبيعي n بحيث يكون P(X ≥ 1) ≥ 0.9؟',
+    hint: '1 - (0.75)ⁿ ≥ 0.9 ⟺ (0.75)ⁿ ≤ 0.1 ⟺ n ≥ ln(0.1)/ln(0.75) ≈ 8.004. وبما أن (0.75)⁸ ≈ 0.1001 > 0.1 فالأصغر هو 9!',
+    options: [
+      'n = 9',
+      'n = 8',
+      'n = 10',
+      'n = 7'
+    ],
+    correctIndex: 0,
+    graphSpec: {
+      type: 'binomial_n_threshold',
+      label: '1 - (0.75)ⁿ ≥ 0.9 ⇒ n ≥ 8.004 ⇒ n_min = 9'
     }
   }
 ];

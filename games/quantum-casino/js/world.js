@@ -224,10 +224,16 @@ window.spawnCasinoEnemy = function (state, forceKind = null, forceX = null, forc
   let sx = forceX;
   let sy = forceY;
   if (sx === null || sy === null) {
-    const ang = Math.random() * Math.PI * 2;
-    const dist = 440 + Math.random() * 140;
-    sx = Math.max(90, Math.min(window.CASINO_WORLD.WIDTH - 90, p.x + Math.cos(ang) * dist));
-    sy = Math.max(110, Math.min(window.CASINO_WORLD.HEIGHT - 110, p.y + Math.sin(ang) * dist));
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      const ang = Math.random() * Math.PI * 2;
+      const dist = 440 + Math.random() * 140;
+      const candX = Math.max(90, Math.min(window.CASINO_WORLD.WIDTH - 90, p.x + Math.cos(ang) * dist));
+      const candY = Math.max(110, Math.min(window.CASINO_WORLD.HEIGHT - 110, p.y + Math.sin(ang) * dist));
+      const blocked = state.coverTables.some((rect) => pointInsideRect(candX, candY, 34, rect));
+      sx = candX;
+      sy = candY;
+      if (!blocked) break;
+    }
   }
   if (kind === 'boss') {
     sx = 1280;
@@ -479,11 +485,14 @@ window.performCasinoShoot = function (state) {
   state.projectiles.push({
     x: p.x + Math.cos(ang) * 24,
     y: p.y + Math.sin(ang) * 24,
+    prevX: p.x + Math.cos(ang) * 24,
+    prevY: p.y + Math.sin(ang) * 24,
     vx: Math.cos(ang) * spd,
     vy: Math.sin(ang) * spd,
     radius: 6.5,
     dmg: inBT ? 26 : 21,
     bounces: inBT ? 1 : 0,
+    ricocheted: false,
     life: 1.05,
     angle: ang
   });
@@ -698,7 +707,9 @@ window.updateCasinoWorld = function (state, rawDt, moveVec, aimVec) {
   p.y = Math.max(46, Math.min(window.CASINO_WORLD.HEIGHT - 46, p.y));
 
   for (let i = 0; i < state.coverTables.length; i += 1) {
-    resolveCircleRectCollision(p, state.coverTables[i]);
+    const rect = state.coverTables[i];
+    if (rect.hitFlash > 0) rect.hitFlash = Math.max(0, rect.hitFlash - playerDt);
+    resolveCircleRectCollision(p, rect);
   }
 
   // Smooth camera tracking
@@ -752,6 +763,8 @@ window.updateCasinoWorld = function (state, rawDt, moveVec, aimVec) {
     const pr = state.projectiles[i];
     const prevX = pr.x;
     const prevY = pr.y;
+    pr.prevX = prevX;
+    pr.prevY = prevY;
     pr.x += pr.vx * playerDt;
     pr.y += pr.vy * playerDt;
     pr.angle += 12 * playerDt;
@@ -767,13 +780,17 @@ window.updateCasinoWorld = function (state, rawDt, moveVec, aimVec) {
     for (let t = 0; t < state.coverTables.length; t += 1) {
       const rect = state.coverTables[t];
       if (pointInsideRect(pr.x, pr.y, pr.radius, rect)) {
+        rect.hitFlash = 0.14;
         if (pr.bounces > 0) {
           pr.bounces -= 1;
+          pr.ricocheted = true;
+          pr.dmg += 12;
           if (prevX < rect.x || prevX > rect.x + rect.w) pr.vx = -pr.vx;
           else pr.vy = -pr.vy;
           pr.x = prevX + pr.vx * playerDt;
           pr.y = prevY + pr.vy * playerDt;
-          window.spawnCasinoParticles(state, pr.x, pr.y, 4, '#c084fc', 120);
+          window.CasinoAudio?.playRicochet?.();
+          window.spawnCasinoParticles(state, pr.x, pr.y, 6, '#c084fc', 150);
         } else {
           window.spawnCasinoParticles(state, pr.x, pr.y, 4, '#94a3b8', 90);
           destroyed = true;
@@ -798,6 +815,10 @@ window.updateCasinoWorld = function (state, rawDt, moveVec, aimVec) {
             bypassShield = true;
             window.addCasinoFloatText(state, e.x, e.y - e.radius - 16, 'اختراق نافذة النجاح p!', '#34d399', 0.9);
           }
+        }
+        if (pr.ricocheted) {
+          state.stats.score += 20;
+          window.addCasinoFloatText(state, pr.x, pr.y - 12, 'ارتداد كمومي +20!', '#e9d5ff', 0.8);
         }
         window.damageCasinoEnemy(state, e, pr.dmg, false, bypassShield);
         state.projectiles.splice(i, 1);
@@ -908,15 +929,20 @@ window.updateCasinoWorld = function (state, rawDt, moveVec, aimVec) {
       if (e.phase >= 2) {
         e.beamTimer -= worldDt;
         if (e.beamTimer <= 0) {
-          e.beamTimer = e.phase === 3 ? 3.8 : 4.6;
-          const horiz = Math.random() < 0.5;
-          const bAngle = horiz ? 0 : Math.PI * 0.5;
+          e.beamTimer = e.phase === 3 ? 3.7 : 4.5;
+          const patterns = [
+            { angle: 0, label: 'شعاع P(A∩B)' },
+            { angle: Math.PI * 0.5, label: 'شعاع P(A∪B)' },
+            { angle: Math.PI * 0.25, label: 'شعاع P_A(B)' },
+            { angle: -Math.PI * 0.25, label: 'شعاع B(n,p)' }
+          ];
+          const pat = patterns[Math.floor(Math.random() * (e.phase >= 3 ? 4 : 2))];
           state.bossBeams.push({
             x: e.x, y: e.y,
-            angle: bAngle,
+            angle: pat.angle,
             charge: 0.95,
             active: 0.48,
-            label: horiz ? 'شعاع P(A∩B)' : 'شعاع P(A∪B)'
+            label: pat.label
           });
           window.CasinoAudio?.playBeamCharge?.();
         }
@@ -979,6 +1005,7 @@ window.updateCasinoWorld = function (state, rawDt, moveVec, aimVec) {
     let blockedByCover = false;
     for (let t = 0; t < state.coverTables.length; t += 1) {
       if (pointInsideRect(ep.x, ep.y, ep.radius * 0.7, state.coverTables[t])) {
+        state.coverTables[t].hitFlash = 0.12;
         blockedByCover = true;
         window.spawnCasinoParticles(state, ep.x, ep.y, 3, '#94a3b8', 70);
         break;

@@ -163,6 +163,19 @@ window.CasinoAudio = {
     this.tone(940, 1480, 0.08, 'triangle', 0.09, 0);
   },
 
+  playRicochet() {
+    this.init();
+    this.tone(1320, 1960, 0.075, 'sine', 0.085, 0);
+    this.tone(1760, 2240, 0.055, 'triangle', 0.05, 0.018);
+  },
+
+  playExecute() {
+    this.init();
+    this.tone(420, 1080, 0.14, 'triangle', 0.13, 0);
+    this.tone(660, 1320, 0.16, 'sine', 0.11, 0.04);
+    this.noise(0.14, 1500, 1.3, 0.11, 0);
+  },
+
   playBossPhaseShift() {
     this.init();
     this.tone(130, 320, 0.35, 'sawtooth', 0.13, 0);

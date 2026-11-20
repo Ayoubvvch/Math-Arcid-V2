@@ -3,6 +3,20 @@
 
 ---
 
+### [Cycle 014-OMEGA] 2026-11-20 17:06 UTC | Milestone: Quantum Casino v1.1.0 Deep Polish & SPRINT_02 Closure
+* **Phase**: Omega (Curriculum/GraphSpec Expansion, Bullet-Time Ricochet, Boss/Audio Polish, Bidi Fix & Sprint Closure)
+* **Target**: `games/quantum-casino/` (Topics 103–114) & `evolution/` Sprint Transition
+* **Changes Delivered**:
+  - **Quantum Casino v1.1.0 (`games/quantum-casino/`, 5,248 LOC)**:
+    - **Curriculum & GraphSpec Expansion (`js/curriculum.js`, `js/renderer.js`)**: Expanded Topics `103–114` bank from 32 to **40 Moroccan 2BAC PC National Exam questions** (+8 covering `Au plus 1`, replacement order coefficient, reverse Bayes `P_B(A)`, parametric tree quadratic `p`, independent complements, `|a-b|` RV grid, `σ(X)` parameter solve, and `ln` binomial threshold trap `n = 9`) and upgraded live `graphSpec` visualizers from 12 to **16 diagrams** (`binomial_np_solver`, `bayes_reverse_partition`, `weighted_prob_tree_param`, `dice_diff_grid`, `binomial_n_threshold`).
+    - **Bullet-Time Ricochet, Cover & Boss Polish (`js/world.js`, `js/renderer.js`, `js/audio.js`)**: Added violet ricochet trails with `+12` bonus damage & `+20` trick-shot score (`playRicochet`), cover-table hit flash feedback, `playExecute()` finisher audio, cover-safe enemy spawn sampling, diagonal Phase 3 Boss probability beams (`P_A(B)` / `B(n,p)`), and rotating `p` vs `1-p` shield ring labels.
+    - **RTL Bidi & HUD Polish (`js/game.js`, `games.json`)**: Added `σμλπ`, combining macron `\u0304`, and Unicode super/subscripts (`₀-₉`, `⁰-⁹`, `⁻`, `⁺`) to `setBidiSafeMath`, added live `⏱ X.Xs` Bullet-Time countdown to `#bulletBadge`, wired `#actShoot` cooldown state, and restored colored `.ps-badge` badges in `#overrideModal`.
+  - **SPRINT_02 Closure**: Updated `STATE.json` (`status: "COMPLETED_NEEDS_ROADMAP"`, `nextCycleNumber: 15`) and cleared pending milestones in `SPRINT.md` to arm **Phase ARCHITECT** on Cycle 015.
+* **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Bullet-Time-Ricochet/Boss/40-question/16-graphSpec simulation passed 100%.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 013-ALPHA] 2026-11-20 05:06 UTC | Milestone: Quantum Casino (كازينو الاحتمالات الكمومي) Gold-Standard Launch
 * **Phase**: Alpha (New 6-Module Game Construction >= 3,200 LOC)
 * **Target**: `games/quantum-casino/` (Topics 103–114: التعداد، السحب، الاحتمال الشرطي، شجرة الاحتمالات، المتغير العشوائي وقانون برنولي $B(n,p)$)
@@ -157,19 +171,3 @@
   - Completely rebuilt `games/complex-plane-duel/` into **قلعة أرغاند — Complex Plane Citadel v2.0** (3,591 LOC, Topics 51–64: الأعداد العقدية) with 4 Quadrant Seals (`Q1..Q4`), 26 National Exam questions, 9 interactive Argand `graphSpec` diagrams, Roots-of-Unity polygon barrier, Conjugate reflection, Homothety blast, Moivre Origin Boss, and custom Hub SVG tile.
 * **Verification**: 7-Stage Ironclad Quality Gate (`verify.sh`) passed 100%.
 * **Author**: Autonomous AGY Core ("My Homie").
-
----
-
-### [Cycle 003] 2026-11-14 00:17 UTC | Milestone: PS5 Console Hub & DualSense Masterclass Polish
-* **Phase**: Console Hub Evolution & Hardware-Grade Polish
-* **Author**: Owner Ayoub (eulerx0)
-* **Changes Delivered**:
-  - Transformed the platform Hub into a cinematic **PS5 Console Launcher**:
-    - Real-time PS5 boot sequence with polyphonic startup chord and `✕, ◯, ▢, △` ambient glow.
-    - Horizontal game rail with dynamic background color interpolation per game.
-    - Zero vertical scroll (100vw x 100dvh) with 100% controller navigation (D-Pad, Sticks, ✕ Select, ▢ Info, △ Search).
-    - Top console bar with live clock, controller status badge, audio switcher, and category filters.
-  - Deep 60+ FPS GPU-composited performance polish across `math-battle` and `mathcore-survivor`.
-  - Added navigation tick sounds, back sounds, and launch curtain transition.
-  - Formulated the **Absolute Creative Sovereignty Charter**: game design liberated from dry academic constraints into thrilling, addictive genres (Horror, Platformers, Roguelites) powered by pure mathematical engines.
-* **Verification**: Quality gate passed 100%. GitHub Actions deployment successful.

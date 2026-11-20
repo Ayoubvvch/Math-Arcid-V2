@@ -96,9 +96,9 @@
       const cy = t.y + t.h * 0.5;
       if (!isVisible(cx, cy, Math.max(t.w, t.h), cam, halfW, halfH)) continue;
 
-      ctx.fillStyle = '#0a251d';
+      ctx.fillStyle = t.hitFlash > 0 ? '#113a2d' : '#0a251d';
       ctx.fillRect(t.x, t.y, t.w, t.h);
-      ctx.strokeStyle = '#fbbf24';
+      ctx.strokeStyle = t.hitFlash > 0 ? '#34d399' : '#fbbf24';
       ctx.lineWidth = 2.4;
       ctx.strokeRect(t.x, t.y, t.w, t.h);
       ctx.strokeStyle = 'rgba(52, 211, 153, 0.45)';
@@ -252,6 +252,20 @@
         ctx.arc(0, 0, sr, e.shieldAngle - gap, e.shieldAngle + gap);
         ctx.stroke();
         ctx.setLineDash([]);
+
+        if (e.kind === 'boss') {
+          const px = Math.cos(e.shieldAngle) * (sr + 14);
+          const py = Math.sin(e.shieldAngle) * (sr + 14);
+          const qx = Math.cos(e.shieldAngle + Math.PI) * (sr + 14);
+          const qy = Math.sin(e.shieldAngle + Math.PI) * (sr + 14);
+          ctx.direction = 'ltr';
+          ctx.font = '900 11px "JetBrains Mono", monospace';
+          ctx.textAlign = 'center';
+          ctx.fillStyle = '#34d399';
+          ctx.fillText('p', px, py + 4);
+          ctx.fillStyle = '#fb7185';
+          ctx.fillText('1-p', qx, qy + 4);
+        }
       }
 
       const bodyColor = e.hitFlash > 0 ? '#ffffff' : e.color;
@@ -353,16 +367,24 @@
   function drawProjectilesAndFx(ctx, state, halfW, halfH) {
     const cam = state.camera;
 
-    // Player Prism Chips
+    // Player Prism Chips (with glowing trail when ricocheted in Bullet-Time)
     for (let i = 0; i < state.projectiles.length; i += 1) {
       const pr = state.projectiles[i];
-      if (!isVisible(pr.x, pr.y, 20, cam, halfW, halfH)) continue;
+      if (!isVisible(pr.x, pr.y, 26, cam, halfW, halfH)) continue;
+      if (pr.ricocheted && typeof pr.prevX === 'number') {
+        ctx.strokeStyle = 'rgba(192, 132, 252, 0.72)';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(pr.prevX, pr.prevY);
+        ctx.lineTo(pr.x, pr.y);
+        ctx.stroke();
+      }
       ctx.save();
       ctx.translate(pr.x, pr.y);
       ctx.rotate(pr.angle);
-      ctx.fillStyle = pr.bounces > 0 ? '#c084fc' : '#fbbf24';
+      ctx.fillStyle = pr.ricocheted ? '#e879f9' : (pr.bounces > 0 ? '#c084fc' : '#fbbf24');
       ctx.beginPath();
-      ctx.arc(0, 0, pr.radius, 0, Math.PI * 2);
+      ctx.arc(0, 0, pr.ricocheted ? pr.radius + 1.2 : pr.radius, 0, Math.PI * 2);
       ctx.fill();
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 1.5;
@@ -492,7 +514,7 @@
   };
 
   /* ═══════════════════════════════════════════════════════════════
-     Probability & Combinatorics GraphSpec Engine (10 Live Diagrams)
+     Probability & Combinatorics GraphSpec Engine (14 Live Diagrams)
      ═══════════════════════════════════════════════════════════════ */
 
   function drawBall(ctx, x, y, r, fill, text) {
@@ -717,6 +739,102 @@
       ctx.beginPath(); ctx.moveTo(195, 76); ctx.lineTo(185, 58); ctx.lineTo(205, 58); ctx.closePath(); ctx.fill();
       ctx.direction = 'ltr'; ctx.font = '800 11px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
       ctx.fillStyle = '#fde047'; ctx.fillText('E(X)=1 | σ=√2/2', 195, 44);
+    } else if (t === 'binomial_np_solver') {
+      const heights = [0.028, 0.121, 0.233, 0.267, 0.200, 0.103, 0.037, 0.009];
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(42, 140); ctx.lineTo(348, 140); ctx.stroke();
+      heights.forEach((pv, k) => {
+        const bx = 66 + k * 36;
+        const bh = pv * 310;
+        ctx.fillStyle = k === 3 ? '#fbbf24' : '#34d399';
+        ctx.fillRect(bx - 11, 140 - bh, 22, bh);
+        ctx.direction = 'ltr'; ctx.font = '700 9.5px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#cbd5e1'; ctx.fillText(String(k), bx, 154);
+      });
+      ctx.direction = 'ltr'; ctx.font = '800 10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#fde047'; ctx.fillText('E(X) = np = 3   |   V(X) = 2.1', cx, 26);
+    } else if (t === 'bayes_reverse_partition') {
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.6;
+      ctx.strokeRect(54, 30, 282, 110);
+      ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
+      ctx.fillRect(54, 30, 113, 110);
+      ctx.fillStyle = 'rgba(34, 211, 238, 0.10)';
+      ctx.fillRect(167, 30, 169, 110);
+      ctx.fillStyle = 'rgba(251, 191, 36, 0.36)';
+      ctx.fillRect(54, 63, 113, 77);
+      ctx.fillStyle = 'rgba(244, 63, 94, 0.32)';
+      ctx.fillRect(167, 118, 169, 22);
+      ctx.strokeStyle = '#fbbf24'; ctx.beginPath(); ctx.moveTo(167, 30); ctx.lineTo(167, 140); ctx.stroke();
+      ctx.direction = 'ltr'; ctx.font = '800 10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#a7f3d0'; ctx.fillText('A (0.4)', 110, 48);
+      ctx.fillStyle = '#67e8f9'; ctx.fillText('Ā (0.6)', 252, 48);
+      ctx.fillStyle = '#fde047'; ctx.fillText('A∩B = 0.28', 110, 105);
+      ctx.fillStyle = '#fda4af'; ctx.fillText('Ā∩B = 0.12', 252, 133);
+    } else if (t === 'weighted_prob_tree_param') {
+      const rx = 56, ry = 88;
+      const ay = 48, nay = 128;
+      ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(rx, ry); ctx.lineTo(170, ay);
+      ctx.moveTo(rx, ry); ctx.lineTo(170, nay);
+      ctx.moveTo(192, ay); ctx.lineTo(308, 30);
+      ctx.moveTo(192, ay); ctx.lineTo(308, 66);
+      ctx.moveTo(192, nay); ctx.lineTo(308, 110);
+      ctx.moveTo(192, nay); ctx.lineTo(308, 146);
+      ctx.stroke();
+      ctx.direction = 'ltr'; ctx.font = '800 10.5px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#fde047'; ctx.fillText('p', 110, 60);
+      ctx.fillStyle = '#cbd5e1'; ctx.fillText('1-p', 110, 122);
+      ctx.fillStyle = '#34d399'; ctx.fillText('A', 181, ay + 4);
+      ctx.fillStyle = '#f43f5e'; ctx.fillText('Ā', 181, nay + 4);
+      ctx.fillStyle = '#fde047'; ctx.fillText('p → B', 268, 30);
+      ctx.fillStyle = '#94a3b8'; ctx.fillText('1-p → B̄', 268, 68);
+      ctx.fillStyle = '#38bdf8'; ctx.fillText('0.3 → B', 268, 110);
+      ctx.fillStyle = '#94a3b8'; ctx.fillText('0.7 → B̄', 268, 148);
+    } else if (t === 'dice_diff_grid') {
+      const vals = [1, 2, 3, 4];
+      const cell = 28;
+      const ox = 140, oy = 32;
+      for (let r = 0; r < 4; r += 1) {
+        for (let c = r + 1; c < 4; c += 1) {
+          const diff = Math.abs(vals[r] - vals[c]);
+          const gx = ox + c * cell;
+          const gy = oy + r * cell;
+          ctx.fillStyle = diff === 1 ? 'rgba(16, 185, 129, 0.45)' : diff === 2 ? 'rgba(251, 191, 36, 0.32)' : 'rgba(168, 85, 247, 0.35)';
+          ctx.fillRect(gx, gy, cell - 2, cell - 2);
+          ctx.strokeStyle = '#34d399';
+          ctx.strokeRect(gx, gy, cell - 2, cell - 2);
+          ctx.direction = 'ltr'; ctx.font = '800 11px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+          ctx.fillStyle = '#ffffff'; ctx.fillText(String(diff), gx + 13, gy + 18);
+        }
+      }
+      ctx.direction = 'ltr'; ctx.font = '800 10px "JetBrains Mono", monospace'; ctx.textAlign = 'left';
+      ctx.fillStyle = '#34d399'; ctx.fillText('X = 1 : 3 paires', 42, 62);
+      ctx.fillStyle = '#fbbf24'; ctx.fillText('X = 2 : 2 paires', 42, 86);
+      ctx.fillStyle = '#c084fc'; ctx.fillText('X = 3 : 1 paire', 42, 110);
+    } else if (t === 'binomial_n_threshold') {
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(52, 144); ctx.lineTo(344, 144); ctx.stroke();
+      const yThresh = 144 - 0.90 * 112;
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = '#fb7185'; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(52, yThresh); ctx.lineTo(344, yThresh); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.direction = 'ltr'; ctx.font = '800 10px "JetBrains Mono", monospace'; ctx.fillStyle = '#fda4af'; ctx.textAlign = 'left';
+      ctx.fillText('0.90', 22, yThresh + 3);
+      for (let n = 5; n <= 10; n += 1) {
+        const val = 1 - Math.pow(0.75, n);
+        const bx = 76 + (n - 5) * 46;
+        const bh = val * 112;
+        ctx.fillStyle = n === 9 ? '#34d399' : n === 8 ? '#fbbf24' : '#334155';
+        ctx.fillRect(bx - 13, 144 - bh, 26, bh);
+        ctx.fillStyle = '#e2e8f0'; ctx.textAlign = 'center';
+        ctx.fillText(`n=${n}`, bx, 158);
+        if (n === 8 || n === 9) {
+          ctx.fillStyle = n === 9 ? '#34d399' : '#fbbf24';
+          ctx.fillText(val.toFixed(3), bx, 139 - bh);
+        }
+      }
     } else {
       // binomial_dist_bars B(4, 1/3)
       const probs = [16 / 81, 32 / 81, 24 / 81, 8 / 81, 1 / 81];
