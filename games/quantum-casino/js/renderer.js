@@ -541,16 +541,18 @@
 
     const w = canvas.width;
     const h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#030b08';
-    ctx.fillRect(0, 0, w, h);
-
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.1)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 24; x < w; x += 32) { ctx.moveTo(x, 0); ctx.lineTo(x, h); }
-    for (let y = 24; y < h; y += 32) { ctx.moveTo(0, y); ctx.lineTo(w, y); }
-    ctx.stroke();
+    if (window.ArcadeCore && window.ArcadeCore.CanvasAxisKit) {
+      window.ArcadeCore.CanvasAxisKit.clearWithGrid(ctx, w, h, {
+        bg: '#030b08',
+        gridColor: 'rgba(16, 185, 129, 0.1)',
+        step: 32,
+        offset: 24
+      });
+    } else {
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#030b08';
+      ctx.fillRect(0, 0, w, h);
+    }
 
     const t = graphSpec.type;
     const cx = w * 0.5;

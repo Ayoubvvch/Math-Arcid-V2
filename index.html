@@ -238,10 +238,10 @@
         <p>This console hub is built for zero-build extensibility — any game registered in <code>games.json</code> automatically appears in the PS5 launcher strip.</p>
 
         <div class="modal-section">
-          <h3 class="modal-section-title">Step 1: Create Game Directory</h3>
+          <h3 class="modal-section-title">Step 1: Create 6-Module Gold-Standard Directory</h3>
           <ul class="modal-list">
-            <li>Create <code>games/&lt;your-game-slug&gt;/index.html</code></li>
-            <li>Import <code>../../shared/gamepad.js</code>, <code>retro-audio.js</code>, <code>math-engine.js</code></li>
+            <li>Create <code>games/&lt;your-game-slug&gt;/index.html</code> (<code>100vw × 100dvh</code> RTL canvas &amp; <code>?from=game</code> Hub exit)</li>
+            <li>Include <code>../../shared/arcade-core.js</code> (Bidi, DualSense, Progress &amp; Axes), plus Hub ES utilities <code>gamepad.js</code> &amp; <code>retro-audio.js</code></li>
           </ul>
         </div>
 

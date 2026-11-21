@@ -14,19 +14,19 @@
 
 ## 2. Sprint Milestones (Cycles 016–022 | 3.5 Days)
 
-### [NEXT — Cycle 016 Omega (2026-11-21 17:00 UTC)] Milestone 3.1: Unified `shared/arcade-core.js` Engine & Critical Exit/Bidi Hotfixes
-* **Deliverables**:
-  - Build `shared/arcade-core.js` (`window.ArcadeCore` — clean classic UMD/IIFE browser script passing `node -c` cleanly and usable without ESM conversion across all 10 games):
-    1. **Universal `ArcadeCore.setBidiSafeMath(el, text)`**: Combines `\u0304` macrons (`ĀB̄D̄M̄`), Greek/math operators (`σμλπ∑∏∫ΦΩΔαβγδ`), full Unicode sub/superscripts (`₀-₉⁰-⁹⁻⁺ₙₚₖᵢ`), and vector/set glyphs (`ℝℚℕℂ∧·⊥∪∩∈∉∅∞√°±≤≥≠≈≡×÷→⇒⇔∀∃⊂⊃`) so zero formulas ever fracture in RTL across any of the 10 games.
-    2. **Unified `ArcadeCore.Gamepad` Calibration**: Provides standardized `applyRadialDeadzone(lx, ly, threshold = 0.18)`, W3C button + `axes[9]` D-pad hat decoding, safe `triggerHaptic(duration, weak, strong)`, and connection indicator helpers.
-    3. **`ArcadeCore.Progress` Telemetry Store**: Clean `localStorage['math_arcid_v2_progress']` schema tracking per-game `bestScore`, `bestRank`, `sealsCleared` (`0..4`), `bossDefeated` (bool), `questionsAttempted`, `questionsCorrect`, `lastPlayed`, and aggregate 2BAC PC stats.
-    4. **`ArcadeCore.CanvasAxisKit`**: Lightweight shared Cartesian axis, dashed asymptote, and crisp `direction = 'ltr'` label renderer for live `graphSpec` canvases.
-  - **Immediate Pilot & Bugfix**:
-    - Fix `games/vector-odyssey/js/game.js` (lines 708 & 713) so `btnExitHubPause` and `btnHubEnd` navigate to `../../index.html?from=game` (no unwanted 1.4s boot screen replay).
-    - Wire `<script src="../../shared/arcade-core.js"></script>` into `vector-odyssey` and `quantum-casino`, migrating `setBidiSafeMath`, DualSense radial deadzone calibration, and recording live run telemetry via `ArcadeCore.Progress`.
-    - Update `games/README.md` & `index.html` contributor instructions to reference `shared/arcade-core.js`.
+### [COMPLETED — Cycle 016 Omega (2026-11-21 17:00 UTC)] Milestone 3.1: Unified `shared/arcade-core.js` Engine & Critical Exit/Bidi Hotfixes
+* **Delivered**:
+  - Shipped `/home/ubuntu/Math-Arcid-V2/shared/arcade-core.js` (`window.ArcadeCore` v1.0.0 UMD/IIFE classic script):
+    1. **`ArcadeCore.setBidiSafeMath`**: Unified Moroccan 2BAC PC `<bdi dir="ltr" class="math-ltr">` isolation supporting `\u0304`, vector arrows (`u⃗`), `σμλπ`, full sub/superscripts, and signed/logic/calculus operators cleanly.
+    2. **`ArcadeCore.Gamepad`**: Shared `applyRadialDeadzone`, `decodeDpadHat` (`axes[9]`), `justPressed`, `snapshotButtons`, edge-triggered `sampleDirectionalNav`, `resolveActiveGamepad`, `updateBanner`, `applyFocusRing`, and DualSense dual-rumble `triggerHaptic`.
+    3. **`ArcadeCore.Progress`**: Versioned `localStorage['math_arcid_v2_progress']` store tracking `bestScore`, `bestRank`, `sealsCleared`, `bossDefeated`, per-topic mastery (`recordAnswer` + `recordSealProgress` + `recordRun` with double-count guard), plus `exportJSON`/`importJSON`/`resetAll`.
+    4. **`ArcadeCore.CanvasAxisKit`**: Shared `clearWithGrid`, `drawCartesianAxes`, `drawDashedLine`, and `drawMathLabel`.
+  - **Pilot Migrations & Exit Bugfix (`vector-odyssey` v1.2.0 & `quantum-casino` v1.2.0)**:
+    - Fixed `games/vector-odyssey/js/game.js` (`btnExitHubPause` / `btnHubEnd` -> `../../index.html?from=game`) eliminating boot-screen replays on Hub return.
+    - Wired `<script src="../../shared/arcade-core.js"></script>` across Games 9–10 (`game.js`, `controls.js`, `renderer.js`), deduplicating ~250 LOC cleanly (`vector-odyssey` 5,288 LOC, `quantum-casino` 5,136 LOC) and persisting live runs/seals/questions.
+    - Updated `games/README.md` & root `index.html` contributor modal cleanly to document `shared/arcade-core.js`.
 
-### [UPCOMING — Cycle 017 Alpha (2026-11-22 05:00 UTC)] Milestone 3.2: PS5 Console Hub Arabic RTL & 2BAC PC Syllabus Reorganization
+### [NEXT — Cycle 017 Alpha (2026-11-22 05:00 UTC)] Milestone 3.2: PS5 Console Hub Arabic RTL & 2BAC PC Syllabus Reorganization
 * **Target**: `index.html`, `js/hub.js`, `css/hub.css`, `games.json`
 * **Deliverables**:
   - Upgrade `index.html` to cohesive Arabic/Bilingual RTL console chrome (`<html lang="ar" dir="rtl">` preserving locked 60FPS `Zero backdrop-filter` CSS & PS5 dual-rail layout): localize navigation chrome, Search Modal quick tags (Arabic 2BAC PC chapters), Boot copy, and DualSense control guide.

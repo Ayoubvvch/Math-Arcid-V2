@@ -3,6 +3,24 @@
 
 ---
 
+### [Cycle 016-OMEGA] 2026-11-21 17:04 UTC | Milestone: Unified `shared/arcade-core.js` Engine & Pilot Refactor (Milestone 3.1)
+* **Phase**: OMEGA (Shared Infrastructure Consolidation, Bugfix & Telemetry Pilot)
+* **Target**: `shared/arcade-core.js`, `games/vector-odyssey/` (v1.2.0), `games/quantum-casino/` (v1.2.0), `games/README.md`, `index.html`
+* **Changes Delivered**:
+  - Created unified classic browser/Node engine **`shared/arcade-core.js`** (`window.ArcadeCore` v1.0.0):
+    - **`ArcadeCore.setBidiSafeMath`**: Consolidated `<bdi dir="ltr" class="math-ltr">` isolation supporting `\u0304`, combining vector arrows (`u⃗`), `σμλπ∑∏∫Φ`, full Unicode sub/superscripts, and signed/logic/vector symbols across all 78 pilot Qs cleanly.
+    - **`ArcadeCore.Gamepad`**: Shared `applyRadialDeadzone`, `decodeDpadHat` (`axes[9]`), `justPressed`, `snapshotButtons`, `sampleDirectionalNav`, `resolveActiveGamepad`, `updateBanner`, `applyFocusRing`, and DualSense dual-rumble `triggerHaptic`.
+    - **`ArcadeCore.Progress`**: Versioned `localStorage['math_arcid_v2_progress']` persistence store tracking per-game `bestScore`, `bestRank` (`S/A/B/C`), `sealsCleared`, `bossDefeated`, per-topic accuracy, and aggregate 2BAC summary + JSON import/export/reset without double-counting.
+    - **`ArcadeCore.CanvasAxisKit`**: Shared 2D grid, Cartesian axes, dashed asymptotes, and LTR canvas math label helpers.
+  - **Pilot Adoption & Bugfixes**:
+    - Fixed `games/vector-odyssey/js/game.js` (`btnExitHubPause` / `btnHubEnd` -> `../../index.html?from=game`) eliminating unwanted boot-screen replays on Hub return.
+    - Wired `shared/arcade-core.js` into `vector-odyssey` (`5,288` LOC) and `quantum-casino` (`5,136` LOC) across `index.html`, `game.js`, `controls.js`, and `renderer.js`, removing ~250 LOC of duplicated boilerplate and saving live rank/seal/answer telemetry.
+    - Updated `games/README.md` & `index.html` contributor modal guide for `shared/arcade-core.js`.
+* **Verification**: Unit/DOM lossless Bidi test (38 `vector-odyssey` Qs = 526 `<bdi>`, 40 `quantum-casino` Qs = 597 `<bdi>`), runtime `vm` end-to-end mission simulations for both games, and all 7 stages of `evolution/scripts/verify.sh` passed 100%.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 015-ARCHITECT] 2026-11-21 05:06 UTC | Milestone: Full Repository & UX Audit, SPRINT_02 Archival & SPRINT_03 Master Plan
 * **Phase**: ARCHITECT (Automatic Post-Sprint Repository Audit & Multi-Day Roadmap Design)
 * **Target**: `evolution/` (`ARCHIVE_MILESTONES.md`, `ROADMAP.md`, `SPRINT.md`, `STATE.json`, `EVOLUTION_LOG.md`)
@@ -135,21 +153,4 @@
     - 3 Bio-Cyber enemy archetypes (`mutant_ln`, `drone_exp`, `sentinel_asym`) with Stagger/Execute (`▢ / E`), 6 PlayStation abilities (`✕` Double-Jump Thruster, `◯` Phase Dash, `▢` Seal Override, `△` Bio-Aegis `e^{ln x}=x`, `R2` Derivative Plasma `u'/u`, `L2` Growth-Comparison Shockwave `e^x ≫ xⁿ`), and the 3-Phase **Asymptote Containment Boss (`مُفاعل المقاربات الأعظم`)** with telegraphed asymptote beams and Phase 3 containment shield.
     - Full DualSense/DualShock gameplay + modal polling + haptics (`js/controls.js`), procedural Web Audio synthesizer with reactor hum & pre-allocated noise buffer (`js/audio.js`), bespoke SVG tile in `js/hub.js`, and registration in `games.json`.
 * **Verification**: All 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`) + Node Metroidvania physics, 3-Phase Boss & curriculum simulation passed 100%.
-* **Author**: Autonomous AGY Core ("My Homie").
-
----
-
-### [Cycle 006-OMEGA] 2026-11-16 17:15 UTC | Milestone: Dual Deep Polish — Limit Abyss v1.1.0 & Argand Citadel v2.1.0
-* **Phase**: Omega (Deep Gameplay, Boss Patterns, Question Bank Expansion & 60FPS Audit)
-* **Targets**: `games/limit-abyss/` (Topics 1–22) & `games/complex-plane-duel/` (Topics 51–64)
-* **Changes Delivered**:
-  - **Limit Abyss v1.1.0 (`games/limit-abyss/`, 4,616 LOC)**:
-    - Engineered full **3-Phase Mariana Leviathan Boss** (`Phase 1: Void Spikes`, `Phase 2: Discontinuity Beams`, `Phase 3: TVI Resonance Shield`).
-    - Fine-tuned Phase 3 TVI shield collision: torpedo deflection off solid `f(a)<0 / f(b)>0` arcs, piercing through rotating TVI Root Windows `α (f(α)=0)`, radial submersible separation preventing entrapment, and `△` Sonar / `L2` TVI Overdrive shield shattering + unified `damageBoss` victory resolution.
-    - Synthesized depth-adaptive acoustic engine in `js/audio.js` (`setDepthRatio`, dual-oscillator sub-harmonic trench drone, reusable white-noise buffer cavitation, bubble vent chimes `playBubblePop`, abyssal trench creaks, shield deflection/shatter chords, beam charge/fire, and AudioContext-scheduled sonar echoes).
-    - Fixed DualSense modal polling bug in `js/game.js`, added `pickLimitChallenge` Fisher-Yates option shuffling, DualSense dual-rumble haptics + analog triggers + `axes[9]` D-Pad hat fallback + Right-Stick aim (`js/controls.js`), and cached backdrop/vent gradients + removed `shadowBlur` in `js/renderer.js` for locked 60FPS.
-  - **Argand Citadel v2.1.0 (`games/complex-plane-duel/`, 3,792 LOC)**:
-    - Expanded `js/curriculum.js` from 26 to **32 Moroccan 2BAC PC National Exam questions** adding cubic polynomial factorization $P(z) = (z - z_0)(az^2 + bz + c)$ (real & complex roots), composite transformations $T_{\vec{u}} \circ R$ and composition-order traps $R \circ T$, weighted barycenters, and diameter-circle loci.
-    - Upgraded `js/renderer.js` to **12 interactive `graphSpec` visualizations** (`half_angle_chord`, `cubic_roots`, `composite_transform`, `diameter_circle`), full Y-axis drone culling, and dynamic RTL/LTR floating text direction.
-* **Verification**: All 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`) + Node physics/curriculum/renderer simulations passed 100%.
 * **Author**: Autonomous AGY Core ("My Homie").

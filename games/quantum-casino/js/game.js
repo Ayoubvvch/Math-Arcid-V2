@@ -132,27 +132,11 @@
    */
   function setBidiSafeMath(el, text) {
     if (!el) return;
-    const raw = String(text ?? '');
-    el.textContent = '';
-
-    const mathSegmentRegex = /([A-Za-z0-9\u0304ℝΩĀB̄D̄M̄σμλπ∑∏∫√°±≤≥≠≈≡×÷→⇒⇔∪∩∈∉∅∞ₙᵖᵏᵢ₀₁₂₃₄₅₆₇₈₉⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺+\-*/=^_{}()[\]|.,:;<>'"]+(?:\s+[A-Za-z0-9\u0304ℝΩĀB̄D̄M̄σμλπ∑∏∫√°±≤≥≠≈≡×÷→⇒⇔∪∩∈∉∅∞ₙᵖᵏᵢ₀₁₂₃₄₅₆₇₈₉⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺+\-*/=^_{}()[\]|.,:;<>'"]+)*)/g;
-    let lastIdx = 0;
-    let match = mathSegmentRegex.exec(raw);
-    while (match !== null) {
-      if (match.index > lastIdx) {
-        el.appendChild(document.createTextNode(raw.slice(lastIdx, match.index)));
-      }
-      const bdi = document.createElement('bdi');
-      bdi.className = 'math-ltr';
-      bdi.dir = 'ltr';
-      bdi.textContent = match[0];
-      el.appendChild(bdi);
-      lastIdx = match.index + match[0].length;
-      match = mathSegmentRegex.exec(raw);
+    if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
+      window.ArcadeCore.setBidiSafeMath(el, text);
+      return;
     }
-    if (lastIdx < raw.length) {
-      el.appendChild(document.createTextNode(raw.slice(lastIdx)));
-    }
+    el.textContent = String(text ?? '');
   }
 
   function handleResize() {
@@ -384,6 +368,7 @@
     if (state.stats.brokenGates >= state.gates.length && !state.bossSpawned) {
       window.spawnSyndicateBoss(state);
     }
+    window.ArcadeCore?.Progress?.recordSealProgress('quantum-casino', state.stats.brokenGates);
     syncHUD(state);
   }
 
@@ -393,7 +378,9 @@
     const btn = els.seqOpts[idx];
 
     state.stats.questionsAnswered += 1;
-    if (idx === activeQuestion.correctIndex) {
+    const isCorrect = idx === activeQuestion.correctIndex;
+    window.ArcadeCore?.Progress?.recordAnswer('quantum-casino', activeQuestion.topic, isCorrect);
+    if (isCorrect) {
       state.stats.questionsCorrect += 1;
       if (btn) btn.classList.add('opt-correct');
       window.CasinoAudio?.playVaultUnlock();
@@ -449,22 +436,35 @@
     setModalOpen(els.overrideModal, false);
     setModalOpen(els.pauseModal, false);
 
+    const acc = s.stats.questionsAnswered > 0
+      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
+      : 100;
+    const progressRes = window.ArcadeCore?.Progress?.recordRun('quantum-casino', {
+      score: s.stats.score,
+      sealsCleared: s.stats.brokenGates,
+      victory: Boolean(victory),
+      runQuestionsAnswered: s.stats.questionsAnswered,
+      runQuestionsCorrect: s.stats.questionsCorrect,
+      bypasses: s.stats.bypasses,
+      answersAlreadyRecorded: true
+    });
+    const rankSuffix = progressRes
+      ? ` • الرتبة: ${progressRes.rank}${progressRes.isNewBest && s.stats.score > 0 ? ' • 🏆 رقم قياسي جديد!' : ''}`
+      : '';
+
     if (els.endTitle) {
       els.endTitle.textContent = victory
         ? 'تم تفكيك نقابة برنولي الكمومية!'
         : 'سقط درع العميل QUANTUM-Ω';
     }
     if (els.endSubtitle) {
-      els.endSubtitle.textContent = victory
+      els.endSubtitle.textContent = (victory
         ? 'سيطرة كاملة على التعداد، الاحتمال الشرطي، شجرة الاحتمالات وقانون برنولي!'
-        : 'أعد اقتحام الخزنة وتحكم في تمديد الزمن لتفادي طلقات الحراس.';
+        : 'أعد اقتحام الخزنة وتحكم في تمديد الزمن لتفادي طلقات الحراس.') + rankSuffix;
     }
     if (els.endGates) els.endGates.textContent = `${s.stats.brokenGates}/4`;
     if (els.endScore) els.endScore.textContent = String(s.stats.score);
 
-    const acc = s.stats.questionsAnswered > 0
-      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
-      : 100;
     if (els.endAccuracy) els.endAccuracy.textContent = `${acc}%`;
     if (els.endBypasses) els.endBypasses.textContent = String(s.stats.bypasses);
 

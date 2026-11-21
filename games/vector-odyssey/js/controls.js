@@ -78,45 +78,18 @@
     return domCache;
   }
 
-  /**
-   * Apply radial deadzone and normalize analog stick vector.
-   * @param {number} x - Raw X axis [-1, 1].
-   * @param {number} y - Raw Y axis [-1, 1].
-   * @param {number} deadzone - Radial threshold.
-   * @returns {{x: number, y: number}} Filtered stick vector.
-   */
+  const gpCore = () => window.ArcadeCore && window.ArcadeCore.Gamepad;
+
   function applyRadialDeadzone(x, y, deadzone) {
-    const mag = Math.hypot(x, y);
-    if (mag < deadzone) return { x: 0, y: 0 };
-    const norm = Math.min(1, (mag - deadzone) / (1 - deadzone));
-    return {
-      x: (x / mag) * norm,
-      y: (y / mag) * norm
-    };
+    return gpCore() ? gpCore().applyRadialDeadzone(x, y, deadzone) : { x, y };
   }
 
-  /**
-   * Detect rising edge for a gamepad button index.
-   * @param {Gamepad} gp - Browser Gamepad object.
-   * @param {number} idx - Standard Gamepad button index.
-   * @returns {boolean} True only on frame pressed.
-   */
   function justPressed(gp, idx) {
-    const btn = gp.buttons[idx];
-    const pressed = Boolean(btn && (btn.pressed || btn.value > 0.55));
-    const was = Boolean(gpState.prevButtons[idx]);
-    return pressed && !was;
+    return gpCore() ? gpCore().justPressed(gp, gpState, idx) : false;
   }
 
-  /**
-   * Snapshot current gamepad buttons for next-frame rising-edge detection.
-   * @param {Gamepad} gp - Browser Gamepad object.
-   */
   function snapshotButtons(gp) {
-    for (let i = 0; i < gp.buttons.length; i += 1) {
-      const btn = gp.buttons[i];
-      gpState.prevButtons[i] = Boolean(btn && (btn.pressed || btn.value > 0.55));
-    }
+    gpCore()?.snapshotButtons(gp, gpState);
   }
 
   /**
@@ -129,129 +102,35 @@
   };
 
   /**
-   * Trigger DualSense / DualShock dual-rumble haptic actuator when available.
-   * @param {number} [duration=90] - Vibration duration in ms.
-   * @param {number} [weak=0.35] - High-frequency motor magnitude [0..1].
-   * @param {number} [strong=0.55] - Low-frequency motor magnitude [0..1].
+   * Trigger DualSense / DualShock dual-rumble haptic actuator when available via ArcadeCore.
    */
   window.triggerOdysseyHaptic = function triggerOdysseyHaptic(duration, weak, strong) {
-    if (!gpState.connected || gpState.index === null) return;
-    if (typeof navigator === 'undefined' || !navigator.getGamepads) return;
-    const pads = navigator.getGamepads();
-    const gp = pads && pads[gpState.index];
-    if (!gp || !gp.vibrationActuator || typeof gp.vibrationActuator.playEffect !== 'function') {
-      return;
-    }
-    try {
-      gp.vibrationActuator.playEffect('dual-rumble', {
-        startDelay: 0,
-        duration: duration || 90,
-        weakMagnitude: Math.min(1, Math.max(0, weak ?? 0.35)),
-        strongMagnitude: Math.min(1, Math.max(0, strong ?? 0.55))
-      }).catch(() => {});
-    } catch (_) {
-      // Ignore unsupported browser actuator states
-    }
+    gpCore()?.triggerHaptic(gpState, duration, weak, strong);
   };
 
-  /**
-   * Update HUD DualSense pill without redundant DOM writes.
-   */
   function updateGamepadBanner() {
     const cache = getDomCache();
-    if (!cache.gamepadPill || !cache.gamepadStatusText) return;
-    if (
-      gpState.lastShownConnected === gpState.connected &&
-      gpState.lastShownLabel === gpState.idLabel
-    ) {
-      return;
-    }
-    gpState.lastShownConnected = gpState.connected;
-    gpState.lastShownLabel = gpState.idLabel;
-
-    cache.gamepadPill.classList.toggle('connected', gpState.connected);
-    cache.gamepadPill.classList.toggle('disconnected', !gpState.connected);
-    if (gpState.connected) {
-      cache.gamepadStatusText.textContent = gpState.idLabel || 'DualSense متصل';
-    } else {
-      cache.gamepadStatusText.textContent = 'يد التحكم: لوحة المفاتيح / DualSense';
-    }
+    gpCore()?.updateBanner(gpState, cache.gamepadPill, cache.gamepadStatusText, 'يد التحكم: لوحة المفاتيح / DualSense');
   }
 
-  /**
-   * Clear .gp-focused class from a button collection and apply to active index.
-   * @param {HTMLElement[]} btns - Button array.
-   * @param {number} idx - Active focus index.
-   */
   function applyFocusRing(btns, idx) {
-    if (!btns || !btns.length) return;
-    const safeIdx = ((idx % btns.length) + btns.length) % btns.length;
-    for (let i = 0; i < btns.length; i += 1) {
-      if (i === safeIdx) {
-        btns[i].classList.add('gp-focused');
-      } else {
-        btns[i].classList.remove('gp-focused');
-      }
-    }
+    gpCore()?.applyFocusRing(btns, idx);
   }
 
-  /**
-   * Highlight active button inside Pause Modal when navigating via DualSense.
-   */
   window.applyOdysseyPauseFocus = function applyOdysseyPauseFocus() {
-    const cache = getDomCache();
-    applyFocusRing(cache.pauseBtns, gpState.pauseFocusIdx);
+    applyFocusRing(getDomCache().pauseBtns, gpState.pauseFocusIdx);
   };
 
-  /**
-   * Highlight active button inside End Modal when navigating via DualSense.
-   */
   window.applyOdysseyEndFocus = function applyOdysseyEndFocus() {
-    const cache = getDomCache();
-    applyFocusRing(cache.endBtns, gpState.endFocusIdx);
+    applyFocusRing(getDomCache().endBtns, gpState.endFocusIdx);
   };
 
-  /**
-   * Resolve active Gamepad object from navigator.getGamepads().
-   * @returns {Gamepad|null} Active gamepad if present.
-   */
   function resolveActiveGamepad() {
-    if (typeof navigator === 'undefined' || !navigator.getGamepads) return null;
-    const pads = navigator.getGamepads();
-    if (!pads) return null;
-
-    if (gpState.index !== null && pads[gpState.index]) {
-      return pads[gpState.index];
-    }
-    for (let i = 0; i < pads.length; i += 1) {
-      if (pads[i] && pads[i].connected) {
-        gpState.connected = true;
-        gpState.index = pads[i].index;
-        gpState.idLabel = pads[i].id && pads[i].id.toLowerCase().includes('dualsense')
-          ? 'DualSense جاهز'
-          : 'Gamepad متصل';
-        return pads[i];
-      }
-    }
-    return null;
+    return gpCore() ? gpCore().resolveActiveGamepad(gpState) : null;
   }
 
-  /**
-   * Decode standard Linux/Chrome D-Pad hat axis (axes[9]) when present.
-   * @param {Gamepad} gp - Browser Gamepad object.
-   * @returns {{up: boolean, down: boolean, left: boolean, right: boolean}} Hat directions.
-   */
   function decodeDpadHat(gp) {
-    const hat = gp && typeof gp.axes?.[9] === 'number' ? gp.axes[9] : null;
-    if (hat === null || hat > 1.1) {
-      return { up: false, down: false, left: false, right: false };
-    }
-    return {
-      up: hat >= -1.05 && hat <= -0.78,
-      right: hat >= -0.65 && hat <= -0.22,
-      down: hat >= -0.15 && hat <= 0.35,
-      left: hat >= 0.45 && hat <= 0.95
-    };
+    return gpCore() ? gpCore().decodeDpadHat(gp) : { up: false, down: false, left: false, right: false };
   }
 
   /**
@@ -439,24 +318,9 @@
     }
 
     const now = performance.now();
-    const ax = gp.axes[0] || 0;
-    const ay = gp.axes[1] || 0;
-    const hat = decodeDpadHat(gp);
-
-    const axisLeftNow = ax < -0.55 || hat.left;
-    const axisRightNow = ax > 0.55 || hat.right;
-    const axisUpNow = ay < -0.55 || hat.up;
-    const axisDownNow = ay > 0.55 || hat.down;
-
-    const dLeft = justPressed(gp, 14) || (axisLeftNow && !gpState.axisLeftHeld);
-    const dRight = justPressed(gp, 15) || (axisRightNow && !gpState.axisRightHeld);
-    const dUp = justPressed(gp, 12) || (axisUpNow && !gpState.axisUpHeld);
-    const dDown = justPressed(gp, 13) || (axisDownNow && !gpState.axisDownHeld);
-
-    gpState.axisLeftHeld = axisLeftNow;
-    gpState.axisRightHeld = axisRightNow;
-    gpState.axisUpHeld = axisUpNow;
-    gpState.axisDownHeld = axisDownNow;
+    const { dLeft, dRight, dUp, dDown } = gpCore()
+      ? gpCore().sampleDirectionalNav(gp, gpState, 0.55)
+      : { dLeft: false, dRight: false, dUp: false, dDown: false };
 
     if (now >= inputLockUntil) {
       if (state.mode === 'intro') {

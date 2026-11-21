@@ -912,23 +912,18 @@
 
     const w = canvas.width;
     const h = canvas.height;
-    ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#060c1f';
-    ctx.fillRect(0, 0, w, h);
-
-    // Subtle background coordinate frame
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.1)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    for (let x = 24; x < w; x += 32) {
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, h);
+    if (window.ArcadeCore && window.ArcadeCore.CanvasAxisKit) {
+      window.ArcadeCore.CanvasAxisKit.clearWithGrid(ctx, w, h, {
+        bg: '#060c1f',
+        gridColor: 'rgba(56, 189, 248, 0.1)',
+        step: 32,
+        offset: 24
+      });
+    } else {
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#060c1f';
+      ctx.fillRect(0, 0, w, h);
     }
-    for (let y = 24; y < h; y += 32) {
-      ctx.moveTo(0, y);
-      ctx.lineTo(w, y);
-    }
-    ctx.stroke();
 
     const cx = w * 0.5;
     const cy = h * 0.58;

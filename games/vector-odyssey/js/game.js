@@ -133,27 +133,11 @@
    */
   function setBidiSafeMath(el, text) {
     if (!el) return;
-    const raw = String(text ?? '');
-    el.textContent = '';
-
-    const mathSegmentRegex = /([A-Za-z0-9ℝ³∧·⊥Ωπ∪∩∈∉∅∞√°±≤≥≠≈≡×÷→⇒⇔+\-*/=^_{}()[\]|.,:;<>'"]+(?:\s+[A-Za-z0-9ℝ³∧·⊥Ωπ∪∩∈∉∅∞√°±≤≥≠≈≡×÷→⇒⇔+\-*/=^_{}()[\]|.,:;<>'"]+)*)/g;
-    let lastIdx = 0;
-    let match = mathSegmentRegex.exec(raw);
-    while (match !== null) {
-      if (match.index > lastIdx) {
-        el.appendChild(document.createTextNode(raw.slice(lastIdx, match.index)));
-      }
-      const span = document.createElement('span');
-      span.className = 'math-ltr';
-      span.dir = 'ltr';
-      span.textContent = match[0];
-      el.appendChild(span);
-      lastIdx = match.index + match[0].length;
-      match = mathSegmentRegex.exec(raw);
+    if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
+      window.ArcadeCore.setBidiSafeMath(el, text);
+      return;
     }
-    if (lastIdx < raw.length) {
-      el.appendChild(document.createTextNode(raw.slice(lastIdx)));
-    }
+    el.textContent = String(text ?? '');
   }
 
   /**
@@ -431,6 +415,7 @@
     if (state.stats.brokenGates >= state.gates.length && !state.bossSpawned) {
       window.spawnHyperSphereBoss(state);
     }
+    window.ArcadeCore?.Progress?.recordSealProgress('vector-odyssey', state.stats.brokenGates);
     syncHUD(state);
   }
 
@@ -447,7 +432,9 @@
     const correctIdx = typeof activeQuestion.correctIndex === 'number'
       ? activeQuestion.correctIndex
       : activeQuestion.answerIndex;
-    if (idx === correctIdx) {
+    const isCorrect = idx === correctIdx;
+    window.ArcadeCore?.Progress?.recordAnswer('vector-odyssey', activeQuestion.topic, isCorrect);
+    if (isCorrect) {
       state.stats.questionsCorrect += 1;
       if (btn) btn.classList.add('opt-correct');
       window.OdysseyAudio?.playGateBreak();
@@ -514,22 +501,35 @@
     setModalOpen(els.overrideModal, false);
     setModalOpen(els.pauseModal, false);
 
+    const acc = s.stats.questionsAnswered > 0
+      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
+      : 100;
+    const progressRes = window.ArcadeCore?.Progress?.recordRun('vector-odyssey', {
+      score: s.stats.score,
+      sealsCleared: s.stats.brokenGates,
+      victory: Boolean(victory),
+      runQuestionsAnswered: s.stats.questionsAnswered,
+      runQuestionsCorrect: s.stats.questionsCorrect,
+      bypasses: s.stats.bypasses,
+      answersAlreadyRecorded: true
+    });
+    const rankSuffix = progressRes
+      ? ` • الرتبة: ${progressRes.rank}${progressRes.isNewBest && s.stats.score > 0 ? ' • 🏆 رقم قياسي جديد!' : ''}`
+      : '';
+
     if (els.endTitle) {
       els.endTitle.textContent = victory
         ? 'تم تحرير الفضاء الإقليدي ℝ³!'
         : 'انهار درع المركبة VECTRA-ℝ³';
     }
     if (els.endSubtitle) {
-      els.endSubtitle.textContent = victory
+      els.endSubtitle.textContent = (victory
         ? 'انتصار ساحق! أتقنت الفلكة، الجداء المتجهي والأوضاع النسبية.'
-        : 'أعد الضبط المداري وحاول اختراق الأختام الفضائية مجدداً.';
+        : 'أعد الضبط المداري وحاول اختراق الأختام الفضائية مجدداً.') + rankSuffix;
     }
     if (els.endGates) els.endGates.textContent = `${s.stats.brokenGates}/4`;
     if (els.endScore) els.endScore.textContent = String(s.stats.score);
 
-    const acc = s.stats.questionsAnswered > 0
-      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
-      : 100;
     if (els.endAccuracy) els.endAccuracy.textContent = `${acc}%`;
     if (els.endBypasses) els.endBypasses.textContent = String(s.stats.bypasses);
 
@@ -704,13 +704,15 @@
     els.btnResumeGame?.addEventListener('click', () => window.closeOdysseyPause());
     els.btnCycleFilterPause?.addEventListener('click', () => window.cycleOdysseyFilter(1));
     els.btnRestartPause?.addEventListener('click', () => resetMissionState(true));
-    els.btnExitHubPause?.addEventListener('click', () => {
-      window.location.href = '../../index.html';
+    els.btnExitHubPause?.addEventListener('click', (e) => {
+      e?.preventDefault?.();
+      window.location.href = '../../index.html?from=game';
     });
 
     els.btnRetryEnd?.addEventListener('click', () => resetMissionState(true));
-    els.btnHubEnd?.addEventListener('click', () => {
-      window.location.href = '../../index.html';
+    els.btnHubEnd?.addEventListener('click', (e) => {
+      e?.preventDefault?.();
+      window.location.href = '../../index.html?from=game';
     });
   }
 

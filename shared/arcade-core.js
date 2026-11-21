@@ -1,0 +1,615 @@
+/**
+ * Math-Arcid-V2 — Unified Platform Core Engine (`window.ArcadeCore`)
+ * Classic zero-dependency UMD/IIFE shared core across the PS5 Hub and all 10 games:
+ *   1. ArcadeCore.setBidiSafeMath  — RTL-safe Moroccan 2BAC PC <bdi dir="ltr"> math isolation
+ *   2. ArcadeCore.Gamepad          — DualSense / DualShock deadzone, D-Pad hat, D-nav & haptics
+ *   3. ArcadeCore.Progress         — Versioned localStorage cross-game telemetry & rank store
+ *   4. ArcadeCore.CanvasAxisKit    — Lightweight shared 2D canvas grids, axes & LTR math labels
+ */
+(function (root, factory) {
+  const api = factory(root);
+  if (root) {
+    root.ArcadeCore = api;
+  }
+  if (typeof module === 'object' && module && module.exports) {
+    module.exports = api;
+  }
+})(typeof window !== 'undefined' ? window : globalThis, function (root) {
+  'use strict';
+
+  const STORAGE_KEY = 'math_arcid_v2_progress';
+  const SCHEMA_VERSION = 1;
+  const RANK_ORDER = { C: 1, B: 2, A: 3, S: 4 };
+
+  // Precompiled character classes covering full Moroccan 2BAC PC notation (Topics 1-114)
+  const MATH_CORE_CLASS =
+    "A-Za-z0-9\\u00C0-\\u024F\\u0300-\\u030F\\u20D0-\\u20FF" +
+    "ℝℚℕℤℂΩΔΣΠΦαβγδεζηθλμπρσφψω" +
+    "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿⁱˣʸʳᵖᵏ" +
+    "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₐₑₒₓₙₚₖᵢ" +
+    "\\][(){}|√∞∅∀∃∈∉⊂⊃∪∩→←↔⇒⇔≤≥≠≈≡·×÷±−≈'′″∘^_∫∑∏∂∇∧∨⊥∥∠°\\\\";
+
+  const MATH_BRIDGE_CLASS =
+    " +\\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→←↔⇒⇔·×÷±−≈'′″∘^_:,.\\\\;∫∑∏∧∨⊥";
+
+  const MATH_SEGMENT_REGEX = new RegExp(
+    "(?:[+\\-−](?=[" + MATH_CORE_CLASS + "])|[" + MATH_CORE_CLASS + "])" +
+    "(?:[" + MATH_BRIDGE_CLASS + "]*[" + MATH_CORE_CLASS + "])*",
+    'g'
+  );
+
+  /**
+   * Format mixed Arabic RTL + math notation safely inside isolated <bdi dir="ltr" class="math-ltr"> elements
+   * so equations, vectors, overbars, probabilities, and signed numbers never fracture in RTL layouts.
+   * @param {HTMLElement|null} el - Target DOM container.
+   * @param {string} text - Mixed Arabic & mathematical formula string.
+   * @param {Object} [opts] - Optional rendering overrides.
+   * @param {string} [opts.tag='bdi'] - Element tag name ('bdi' or 'span').
+   * @param {string} [opts.className='math-ltr'] - CSS class applied to math runs.
+   */
+  function setBidiSafeMath(el, text, opts) {
+    if (!el) return;
+    const doc = el.ownerDocument || (typeof document !== 'undefined' ? document : null);
+    const raw = String(text ?? '');
+    el.textContent = '';
+    if (!doc) return;
+
+    const tag = (opts && opts.tag) || 'bdi';
+    const className = (opts && opts.className) || 'math-ltr';
+
+    MATH_SEGMENT_REGEX.lastIndex = 0;
+    let lastIdx = 0;
+    let match = MATH_SEGMENT_REGEX.exec(raw);
+
+    while (match !== null) {
+      let sIdx = match.index;
+      let eIdx = sIdx + match[0].length;
+
+      // Trim standalone sentence-ending colons or periods not inside numbers/decimals
+      while (eIdx > sIdx) {
+        const ch = raw[eIdx - 1];
+        if (ch === ' ' || ch === '\t') {
+          eIdx -= 1;
+          continue;
+        }
+        if ((ch === ':' || ch === ';') && eIdx === match.index + match[0].length) {
+          eIdx -= 1;
+          continue;
+        }
+        break;
+      }
+
+      if (eIdx > sIdx) {
+        if (sIdx > lastIdx) {
+          el.appendChild(doc.createTextNode(raw.slice(lastIdx, sIdx)));
+        }
+        const node = doc.createElement(tag);
+        node.className = className;
+        node.dir = 'ltr';
+        node.textContent = raw.slice(sIdx, eIdx);
+        el.appendChild(node);
+        lastIdx = eIdx;
+      }
+      match = MATH_SEGMENT_REGEX.exec(raw);
+    }
+
+    if (lastIdx < raw.length) {
+      el.appendChild(doc.createTextNode(raw.slice(lastIdx)));
+    }
+  }
+
+  /**
+   * Standard PlayStation DualSense / DualShock & W3C Gamepad calibration utilities.
+   */
+  const Gamepad = {
+    createState() {
+      return {
+        connected: false,
+        index: null,
+        idLabel: '',
+        prevButtons: [],
+        axisLeftHeld: false,
+        axisRightHeld: false,
+        axisUpHeld: false,
+        axisDownHeld: false,
+        pauseFocusIdx: 0,
+        endFocusIdx: 0,
+        lastShownConnected: null,
+        lastShownLabel: ''
+      };
+    },
+
+    /**
+     * Apply radial deadzone and smooth vector rescaling in [0, 1].
+     * @param {number} x - Raw X axis [-1, 1].
+     * @param {number} y - Raw Y axis [-1, 1].
+     * @param {number} [deadzone=0.18] - Radial threshold.
+     * @returns {{x: number, y: number}} Normalized stick vector.
+     */
+    applyRadialDeadzone(x, y, deadzone = 0.18) {
+      const mag = Math.hypot(x || 0, y || 0);
+      if (mag < deadzone) return { x: 0, y: 0 };
+      const norm = Math.min(1, (mag - deadzone) / Math.max(0.001, 1 - deadzone));
+      return {
+        x: (x / mag) * norm,
+        y: (y / mag) * norm
+      };
+    },
+
+    /**
+     * Decode standard Linux/Chrome D-Pad hat axis (axes[9]) when present.
+     * @param {Gamepad|null} gp - Browser Gamepad object.
+     * @returns {{up: boolean, down: boolean, left: boolean, right: boolean}} Hat directions.
+     */
+    decodeDpadHat(gp) {
+      const hat = gp && gp.axes && typeof gp.axes[9] === 'number' ? gp.axes[9] : null;
+      if (hat === null || hat > 1.1) {
+        return { up: false, down: false, left: false, right: false };
+      }
+      return {
+        up: hat >= -1.05 && hat <= -0.78,
+        right: hat >= -0.65 && hat <= -0.22,
+        down: hat >= -0.15 && hat <= 0.35,
+        left: hat >= 0.45 && hat <= 0.95
+      };
+    },
+
+    /**
+     * Detect rising-edge press on standard Gamepad button index.
+     */
+    justPressed(gp, gpState, idx, threshold = 0.55) {
+      const btn = gp && gp.buttons && gp.buttons[idx];
+      const pressed = Boolean(btn && (btn.pressed || btn.value > threshold));
+      const was = Boolean(gpState && gpState.prevButtons[idx]);
+      return pressed && !was;
+    },
+
+    /**
+     * Snapshot all gamepad button states for next-frame rising-edge checks.
+     */
+    snapshotButtons(gp, gpState, threshold = 0.55) {
+      if (!gp || !gp.buttons || !gpState) return;
+      for (let i = 0; i < gp.buttons.length; i += 1) {
+        const btn = gp.buttons[i];
+        gpState.prevButtons[i] = Boolean(btn && (btn.pressed || btn.value > threshold));
+      }
+    },
+
+    /**
+     * Sample edge-triggered directional navigation across D-Pad buttons, Linux hat axis, and Left Stick.
+     */
+    sampleDirectionalNav(gp, gpState, threshold = 0.55) {
+      if (!gp || !gpState) {
+        return { dLeft: false, dRight: false, dUp: false, dDown: false };
+      }
+      const ax = (gp.axes && gp.axes[0]) || 0;
+      const ay = (gp.axes && gp.axes[1]) || 0;
+      const hat = Gamepad.decodeDpadHat(gp);
+
+      const leftNow = ax < -threshold || hat.left;
+      const rightNow = ax > threshold || hat.right;
+      const upNow = ay < -threshold || hat.up;
+      const downNow = ay > threshold || hat.down;
+
+      const dLeft = Gamepad.justPressed(gp, gpState, 14) || (leftNow && !gpState.axisLeftHeld);
+      const dRight = Gamepad.justPressed(gp, gpState, 15) || (rightNow && !gpState.axisRightHeld);
+      const dUp = Gamepad.justPressed(gp, gpState, 12) || (upNow && !gpState.axisUpHeld);
+      const dDown = Gamepad.justPressed(gp, gpState, 13) || (downNow && !gpState.axisDownHeld);
+
+      gpState.axisLeftHeld = leftNow;
+      gpState.axisRightHeld = rightNow;
+      gpState.axisUpHeld = upNow;
+      gpState.axisDownHeld = downNow;
+
+      return { dLeft, dRight, dUp, dDown };
+    },
+
+    /**
+     * Resolve currently active connected gamepad from navigator.getGamepads().
+     */
+    resolveActiveGamepad(gpState) {
+      if (typeof navigator === 'undefined' || !navigator.getGamepads) return null;
+      const pads = navigator.getGamepads();
+      if (!pads) return null;
+
+      if (gpState && gpState.index !== null && pads[gpState.index] && pads[gpState.index].connected) {
+        return pads[gpState.index];
+      }
+      for (let i = 0; i < pads.length; i += 1) {
+        if (pads[i] && pads[i].connected) {
+          if (gpState) {
+            gpState.connected = true;
+            gpState.index = pads[i].index;
+            gpState.idLabel = pads[i].id && pads[i].id.toLowerCase().includes('dualsense')
+              ? 'DualSense جاهز'
+              : 'Gamepad متصل';
+          }
+          return pads[i];
+        }
+      }
+      return null;
+    },
+
+    /**
+     * Trigger dual-rumble haptic pulse safely on supported controllers.
+     */
+    triggerHaptic(gpState, duration = 90, weak = 0.35, strong = 0.55) {
+      if (!gpState || !gpState.connected || gpState.index === null) return;
+      if (typeof navigator === 'undefined' || !navigator.getGamepads) return;
+      const pads = navigator.getGamepads();
+      const gp = pads && pads[gpState.index];
+      if (!gp || !gp.vibrationActuator || typeof gp.vibrationActuator.playEffect !== 'function') {
+        return;
+      }
+      try {
+        gp.vibrationActuator.playEffect('dual-rumble', {
+          startDelay: 0,
+          duration: duration || 90,
+          weakMagnitude: Math.min(1, Math.max(0, weak ?? 0.35)),
+          strongMagnitude: Math.min(1, Math.max(0, strong ?? 0.55))
+        }).catch(() => {});
+      } catch (_) {
+        // Ignore browsers blocking vibration without gesture
+      }
+    },
+
+    /**
+     * Synchronize DualSense status pill without redundant DOM updates.
+     */
+    updateBanner(gpState, pillEl, statusEl, disconnectedText = 'لوحة المفاتيح / DualSense') {
+      if (!gpState || !pillEl || !statusEl) return;
+      if (
+        gpState.lastShownConnected === gpState.connected &&
+        gpState.lastShownLabel === gpState.idLabel
+      ) {
+        return;
+      }
+      gpState.lastShownConnected = gpState.connected;
+      gpState.lastShownLabel = gpState.idLabel;
+
+      pillEl.classList.toggle('connected', gpState.connected);
+      pillEl.classList.toggle('disconnected', !gpState.connected);
+      statusEl.textContent = gpState.connected
+        ? (gpState.idLabel || 'DualSense متصل')
+        : disconnectedText;
+    },
+
+    /**
+     * Apply .gp-focused highlight class across modal buttons.
+     */
+    applyFocusRing(btns, idx) {
+      if (!btns || !btns.length) return;
+      const safeIdx = ((idx % btns.length) + btns.length) % btns.length;
+      for (let i = 0; i < btns.length; i += 1) {
+        btns[i].classList.toggle('gp-focused', i === safeIdx);
+      }
+    }
+  };
+
+  /**
+   * Versioned cross-game progress & 2BAC PC mastery telemetry store (`localStorage`).
+   */
+  let memoryFallback = null;
+
+  function createEmptyStore() {
+    return {
+      schemaVersion: SCHEMA_VERSION,
+      updatedAt: null,
+      games: {}
+    };
+  }
+
+  function createEmptyGameEntry() {
+    return {
+      bestScore: 0,
+      bestRank: null,
+      sealsCleared: 0,
+      bossDefeated: false,
+      questionsAnswered: 0,
+      questionsCorrect: 0,
+      lastAccuracy: null,
+      bypassesUsed: 0,
+      runsCompleted: 0,
+      masteredTopics: [],
+      weakTopics: [],
+      topicStats: {},
+      lastPlayedISO: null
+    };
+  }
+
+  function readStore() {
+    try {
+      const storage = root && root.localStorage;
+      if (!storage) return memoryFallback || createEmptyStore();
+      const raw = storage.getItem(STORAGE_KEY);
+      if (!raw) return createEmptyStore();
+      const parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object' || typeof parsed.games !== 'object') {
+        return createEmptyStore();
+      }
+      return parsed;
+    } catch (_) {
+      return memoryFallback || createEmptyStore();
+    }
+  }
+
+  function writeStore(store) {
+    store.schemaVersion = SCHEMA_VERSION;
+    store.updatedAt = new Date().toISOString();
+    memoryFallback = store;
+    try {
+      const storage = root && root.localStorage;
+      if (storage) {
+        storage.setItem(STORAGE_KEY, JSON.stringify(store));
+      }
+    } catch (_) {
+      // Ignore QuotaExceededError or private browsing blocks
+    }
+    return store;
+  }
+
+  function ensureEntry(store, gameId) {
+    if (!store.games[gameId]) {
+      store.games[gameId] = createEmptyGameEntry();
+    }
+    return store.games[gameId];
+  }
+
+  const Progress = {
+    STORAGE_KEY,
+
+    computeRank(summary) {
+      const s = summary || {};
+      const victory = Boolean(s.victory);
+      const seals = Number(s.sealsCleared || 0);
+      const acc = typeof s.accuracy === 'number' ? s.accuracy : 100;
+      const bypasses = Number(s.bypasses || 0);
+
+      if (victory && acc >= 85 && bypasses === 0) return 'S';
+      if (victory || (seals >= 4 && acc >= 75)) return 'A';
+      if (seals >= 2 || acc >= 55) return 'B';
+      return 'C';
+    },
+
+    recordAnswer(gameId, topicId, isCorrect) {
+      if (!gameId) return null;
+      const store = readStore();
+      const entry = ensureEntry(store, gameId);
+      entry.questionsAnswered += 1;
+      if (isCorrect) entry.questionsCorrect += 1;
+      entry.lastPlayedISO = new Date().toISOString();
+
+      if (topicId !== undefined && topicId !== null) {
+        const key = String(topicId);
+        if (!entry.topicStats[key]) entry.topicStats[key] = { attempts: 0, correct: 0 };
+        entry.topicStats[key].attempts += 1;
+        if (isCorrect) entry.topicStats[key].correct += 1;
+
+        const stats = entry.topicStats[key];
+        const ratio = stats.attempts > 0 ? stats.correct / stats.attempts : 0;
+        const mSet = new Set(entry.masteredTopics || []);
+        const wSet = new Set(entry.weakTopics || []);
+        if (stats.correct >= 1 && ratio >= 0.6) {
+          mSet.add(key);
+          wSet.delete(key);
+        } else if (stats.attempts >= 2 && ratio < 0.6) {
+          wSet.add(key);
+        }
+        entry.masteredTopics = Array.from(mSet);
+        entry.weakTopics = Array.from(wSet);
+      }
+
+      writeStore(store);
+      return entry;
+    },
+
+    recordSealProgress(gameId, sealsCleared) {
+      if (!gameId) return null;
+      const store = readStore();
+      const entry = ensureEntry(store, gameId);
+      const clamped = Math.max(0, Math.min(4, Number(sealsCleared || 0)));
+      if (clamped > entry.sealsCleared) {
+        entry.sealsCleared = clamped;
+      }
+      entry.lastPlayedISO = new Date().toISOString();
+      writeStore(store);
+      return entry;
+    },
+
+    recordRun(gameId, run) {
+      if (!gameId || !run) return null;
+      const store = readStore();
+      const entry = ensureEntry(store, gameId);
+
+      const score = Math.max(0, Math.round(Number(run.score || 0)));
+      const seals = Math.max(0, Math.min(4, Number(run.sealsCleared || 0)));
+      const qAns = Math.max(0, Number(run.runQuestionsAnswered || 0));
+      const qCorr = Math.max(0, Number(run.runQuestionsCorrect || 0));
+      const accuracy = qAns > 0 ? Math.round((qCorr / qAns) * 100) : 100;
+      const bypasses = Math.max(0, Number(run.bypasses || 0));
+      const victory = Boolean(run.victory);
+
+      const isNewBest = score > entry.bestScore;
+      if (isNewBest) entry.bestScore = score;
+      if (seals > entry.sealsCleared) entry.sealsCleared = seals;
+      if (victory) entry.bossDefeated = true;
+
+      const rank = Progress.computeRank({ victory, accuracy, sealsCleared: seals, bypasses });
+      if (!entry.bestRank || (RANK_ORDER[rank] || 0) > (RANK_ORDER[entry.bestRank] || 0)) {
+        entry.bestRank = rank;
+      }
+
+      if (!run.answersAlreadyRecorded) {
+        entry.questionsAnswered += qAns;
+        entry.questionsCorrect += qCorr;
+      }
+
+      entry.lastAccuracy = accuracy;
+      entry.bypassesUsed += bypasses;
+      entry.runsCompleted += 1;
+      entry.lastPlayedISO = new Date().toISOString();
+
+      writeStore(store);
+      return { entry, rank, isNewBest, accuracy };
+    },
+
+    getGameProgress(gameId) {
+      const store = readStore();
+      return store.games[gameId] || createEmptyGameEntry();
+    },
+
+    getAllProgress() {
+      return readStore();
+    },
+
+    getSummary(totalGames = 10) {
+      const store = readStore();
+      const entries = Object.values(store.games || {});
+      let gamesPlayed = 0;
+      let bossesDefeated = 0;
+      let totalSeals = 0;
+      let questionsAnswered = 0;
+      let questionsCorrect = 0;
+
+      for (let i = 0; i < entries.length; i += 1) {
+        const g = entries[i];
+        if (!g) continue;
+        if ((g.runsCompleted || 0) > 0 || (g.questionsAnswered || 0) > 0 || (g.sealsCleared || 0) > 0) {
+          gamesPlayed += 1;
+        }
+        if (g.bossDefeated) bossesDefeated += 1;
+        totalSeals += Number(g.sealsCleared || 0);
+        questionsAnswered += Number(g.questionsAnswered || 0);
+        questionsCorrect += Number(g.questionsCorrect || 0);
+      }
+
+      const accuracyPct = questionsAnswered > 0
+        ? Math.round((questionsCorrect / questionsAnswered) * 100)
+        : 0;
+
+      return {
+        totalGames,
+        gamesPlayed,
+        bossesDefeated,
+        totalSeals,
+        questionsAnswered,
+        questionsCorrect,
+        accuracyPct,
+        updatedAt: store.updatedAt
+      };
+    },
+
+    exportJSON() {
+      return JSON.stringify(readStore(), null, 2);
+    },
+
+    importJSON(raw) {
+      const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+      if (!parsed || typeof parsed !== 'object' || typeof parsed.games !== 'object') {
+        throw new Error('Invalid ArcadeCore progress backup format.');
+      }
+      return writeStore(parsed);
+    },
+
+    resetGame(gameId) {
+      const store = readStore();
+      delete store.games[gameId];
+      return writeStore(store);
+    },
+
+    resetAll() {
+      return writeStore(createEmptyStore());
+    }
+  };
+
+  /**
+   * Lightweight 2D Cartesian grid, axis, asymptote & LTR math-label helper for graphSpec canvases.
+   */
+  const CanvasAxisKit = {
+    clearWithGrid(ctx, w, h, opts) {
+      if (!ctx) return;
+      const o = opts || {};
+      const bg = o.bg || '#060c1f';
+      const gridColor = o.gridColor || 'rgba(56, 189, 248, 0.1)';
+      const step = o.step || 32;
+      const offset = o.offset !== undefined ? o.offset : 24;
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = bg;
+      ctx.fillRect(0, 0, w, h);
+
+      ctx.strokeStyle = gridColor;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let x = offset; x < w; x += step) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, h);
+      }
+      for (let y = offset; y < h; y += step) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+      }
+      ctx.stroke();
+    },
+
+    drawCartesianAxes(ctx, opts) {
+      if (!ctx) return;
+      const o = opts || {};
+      const w = o.w || 390;
+      const h = o.h || 185;
+      const ox = o.ox !== undefined ? o.ox : w * 0.5;
+      const oy = o.oy !== undefined ? o.oy : h * 0.55;
+      const axisColor = o.axisColor || 'rgba(148, 163, 184, 0.55)';
+      const labelColor = o.labelColor || '#94a3b8';
+
+      ctx.strokeStyle = axisColor;
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.moveTo(12, oy);
+      ctx.lineTo(w - 12, oy);
+      ctx.moveTo(ox, h - 10);
+      ctx.lineTo(ox, 10);
+      ctx.stroke();
+
+      CanvasAxisKit.drawMathLabel(ctx, o.xLabel || 'x', w - 18, oy - 8, { color: labelColor });
+      CanvasAxisKit.drawMathLabel(ctx, o.yLabel || 'y', ox + 10, 16, { color: labelColor });
+      if (o.showOrigin !== false) {
+        CanvasAxisKit.drawMathLabel(ctx, 'O', ox - 10, oy + 13, { color: labelColor });
+      }
+    },
+
+    drawDashedLine(ctx, x1, y1, x2, y2, color, dash, lineWidth) {
+      if (!ctx) return;
+      ctx.save();
+      ctx.setLineDash(dash || [5, 5]);
+      ctx.strokeStyle = color || '#fbbf24';
+      ctx.lineWidth = lineWidth || 1.6;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.restore();
+    },
+
+    drawMathLabel(ctx, text, x, y, opts) {
+      if (!ctx) return;
+      const o = opts || {};
+      ctx.save();
+      ctx.direction = 'ltr';
+      ctx.font = o.font || '800 11px "JetBrains Mono", monospace';
+      ctx.textAlign = o.align || 'center';
+      ctx.textBaseline = o.baseline || 'alphabetic';
+      ctx.fillStyle = o.color || '#f8fafc';
+      ctx.fillText(String(text ?? ''), x, y);
+      ctx.restore();
+    }
+  };
+
+  return {
+    version: '1.0.0',
+    setBidiSafeMath,
+    Gamepad,
+    Progress,
+    CanvasAxisKit
+  };
+});
