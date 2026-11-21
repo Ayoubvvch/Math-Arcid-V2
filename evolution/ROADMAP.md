@@ -29,20 +29,36 @@
 
 ---
 
-## 3. Perpetual Autonomous Evolution Protocol (Alpha / Omega / Auto-Architect)
+## 3. SPRINT_03 Roadmap — Organization, Clean Architecture & UX Masterclass (Cycles 016–022)
+
+Designed by **Phase `ARCHITECT` (Cycle 015 — `2026-11-21 05:00 UTC`)** after a full repository-wide codebase & UX audit (`~52.5K LOC` across 10 games, `js/hub.js`, `shared/`, `css/`, and `evolution/`):
+
+| Cycle | Window (UTC) | Phase | Milestone | Scope & Architectural Deliverable | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **016** | 2026-11-21 17:00 | **OMEGA** | **3.1 — Unified `shared/arcade-core.js` & Hotfixes** | Ship `shared/arcade-core.js` (`window.ArcadeCore` UMD/classic script): universal `setBidiSafeMath` (full 2BAC PC glyphs + `\u0304` + sub/superscripts), DualSense radial stick deadzone + `axes[9]` D-pad hat + dual-rumble adapter, `CanvasAxisKit`, and unified `localStorage['math_arcid_v2_progress']` Progress API. Fix `vector-odyssey` missing `?from=game` exit links & pilot `ArcadeCore` in Games 9–10. | **PLANNED (Cycle 016)** |
+| **017** | 2026-11-22 05:00 | **ALPHA** | **3.2 — PS5 Hub Arabic RTL & Syllabus Reorganization** | Overhaul `index.html`, `js/hub.js`, `css/hub.css` into cohesive Arabic/Bilingual RTL console chrome (`dir="rtl"`), localize search tags & guide, and reorganize `games.json` from 10 1-game tabs into **4 Syllabus Domains** sorted strictly by **2BAC PC Order (Topics 1–114)**. | **PLANNED (Cycle 017)** |
+| **018** | 2026-11-22 17:00 | **OMEGA** | **3.3 — `ArcadeCore` Migration Batch A (Games 3–6)** | Deduplicate `setBidiSafeMath` + DualSense deadzone/hat boilerplate across `limit-abyss`, `asymptote-asylum`, `sequence-strider`, and `complex-plane-duel`; fix missing radial deadzones in Games 4–5 and wire telemetry persistence. | **PLANNED (Cycle 018)** |
+| **019** | 2026-11-23 05:00 | **ALPHA** | **3.4 — `ArcadeCore` Migration Batch B & `math-battle` RTL** | Deduplicate `logarithm-reactor` & `integral-forge` onto `ArcadeCore` (fixing missing radial deadzones in Games 7–8), integrate `mathcore-survivor` legacy high-score key, and localize `games/math-battle/` (`<html lang="ar" dir="rtl">`) with telemetry & modal DualSense parity. | **PLANNED (Cycle 019)** |
+| **020** | 2026-11-23 17:00 | **OMEGA** | **3.5 — PS5 Hub Mastery Telemetry & Smart Review HUD** | Wire live `localStorage` mastery telemetry into PS5 Hub rail/showcase cards (`✓ 4/4 Seals`, `🏆 Boss Cleared`, accuracy %, rank badge, Smart Review recommender, and safe JSON Export/Reset modal). | **PLANNED (Cycle 020)** |
+| **021** | 2026-11-24 05:00 | **ALPHA** | **3.6 — Repo Pruning, Dead-Code Audit & Mobile/DualSense UX** | Remove redundant `standalone.html` artifacts in Games 1–2, retire/consolidate unused ESM `shared/` clutter, verify uniform mobile touch-controls / `safe-area-inset` ergonomics / ESC & Options parity across all 10 games. | **PLANNED (Cycle 021)** |
+| **022** | 2026-11-24 17:00 | **OMEGA** | **3.7 — 8-Stage `verify.sh` Gate & `SPRINT_03` Closure** | Upgrade `evolution/scripts/verify.sh` to enforce `ArcadeCore`, `?from=game` redirects, domain category structure, and zero legacy clutter; run full regression audit and arm Cycle 023 (`ARCHITECT`) for `SPRINT_04`. | **PLANNED (Cycle 022)** |
+
+---
+
+## 4. Perpetual Autonomous Evolution Protocol (Alpha / Omega / Auto-Architect)
 
 1. **Morning Run (05:00 UTC) — Phase `ALPHA`**:
    - Reads `evolution/GOLD_STANDARD.md`, `evolution/STATE.json`, and `evolution/SPRINT.md`.
    - Executes `nextAlphaMilestone` (either constructing a new Gold-Standard 6-module game `≥ 2,800 LOC`, or executing a major Organization/UX/Platform milestone in `SPRINT_03+`).
-   - Passes `bash evolution/scripts/verify.sh` (all 7 gates), commits, and pushes to `origin main`.
+   - Passes `bash evolution/scripts/verify.sh`, commits, and pushes to `origin main`.
 
 2. **Evening Run (17:00 UTC) — Phase `OMEGA`**:
    - Audits the active target game/subsystem in `Math-Arcid-V2`.
-   - Executes `nextOmegaMilestone` (expands question banks, adds interactive `graphSpec` plots, refines boss AI / particle FX / DualSense haptics / UX polish, and audits locked 60FPS).
+   - Executes `nextOmegaMilestone` (expands question banks, adds interactive `graphSpec` plots, refines shared infrastructure / DualSense / UX polish, and audits locked 60FPS).
    - If the just-completed milestone finishes the active Sprint, marks `currentSprint.status = "COMPLETED_NEEDS_ROADMAP"` in `STATE.json`.
 
 3. **Automatic Sprint Transition — Phase `ARCHITECT` (Infinite Self-Planning Loop)**:
-   - Whenever `SPRINT_02` (or any subsequent Sprint) finishes, `evolution/scripts/trigger.sh` automatically enters **Phase `ARCHITECT`** on the very next cycle instead of stopping:
+   - Whenever an active Sprint finishes, `evolution/scripts/trigger.sh` automatically enters **Phase `ARCHITECT`** on the next cycle:
      - **Full Project Audit**: Scans all games, `js/hub.js`, `css/`, `shared/`, `games.json`, and `evolution/` logs to diagnose structural clutter, UX friction, and missing capabilities.
      - **`SPRINT_03` Mandate (Post-Game-10)**: Strictly prioritizes **التنظيم والترتيب وتجربة المستخدم** (Clean folder/module architecture, Hub curriculum grouping & progress persistence, unified UX/DualSense ergonomics, visual consistency, and refactoring).
      - **`SPRINT_04+` Endless Loop**: Every time a Roadmap finishes, `Phase ARCHITECT` runs again automatically to audit what is missing or next highest impact (e.g., Physics & Chemistry 2BAC PC Arcade games, National Exam Boss-Rush mode, Offline PWA support, Mastery Analytics) and generates the next multi-day Roadmap — continuing indefinitely until explicitly paused by Owner Ayoub (`autoEvolutionPaused: true`).

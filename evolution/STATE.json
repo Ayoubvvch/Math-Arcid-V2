@@ -1,6 +1,6 @@
 {
   "project": "Math-Arcid-V2",
-  "version": "2.14.0",
+  "version": "2.15.0",
   "repository": "https://github.com/Ayoubvvch/Math-Arcid-V2",
   "deployment": "https://ayoubvvch.github.io/Math-Arcid-V2/",
   "owner": "Ayoub (eulerx0)",
@@ -14,9 +14,9 @@
     "architectPhase": "Auto-triggered on Sprint completion -> Full Project Audit & Next Multi-Day Roadmap Generation (Endless until paused by Owner)"
   },
   "metrics": {
-    "totalCyclesCompleted": 14,
-    "lastCycleTimestamp": "2026-11-20T17:06:00Z",
-    "lastCyclePhase": "Phase Omega: Quantum Casino v1.1.0 Deep Polish & SPRINT_02 Closure (5,248 LOC, 40 Questions Topics 103-114, 16 GraphSpecs, Bullet-Time Ricochet & Ready for Phase ARCHITECT)",
+    "totalCyclesCompleted": 15,
+    "lastCycleTimestamp": "2026-11-21T05:06:00Z",
+    "lastCyclePhase": "Phase ARCHITECT: Full Codebase & UX Audit (~52.5K LOC), SPRINT_02 Archived & SPRINT_03 Organization/UX Master Plan Generated (Cycles 016–022)",
     "totalGamesLive": 10,
     "verificationStatus": "PASSED_7_STAGE_IRONCLAD_GATE"
   },
@@ -111,12 +111,12 @@
     }
   ],
   "currentSprint": {
-    "id": "SPRINT_02",
-    "name": "Math-Arcid-V2 Gold Standard Unleashed (Games 5–10)",
-    "status": "COMPLETED_NEEDS_ROADMAP",
-    "nextCycleNumber": 15,
-    "nextOmegaMilestone": "Phase ARCHITECT will assign SPRINT_03 Omega milestones on next cycle",
-    "nextAlphaMilestone": "Phase ARCHITECT will audit the full 10-game repository and draft SPRINT_03 (Organization, Clean Code Structure & UX)"
+    "id": "SPRINT_03",
+    "name": "Organization, Clean Architecture & UX Masterclass (التنظيم والترتيب وتجربة المستخدم)",
+    "status": "ACTIVE",
+    "nextCycleNumber": 16,
+    "nextOmegaMilestone": "Milestone 3.1 (Cycle 016): Build unified shared/arcade-core.js (universal setBidiSafeMath, DualSense radial deadzone + axes[9] hat + dual-rumble, CanvasAxisKit, ArcadeCore.Progress localStorage store), fix vector-odyssey missing ?from=game exit links, and pilot in Games 9-10",
+    "nextAlphaMilestone": "Milestone 3.2 (Cycle 017): Overhaul index.html, js/hub.js, css/hub.css & games.json into Arabic RTL PS5 Hub organized into 4 logical 2BAC PC syllabus domains sorted by Topics 1-114"
   },
   "perpetualRoadmapPolicy": {
     "enabled": true,
@@ -128,6 +128,11 @@
     {
       "id": "SPRINT_01",
       "name": "Genesis & Gold Standard Foundations (Games 1–4)",
+      "status": "COMPLETED"
+    },
+    {
+      "id": "SPRINT_02",
+      "name": "Math-Arcid-V2 Gold Standard Unleashed (Games 5–10)",
       "status": "COMPLETED"
     }
   ]

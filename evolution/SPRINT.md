@@ -1,95 +1,75 @@
-# Active Sprint: SPRINT_02 — Gold Standard Unleashed (Math-Arcid-V2)
+# Active Sprint: SPRINT_03 — Organization, Clean Architecture & UX Masterclass
 
-## 1. Sprint Charter & Non-Negotiable Rules
+## 1. Sprint Charter & Architectural Mandate
 * **Target Repository**: `/home/ubuntu/Math-Arcid-V2` (`https://github.com/Ayoubvvch/Math-Arcid-V2`)
-* **Strict Rule**: NEVER touch `/home/ubuntu/math-arcade` (V1 is reserved exclusively for Owner Ayoub's manual development).
-* **Mandatory Reference Architecture (`evolution/GOLD_STANDARD.md`)**:
-  - Every new or upgraded game MUST match the 6-module full-screen Arabic RTL architecture of `asymptote-asylum` (Topics 23–38), `sequence-strider` (Topics 39–50), `complex-plane-duel` (Topics 51–64), and `limit-abyss` (Topics 1–22).
-  - Minimum **2,800 lines of code** per game, **≥ 24 National Exam questions** in `js/curriculum.js` with live `graphSpec` plotting, 4 Sectors + Boss in `js/world.js`, full DualSense modal + gameplay controls in `js/controls.js`, and bespoke SVG artwork in `js/hub.js`.
+* **Strict Boundary**: NEVER touch `/home/ubuntu/math-arcade` (V1 remains untouched for Owner Ayoub).
+* **Sprint Priority (`perpetualRoadmapPolicy.sprint03Focus`)**: **التنظيم والترتيب وتجربة المستخدم** — Zero redundant game clones in this sprint; 100% focus on deduplicating ~4,300+ LOC of repeated Bidi/DualSense/Graph boilerplate across `games/*`, elevating the PS5 Console Hub to Arabic/Bilingual RTL organized by Moroccan 2BAC PC curriculum order (`Topics 1–114`), adding cross-game `localStorage` mastery telemetry, eliminating dead files & navigation bugs, and preserving the locked 60FPS Gold Standard (`zero backdrop-filter`, `zero shadowBlur`, 6-module structure).
+* **Audit Snapshot Entering Cycle 016**:
+  - `shared/canvas-kit.js` (149 LOC) & `shared/math-engine.js` (161 LOC) have `0` active imports; all 8 Gold Standard games duplicate custom IIFE implementations of `setBidiSafeMath` (with divergent symbol sets), `controls.js` (missing radial deadzones in 4/8 curriculum games), and HUD state caches.
+  - `games.json` splits 10 titles across 10 single-game category tabs (`renderCategories()` creates 11 pills), ordered by build chronology rather than Topics `1–114`; root `index.html` chrome & search tags remain English-only (`<html lang="en">`).
+  - `0 of 8` curriculum games persist progress/seals/accuracy; PS5 Hub shows no completion or mastery telemetry.
+  - `games/vector-odyssey/js/game.js` (L708, L713) overrides `?from=game` exit links with raw `../../index.html`; `mathcore-survivor` and `math-battle` retain unused `standalone.html` duplicates and `<html lang="en">` UI on `math-battle`.
 
 ---
 
-## 2. Sprint Milestones
+## 2. Sprint Milestones (Cycles 016–022 | 3.5 Days)
 
-### [COMPLETED] Milestone 2.1: Complex Plane Citadel Gold-Standard Overhaul (`games/complex-plane-duel/`)
-* Replaced the legacy 540×960 prototype with **قلعة أرغاند — Complex Plane Citadel v2.0** (3,591 LOC):
-  - Full-screen 100vw × 100dvh 60FPS Argand-Cauchy Plane (`2400 × 1800`) centered at $O(0,0)$.
-  - Complete **Topics 51–64 (الأعداد العقدية)** curriculum engine (`js/curriculum.js`, 24 rigorous questions + 8 Argand `graphSpec` visualizations).
-  - 4 Quadrant Seals (`Q1..Q4`), Polar Hazard Orbits, Euler Phase Dash (`✕`), Conjugate Reflection (`◯`), Seal Override (`▢`), Roots-of-Unity Hexagon Barrier (`△`), Affix Plasma Cannon (`R2`), Homothety Shockwave (`L2`), and the Moivre Origin Boss (`نواة موافر`).
-  - Bespoke Argand SVG tile added to `js/hub.js`.
+### [NEXT — Cycle 016 Omega (2026-11-21 17:00 UTC)] Milestone 3.1: Unified `shared/arcade-core.js` Engine & Critical Exit/Bidi Hotfixes
+* **Deliverables**:
+  - Build `shared/arcade-core.js` (`window.ArcadeCore` — clean classic UMD/IIFE browser script passing `node -c` cleanly and usable without ESM conversion across all 10 games):
+    1. **Universal `ArcadeCore.setBidiSafeMath(el, text)`**: Combines `\u0304` macrons (`ĀB̄D̄M̄`), Greek/math operators (`σμλπ∑∏∫ΦΩΔαβγδ`), full Unicode sub/superscripts (`₀-₉⁰-⁹⁻⁺ₙₚₖᵢ`), and vector/set glyphs (`ℝℚℕℂ∧·⊥∪∩∈∉∅∞√°±≤≥≠≈≡×÷→⇒⇔∀∃⊂⊃`) so zero formulas ever fracture in RTL across any of the 10 games.
+    2. **Unified `ArcadeCore.Gamepad` Calibration**: Provides standardized `applyRadialDeadzone(lx, ly, threshold = 0.18)`, W3C button + `axes[9]` D-pad hat decoding, safe `triggerHaptic(duration, weak, strong)`, and connection indicator helpers.
+    3. **`ArcadeCore.Progress` Telemetry Store**: Clean `localStorage['math_arcid_v2_progress']` schema tracking per-game `bestScore`, `bestRank`, `sealsCleared` (`0..4`), `bossDefeated` (bool), `questionsAttempted`, `questionsCorrect`, `lastPlayed`, and aggregate 2BAC PC stats.
+    4. **`ArcadeCore.CanvasAxisKit`**: Lightweight shared Cartesian axis, dashed asymptote, and crisp `direction = 'ltr'` label renderer for live `graphSpec` canvases.
+  - **Immediate Pilot & Bugfix**:
+    - Fix `games/vector-odyssey/js/game.js` (lines 708 & 713) so `btnExitHubPause` and `btnHubEnd` navigate to `../../index.html?from=game` (no unwanted 1.4s boot screen replay).
+    - Wire `<script src="../../shared/arcade-core.js"></script>` into `vector-odyssey` and `quantum-casino`, migrating `setBidiSafeMath`, DualSense radial deadzone calibration, and recording live run telemetry via `ArcadeCore.Progress`.
+    - Update `games/README.md` & `index.html` contributor instructions to reference `shared/arcade-core.js`.
 
-### [COMPLETED] Milestone 2.3: Launch Game 6 — `limit-abyss` (هاوية النهايات والاتصال — Topics 1–22)
-* Built **هاوية النهايات والاتصال — Limit Abyss v1.0.0** (**4,012 LOC**):
-  - 2D Deep-Trench Subnautic Survival & Sonar Exploration (`2560 × 1600` abyssal Mariana trench with 4 stratified depth sectors).
-  - Pilot the submersible `Nautilus-ε` equipped with Hydro-Jet boost (`✕`), Sub-Vortex Evasion (`◯`), Pressure Seal Override (`▢`), Continuity Sonar Ping (`△`), Conjugate Torpedo (`R2`), and TVI Overdrive Shockwave (`L2`).
-  - Complete **Topics 1–22 (النهايات، الاتصال، مبرهنة القيم الوسيطية TVI، والدالة العكسية $f^{-1}$)**:
-    - 28 Moroccan National Exam questions with `setBidiSafeMath`.
-    - 8 interactive HTML5 Canvas `graphSpec` visualizers (`spec_conjugate_hole`, `spec_trig_limit`, `spec_step_discontinuity`, `spec_piecewise_continuity`, `spec_interval_image`, `spec_tvi_roots`, `spec_inverse_reflection`, `spec_nth_root`).
-  - 4 Abyssal Pressure Seals (`ختم الشفق`, `ختم الظلام`, `ختم الهاوية`, `ختم خندق الهدال`) + Leviathan Discontinuity Boss (`لوفياثان الانقطاع العظيم`).
-  - Bespoke multi-layered SVG tile in `js/hub.js` with glowing sonar caustics.
-  - Passed all 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`).
+### [UPCOMING — Cycle 017 Alpha (2026-11-22 05:00 UTC)] Milestone 3.2: PS5 Console Hub Arabic RTL & 2BAC PC Syllabus Reorganization
+* **Target**: `index.html`, `js/hub.js`, `css/hub.css`, `games.json`
+* **Deliverables**:
+  - Upgrade `index.html` to cohesive Arabic/Bilingual RTL console chrome (`<html lang="ar" dir="rtl">` preserving locked 60FPS `Zero backdrop-filter` CSS & PS5 dual-rail layout): localize navigation chrome, Search Modal quick tags (Arabic 2BAC PC chapters), Boot copy, and DualSense control guide.
+  - Reorganize `games.json` into **4 clean, pedagogical 2BAC PC Domains** sorted strictly in Moroccan curriculum progression (`Topics 1 → 114`):
+    1. `الأساسيات والتقويم` (Foundations: `mathcore-survivor`, `math-battle`)
+    2. `التحليل والدوال` (`Topics 1–50 & 65–90`: `limit-abyss`, `asymptote-asylum`, `sequence-strider`, `logarithm-reactor`, `integral-forge`)
+    3. `الأعداد العقدية والفضاء` (`Topics 51–64 & 91–102`: `complex-plane-duel`, `vector-odyssey`)
+    4. `التعداد والاحتمالات` (`Topics 103–114`: `quantum-casino`)
+  - Upgrade `js/hub.js` rail cards, showcase metadata, and DualSense `L1`/`R1` category switching cleanly so all 10 `getGameArtworkSVG` bespoke tiles remain intact alongside clear `الدرس XX–XX` curriculum pills and zero RTL layout glitches.
 
-### [COMPLETED — Cycle 006 Omega (17:00 UTC)] Milestone 2.2: Dual Deep Polish (Limit Abyss & Argand Citadel)
-* **Limit Abyss v1.1.0 (`games/limit-abyss/`, 4,616 LOC)**:
-  - Implemented full 3-Phase Mariana Leviathan Boss state machine (`Phase 1: Void Spikes`, `Phase 2: Discontinuity Beams (lim⁻ ≠ lim⁺)`, `Phase 3: TVI Resonance Shield f(a)·f(b) < 0` with rotating Root Windows `α` where `f(α) = 0`).
-  - Fine-tuned Phase 3 TVI shield collision: torpedo deflection off solid arcs, piercing through rotating `α` root windows, radial submarine repulsion preventing entrapment, and `△` Sonar / `L2` Shockwave shield shattering + unified `damageBoss` victory trigger.
-  - Upgraded `js/audio.js` with depth-adaptive dual-oscillator drone (`setDepthRatio`), reusable hydrophone noise buffer cavitation, thermal vent bubble chimes (`playBubblePop`), trench creaks, beam charge/fire, and Web Audio timeline echoes (zero timer leaks).
-  - Fixed DualSense modal polling bug in `js/game.js` (`pollInput()` now runs even while paused/modals open), added Fisher-Yates option shuffling (`pickLimitChallenge`), DualSense haptics + analog triggers + D-Pad hat fallback (`js/controls.js`), and eliminated per-frame gradients and `shadowBlur` in `js/renderer.js` for locked 60FPS.
-* **Argand Citadel v2.1.0 (`games/complex-plane-duel/`, 3,792 LOC)**:
-  - Expanded `js/curriculum.js` from 26 to **32 Moroccan 2BAC PC questions** adding cubic polynomial factorization $P(z) = (z - z_0)(az^2 + bz + c)$ (real and complex coefficients), composite transformations ($T_{\vec{u}} \circ R$ and order sensitivity $R \circ T$), weighted barycenter affixes, and pure-imaginary diameter circle loci.
-  - Upgraded `js/renderer.js` to **12 interactive `graphSpec` plots** (adding dedicated `half_angle_chord`, `cubic_roots`, `composite_transform`, and `diameter_circle`), full Y-axis drone culling, and dynamic RTL/LTR floating text direction.
+### [UPCOMING — Cycle 018 Omega (2026-11-22 17:00 UTC)] Milestone 3.3: `ArcadeCore` Migration Batch A (Games 3–6)
+* **Target**: `games/limit-abyss/`, `games/asymptote-asylum/`, `games/sequence-strider/`, `games/complex-plane-duel/`
+* **Deliverables**:
+  - Integrate `shared/arcade-core.js` across all 4 titles.
+  - Replace local `setBidiSafeMath` / `window.setSeqBidiSafeMath` copies with `ArcadeCore.setBidiSafeMath`.
+  - Fix missing analog stick deadzone calibration in `sequence-strider/js/controls.js` and `complex-plane-duel/js/controls.js` via `ArcadeCore.Gamepad` while standardizing `limit-abyss` & `asymptote-asylum`.
+  - Wire `ArcadeCore.Progress` recording (per-seal unlock, answer accuracy, Boss defeat, best score) into all 4 games and verify all 6 modules + >=2,500 LOC + locked 60FPS.
 
-### [COMPLETED — Cycle 007 Alpha (05:00 UTC)] Milestone 2.4: Launch Game 7 — `logarithm-reactor` (مفاعل اللوغاريتم والأسي — Topics 65–78)
-* Built **مفاعل اللوغاريتم والأسي — Logarithm Reactor v1.0.0** (**4,183 LOC** across 6 modules + Bio-Cyber CSS):
-  - 2D Bio-Cyber Metroidvania Lab (`2800 × 1800` facility) with one-way drop-through catwalks, twin vertical bio-elevators, `ln(x ≤ 0)` acid pools, and 4 Containment Wings (`α, β, γ, δ`).
-  - Complete **Topics 65–78 (الدوال اللوغاريتمية والأسية، المعادلات والمتراجحات، المشتقات والأصلية، النمو المقارن والفروع اللانهائية)**:
-    - **32 Moroccan 2BAC PC National Exam questions** with `setBidiSafeMath` and Fisher-Yates option shuffling (`pickReactorChallenge`).
-    - **10 Interactive Canvas `graphSpec` plots** (`ln_domain_band`, `primitive_area_inv`, `ln_curve_tangent`, `ln_abs_both_sides`, `exp_ln_symmetry`, `exp_quad_roots`, `exp_tangent_bound`, `growth_comparison`, `ln_branch_parabolic`, `exp_parabolic_y`).
-  - 6 PlayStation abilities (`✕` Double-Jump Thruster, `◯` Phase Dash, `▢` Seal Override / Execute, `△` Bio-Aegis `e^{ln x}=x`, `R2` Derivative Beam `u'/u`, `L2` Growth-Comparison Shockwave `e^x ≫ xⁿ`) + 3-Phase Asymptote Containment Boss (`مُفاعل المقاربات الأعظم`).
-  - Registered in `games.json` with bespoke exponential/logarithmic symmetry SVG tile in `js/hub.js`.
+### [UPCOMING — Cycle 019 Alpha (2026-11-23 05:00 UTC)] Milestone 3.4: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Upgrade
+* **Target**: `games/logarithm-reactor/`, `games/integral-forge/`, `games/mathcore-survivor/`, `games/math-battle/`
+* **Deliverables**:
+  - Integrate `shared/arcade-core.js` into `logarithm-reactor` and `integral-forge` (fixing missing radial deadzones in both `controls.js`, unifying `setBidiSafeMath`, and persisting `ArcadeCore.Progress` run stats).
+  - Connect `mathcore-survivor` (migrating/bridging its existing `localStorage` high-score seamlessly) and `math-battle` to `ArcadeCore.Progress`.
+  - Localize `games/math-battle/` (`<html lang="ar" dir="rtl">`, HUD/modals/buttons/Arabic calculus prompts) to match the unified platform UX standard and confirm full DualSense modal + gameplay consistency across Games 1–2.
 
-### [COMPLETED — Cycle 008 Omega (17:00 UTC)] Milestone 2.5: Deep Polish for Logarithm Reactor & Multi-Game Audit
-* **Logarithm Reactor v1.1.0 (`games/logarithm-reactor/`, 4,678 LOC)**:
-  - Fixed `override` bullet-time elevator drift by decoupling `state.worldTime += dt` from `state.time`, tuned twin bio-elevator range (`y: 490..1470`) with terminal dwell plateaus, dynamic `▲/▼/●` track indicators, direction-reversal lock, and hydraulic Web Audio cues (`playElevatorBoard`, `playElevatorDock`).
-  - Added full `ln(x ≤ 0)` acid-pool physics (viscous drag, upward caustic splash burst, continuous bubble sizzle particles, `playAcidSplash` / `playAcidSizzle` Web Audio synthesis, thermal bounce with jump recovery, and safe neutralization under `△` Equivalence Aegis `e^{ln x} = x`) plus animated wave surfaces in `js/renderer.js`.
-  - Upgraded the Phase 3 **Asymptote Containment Boss (`مُفاعل المقاربات الأعظم`)** with a rotating **Equivalence Root Window `α = 1`** (`shieldAngle`), projectile piercing vs solid-arc deflection (`playShieldDeflect`), shield recharge & stun windows, radial separation repulsion, and twin orthogonal Cross-Asymptote Beams.
-  - Expanded `js/curriculum.js` from 32 to **39 Moroccan 2BAC PC questions** (+7 questions covering parameter discussions $e^x = mx$, $x\ln x = m$, $\ln^2 x - (m+1)\ln x + m \le 0$, $1-\frac{1}{x} \le \ln x \le x-1$, base-$a$ flip $(1/2)^x > 8$, $x e^{-x}$ inflection point, and $F(0)=0$ primitive) with **13 live `graphSpec` plots** (`log_ineq_band`, `exp_param_tangent`, `ln_param_roots`).
-* **Multi-Game 60FPS Audit (All 5 Gold-Standard Titles)**:
-  - Eliminated full-screen GPU `backdrop-filter: blur(...)` overhead over the 60FPS canvas in `games/limit-abyss/css/style.css`.
-  - Cached `coneGrad` and `darkGrad` radial gradients in `games/asymptote-asylum/js/renderer.js` (zero per-frame gradient allocations).
-  - Added full X+Y viewport culling across orbs, drones, projectiles, particles, and floating texts in `sequence-strider`, `complex-plane-duel`, `asymptote-asylum`, and `logarithm-reactor`, cached `affixStr` formatting in `complex-plane-duel`, and cached HUD element refs & boolean states across all `syncHUD()` loops.
+### [UPCOMING — Cycle 020 Omega (2026-11-23 17:00 UTC)] Milestone 3.5: PS5 Hub Mastery Telemetry Dashboard & Smart Review UX
+* **Target**: `js/hub.js`, `css/hub.css`, `index.html`, `shared/arcade-core.js`
+* **Deliverables**:
+  - Surface live `ArcadeCore.Progress` telemetry inside the PS5 Hub without violating 60FPS GPU rules (`zero backdrop-filter`):
+    - Render mastery rings, `✓ 4/4 أختام` badges, `🏆 الزعيم مهزوم` trophies, rank (`S/A/B`), and question accuracy `%` directly on Game Rail Tiles and Showcase cards.
+    - Add a Topbar **2BAC PC Mastery Summary** (`X/10` Bosses Cleared, global accuracy `%`, total mastered questions) + one-click **Smart Review Filter (`المراجعة الذكية`)** recommending unplayed or low-accuracy chapters.
+    - Add an accessible **Progress Backup / Reset Modal** (export/import JSON telemetry or safe double-confirm reset via DualSense & mouse/keyboard).
 
-### [COMPLETED — Cycle 009 Alpha (05:00 UTC)] Milestone 2.6: Launch Game 8 — `integral-forge` (محرقة التكامل والمعادلات — Topics 79–90)
-* Built **محرقة التكامل والمعادلات — Integral Forge v1.0.0** (**4,485 LOC** across 6 modules + Molten Foundry CSS):
-  - 2D Heavy Mech Siege & Area Slicer (`2600 × 1700` molten foundry) starring `TITAN-∫`, twin magnetic gantry cranes (`y: 490..1410` with terminal dwell), one-way catwalks, molten slag cooling channels with splash/sizzle physics, and 4 Foundry Wings (`α, β, γ, δ`).
-  - Complete **Topics 79–90 (الدوال الأصلية، التكامل المحدود، المكاملة بالأجزاء ALPES، التفكيك و Φ(x)، حساب المساحات والحجوم، والمعادلات التفاضلية من الرتبة 1 و 2)**:
-    - **30 Moroccan 2BAC PC National Exam questions** with `setBidiSafeMath` and Fisher-Yates option shuffling (`pickForgeChallenge`).
-    - **10 Interactive Canvas `graphSpec` plots** (`primitive_shift`, `chasles_split`, `riemann_integral_sign`, `ipp_area_ln`, `integral_phi_deriv`, `area_below_ox`, `area_between_curves`, `volume_revolution_ox`, `ode_first_order`, `ode_second_harmonic`).
-  - 3 Foundry Enemy Archetypes (`drone_riemann`, `turret_flux`, `golem_ode` with Stagger/Execute), 6 PlayStation Mech Abilities (`✕` Magnetic Double-Jump, `◯` Area Slicer Cleave `|f-g|`, `▢` Seal Override / Golem Execute, `△` Chasles Thermal Aegis `∫_a^c + ∫_c^b`, `R2` Riemann Plasma Cannon, `L2` Volume of Revolution Shockwave `π∫f² dx`), and the 3-Phase **Differential Colossus Boss (`عملاق المعادلات التفاضلية`)** featuring a rotating Characteristic Root Window `r₀` in Phase 3.
-  - Registered in `games.json` with bespoke area-under-curve, solid-of-revolution & harmonic-wave SVG artwork in `js/hub.js`.
+### [UPCOMING — Cycle 021 Alpha (2026-11-24 05:00 UTC)] Milestone 3.6: Legacy Pruning, Dead-Code Consolidation & Mobile/DualSense UX Polish
+* **Target**: Repository root, `shared/`, `games/mathcore-survivor/`, `games/math-battle/`, and responsive/touch CSS across all 10 games
+* **Deliverables**:
+  - Remove duplicate/unlinked `games/mathcore-survivor/standalone.html` and `games/math-battle/standalone.html`; consolidate inner README notes cleanly into root `README.md` and `games/README.md`.
+  - Audit `shared/` to ensure zero dead unused files (either migrate/wrap useful `CanvasKit`/`Calculus` helpers or remove unused ESM remnants once `js/hub.js` & `shared/arcade-core.js` form a crystal-clear, documented shared layer).
+  - Execute a responsive & ergonomics sweep across all 10 games (`390×844` mobile touch buttons, `safe-area-inset-*`, `1280×720` & `1920×1080` desktop HUD non-overlap, Escape/Options pause parity, and instant `?from=game` return).
 
-### [COMPLETED — Cycle 010 Omega (17:00 UTC)] Milestone 2.7: Deep Polish for Integral Forge
-* **Integral Forge v1.1.0 (`games/integral-forge/`, 4,722 LOC)**:
-  - Upgraded `js/audio.js` with `playCraneDock()` hydraulic piston latch and `playBossPhaseShift()` foundry escalation synth; wired slag vaporization for enemy bolts, harmonic $y'' + \omega^2 y$ motion on `golem_ode`, alternating Phase 2/3 Boss spiral barrages, `L2` Volume Shockwave clearing enemy projectiles (`420px`), and DualSense confirmation haptics on correct Override answers.
-  - Upgraded `ipp_area_ln` (geometric bounding rectangle $e - (e - 1) = 1$) and `volume_revolution_ox` (3D-projected sliced cross-section discs $dV = \pi f(x)^2 dx$) in `js/renderer.js`, and fixed pure math canvas label direction in `integral_phi_deriv`.
-  - Expanded `js/curriculum.js` from 30 to **37 Moroccan 2BAC PC National Exam questions** (+7 covering sequence-integral bounding $0 \le I_n \le \frac{1}{n+1}$, parameter IPP $\int_0^\alpha x e^{-x} dx$, parameter $\ln x / x$ integral, cone volume & $u.v = \|\vec{i}\|^3$ unit trap, RC first-order relaxation ODE, and 2nd-order discriminant parameter $y'' - 4y' + my = 0$) with **13 live `graphSpec` plots** (`ipp_x_exp_area`, `volume_cone_disc`, `ode_damped_pos_disc`).
-
-### [COMPLETED — Cycle 011 Alpha (2026-11-19)] Milestone 2.8: Launch Game 9 — `vector-odyssey` (أوديسا الفضاء المتجهي — Topics 91–102)
-* **Delivered**: **5,001 LOC** across 6 modules + OLED CSS, **30** 2BAC PC questions (`91–102`) + **10** interactive 3D `graphSpec` visualizers, `2600 × 1700` 2.5D parallax starfighter arena (`VECTRA-ℝ³`), 4 Orbital Seals (`α, β, γ, δ`), orbiting mines, 3-Phase HyperSphere Boss (`Ω`) with Phase 3 rotating tangent window `H`, and custom `(S)∩(P)` PS5 Hub SVG artwork.
-
-### [COMPLETED — Cycle 012 Omega (17:00 UTC)] Milestone 2.9: Deep Polish for Vector Odyssey
-* **Vector Odyssey v1.1.0 (`games/vector-odyssey/`, 5,426 LOC)**:
-  - **3D Wireframe Depth Cues & 60FPS Renderer (`js/renderer.js`)**: Eliminated per-frame vertex array allocations with fixed `PROJ_POOL`, separated polyhedron edges into dashed dim back-edges (`zMid < 0`) and solid bright front-edges (`zMid >= 0`) with near-vertex highlights, added central $(O, \vec{i}, \vec{j}, \vec{k})$ spatial triad and Boss beam slice equation labels (`x = ...` / `y = ...`), and upgraded `drawSphereWireframe` / `sphere_plane_circle_3d` with back-dashed / front-solid arcs.
-  - **Curriculum & 3D GraphSpec Expansion (`js/curriculum.js`, `js/renderer.js`)**: Expanded Topics `91–102` bank from `30` to **38 Moroccan 2BAC PC questions** (+8 parameter-in-space, double-root distance, line-in-plane, sphere radius parameter, twin tangent planes, circle radius parameter, `d(Ω, D)` distance method, and tetrahedron altitude questions) and upgraded live `graphSpec` visualizers from `10` to **14 interactive 3D diagrams** (`sphere_tangent_plane_param_3d`, `sphere_circle_param_3d`, `sphere_line_dist_3d`, `tetrahedron_volume_3d`).
-  - **Combat, Boss & Audio Depth (`js/world.js`, `js/audio.js`)**: Trench deflector pylons now intercept enemy projectiles as active cover, `cruiser_sphere` cruisers activate rotating tangent mini-shields after 1+ broken seals, Boss AI runs independent of `dist <= 1` with explicit `H`-gap piercing feedback, and `OdysseyAudio` adds `setCombatIntensity`, `playOrbPickup`, and `playComboChime`.
-  - **DualSense & HUD Bug Fixes (`js/controls.js`, `js/game.js`, `index.html`, `games.json`)**: Fixed CSS/JS class mismatches (`opt-correct`/`opt-wrong`, `highlight-ready`, `gp-pill.disconnected`), wired HUD `#filterChip` click cycling, added `axes[9]` D-Pad hat fallback, aligned `Shift/K` (Roll), `F/R` (Overdrive), `R1` (Hint), and `L2` (Bypass `-40%` energy) across DualSense/Keyboard/UI, and preserved active runs when opening Help.
-
-### [COMPLETED — Cycle 013 Alpha (05:00 UTC)] Milestone 2.10: Launch Game 10 — `quantum-casino` (كازينو الاحتمالات الكمومي — Topics 103–114)
-* **Delivered**: **4,933 LOC** across 6 modules + Emerald Felt & Roulette Gold CSS (`games/quantum-casino/`), **32** Moroccan 2BAC PC National Exam questions (`103–114`) + **12** live interactive `graphSpec` visualizers (`11` distinct probability/combinatorics diagram types), `2560 × 1600` 2D Tactical Heist & Bullet-Time Probability Vault (`QUANTUM-Ω`), solid poker-table tactical cover with Bullet-Time projectile ricochets, 4 Wing Seals (`α, β, γ, δ`) guarded by orbiting Roulette Laser Mines, 3 Enemy Archetypes (`guard_card`, `turret_dice`, `enforcer_markov` with Stagger/Execute `[▢ / E]`), 6 PlayStation abilities including `△` Bullet-Time `0.28x` dilation & `L2` Bernoulli Jackpot Shockwave, 3-Phase **Bernoulli Syndicate Core Boss** with rotating green `p` success window, full DualSense modal + gameplay controls, and bespoke Tree/Binomial `B(n,p)` SVG tile in `js/hub.js`.
-
-### [COMPLETED — Cycle 014 Omega (17:00 UTC)] Milestone 2.11: Deep Polish for Quantum Casino & SPRINT_02 Closure
-* **Quantum Casino v1.1.0 (`games/quantum-casino/`, 5,248 LOC)**:
-  - **Curriculum & GraphSpec Expansion (`js/curriculum.js`, `js/renderer.js`)**: Expanded Topics `103–114` bank from 32 to **40 Moroccan 2BAC PC National Exam questions** (+8 covering "at most 1 red" `C₅³+C₄¹C₅²`, order coefficient with replacement, reverse Bayes `P_B(A)`, parametric probability tree root `p² + 0.3(1-p) = 0.4`, independent complements `P(Ā∩B)`, discrete RV `|a-b|`, expectation-parameter `σ(X)`, and `P(X≥1)≥0.9` logarithmic threshold trap `n = 9`), and upgraded live `graphSpec` visualizers from 12 to **16 diagrams** (`binomial_np_solver`, `bayes_reverse_partition`, `weighted_prob_tree_param`, `dice_diff_grid`, `binomial_n_threshold`).
-  - **Bullet-Time Ricochet, Boss & Cover Polish (`js/world.js`, `js/renderer.js`, `js/audio.js`)**: Added violet ricochet trails with `+12` bonus damage & `+20` score on poker-table bounces (`playRicochet`), cover-table hit flashes, `playExecute()` finisher crunch, spawn-out-of-cover validation, alternating diagonal `P_A(B)` / `B(n,p)` Boss Phase 3 beams, and rotating green `p` vs crimson `1-p` labels on the Boss Binomial Shield.
-  - **RTL Bidi & HUD Fixes (`js/game.js`, `games.json`)**: Expanded `setBidiSafeMath` regex with `σμλπ`, `\u0304` combining macron, and full Unicode superscripts/subscripts (`₀-₉`, `⁰-⁹`, `⁻`, `⁺`) so expressions like `C₄²` and `σ(X)` never fracture in RTL; added live Bullet-Time countdown `⏱ X.Xs` in `#bulletBadge`, wired `actShoot` cooldown indicator, and preserved colored `.ps-badge` tags inside `#overrideModal`.
-* **Sprint Transition Armed**: Zero pending milestones remain in `SPRINT_02`; `STATE.json` updated to `"status": "COMPLETED_NEEDS_ROADMAP"` so **Cycle 015 enters Phase `ARCHITECT`** automatically to audit the 10-game repository and draft `SPRINT_03`.
+### [UPCOMING — Cycle 022 Omega (2026-11-24 17:00 UTC)] Milestone 3.7: Ironclad 8-Stage `verify.sh` Upgrade & `SPRINT_03` Closure
+* **Target**: `evolution/scripts/verify.sh`, `evolution/GOLD_STANDARD.md`, `STATE.json`, `SPRINT.md`
+* **Deliverables**:
+  - Harden `evolution/scripts/verify.sh` with **Stage 8 (Platform Integrity & UX Regression Gate)**: verify `shared/arcade-core.js` syntax and integration, fail on any `location.href = '../../index.html'` missing `?from=game`, fail on leftover `standalone.html` clutter, verify domain categories (`<= 5`), and check zero CSS `backdrop-filter` regressions.
+  - Run full Node + Playwright/DOM sanity verification across the Hub and all 10 games.
+  - Close `SPRINT_03` (`currentSprint.status = "COMPLETED_NEEDS_ROADMAP"`, `nextCycleNumber: 23`) to arm **Phase `ARCHITECT`** for `SPRINT_04`.
