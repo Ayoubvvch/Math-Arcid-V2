@@ -24,13 +24,13 @@
   // Precompiled character classes covering full Moroccan 2BAC PC notation (Topics 1-114)
   const MATH_CORE_CLASS =
     "A-Za-z0-9\\u00C0-\\u024F\\u0300-\\u030F\\u20D0-\\u20FF" +
-    "ℝℚℕℤℂΩΔΣΠΦαβγδεζηθλμπρσφψω" +
-    "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁿⁱˣʸʳᵖᵏ" +
+    "ℝℚℕℤℂΩΔΣΠΦαβγδεζηθλμπρστφψω" +
+    "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ᵃᵉʰⁱᵏᵐⁿᵒᵖʳˢᵗᵘᵛʷˣʸᶻ" +
     "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₐₑₒₓₙₚₖᵢ" +
-    "\\][(){}|√∞∅∀∃∈∉⊂⊃∪∩→←↔⇒⇔≤≥≠≈≡·×÷±−≈'′″∘^_∫∑∏∂∇∧∨⊥∥∠°\\\\";
+    "\\][(){}|√∛∜∞∅∀∃∈∉⊂⊃∪∩→←↔⇒⇔⇐↦⟹⟺≤≥≠≈≡·×÷±−≈'′″∘^_∫∑∏∂∇∧∨⊥∥∠°\\\\%";
 
   const MATH_BRIDGE_CLASS =
-    " +\\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→←↔⇒⇔·×÷±−≈'′″∘^_:,.\\\\;∫∑∏∧∨⊥";
+    " +\\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→←↔⇒⇔⇐↦⟹⟺·×÷±−≈'′″∘^_:,.\\\\;∫∑∏∧∨⊥";
 
   const MATH_SEGMENT_REGEX = new RegExp(
     "(?:[+\\-−](?=[" + MATH_CORE_CLASS + "])|[" + MATH_CORE_CLASS + "])" +
@@ -65,9 +65,10 @@
       let sIdx = match.index;
       let eIdx = sIdx + match[0].length;
 
-      // Trim standalone sentence-ending colons or periods not inside numbers/decimals
+      // Trim trailing whitespace, sentence colons/semicolons, or unbalanced parentheses
       while (eIdx > sIdx) {
-        const ch = raw[eIdx - 1];
+        const sub = raw.slice(sIdx, eIdx);
+        const ch = sub[sub.length - 1];
         if (ch === ' ' || ch === '\t') {
           eIdx -= 1;
           continue;
@@ -76,17 +77,37 @@
           eIdx -= 1;
           continue;
         }
+        const op = (sub.match(/\(/g) || []).length;
+        const cl = (sub.match(/\)/g) || []).length;
+        if ((ch === '(' && op > cl) || (ch === ')' && cl > op)) {
+          eIdx -= 1;
+          continue;
+        }
         break;
       }
 
-      if (eIdx > sIdx) {
+      // Trim leading whitespace or unbalanced parentheses
+      while (sIdx < eIdx) {
+        const sub = raw.slice(sIdx, eIdx);
+        const ch = sub[0];
+        const op = (sub.match(/\(/g) || []).length;
+        const cl = (sub.match(/\)/g) || []).length;
+        if (ch === ' ' || ch === '\t' || (ch === '(' && op > cl) || (ch === ')' && cl > op)) {
+          sIdx += 1;
+          continue;
+        }
+        break;
+      }
+
+      const tok = raw.slice(sIdx, eIdx);
+      if (tok && !/^[()\[\]\s]+$/.test(tok)) {
         if (sIdx > lastIdx) {
           el.appendChild(doc.createTextNode(raw.slice(lastIdx, sIdx)));
         }
         const node = doc.createElement(tag);
         node.className = className;
         node.dir = 'ltr';
-        node.textContent = raw.slice(sIdx, eIdx);
+        node.textContent = tok;
         el.appendChild(node);
         lastIdx = eIdx;
       }
@@ -137,21 +158,24 @@
     },
 
     /**
-     * Decode standard Linux/Chrome D-Pad hat axis (axes[9]) when present.
+     * Decode standard Linux/Chrome 8-way D-Pad hat axis (axes[9]) when present.
      * @param {Gamepad|null} gp - Browser Gamepad object.
      * @returns {{up: boolean, down: boolean, left: boolean, right: boolean}} Hat directions.
      */
     decodeDpadHat(gp) {
-      const hat = gp && gp.axes && typeof gp.axes[9] === 'number' ? gp.axes[9] : null;
-      if (hat === null || hat > 1.1) {
-        return { up: false, down: false, left: false, right: false };
+      const dirs = { up: false, down: false, left: false, right: false };
+      const h = gp && gp.axes && gp.axes.length > 9 ? gp.axes[9] : null;
+      if (typeof h === 'number' && Math.abs(h) <= 1.05 && h < 1.1) {
+        if (h < -0.75) { dirs.up = true; }
+        else if (h < -0.52) { dirs.up = true; dirs.right = true; }
+        else if (h < -0.22) { dirs.right = true; }
+        else if (h < 0.05) { dirs.right = true; dirs.down = true; }
+        else if (h < 0.30) { dirs.down = true; }
+        else if (h < 0.58) { dirs.down = true; dirs.left = true; }
+        else if (h <= 0.85) { dirs.left = true; }
+        else { dirs.left = true; dirs.up = true; }
       }
-      return {
-        up: hat >= -1.05 && hat <= -0.78,
-        right: hat >= -0.65 && hat <= -0.22,
-        down: hat >= -0.15 && hat <= 0.35,
-        left: hat >= 0.45 && hat <= 0.95
-      };
+      return dirs;
     },
 
     /**
@@ -220,12 +244,18 @@
           if (gpState) {
             gpState.connected = true;
             gpState.index = pads[i].index;
-            gpState.idLabel = pads[i].id && pads[i].id.toLowerCase().includes('dualsense')
+            const lowId = (pads[i].id || '').toLowerCase();
+            gpState.idLabel = (lowId.includes('dualsense') || lowId.includes('054c') || lowId.includes('dualshock') || lowId.includes('playstation'))
               ? 'DualSense جاهز'
               : 'Gamepad متصل';
           }
           return pads[i];
         }
+      }
+      if (gpState) {
+        gpState.connected = false;
+        gpState.index = null;
+        gpState.idLabel = '';
       }
       return null;
     },

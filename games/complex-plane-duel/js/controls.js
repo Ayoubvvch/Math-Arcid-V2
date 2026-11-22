@@ -2,6 +2,8 @@
  * Sequence Strider - 100% DualSense / DualShock, Keyboard, Mouse & Touch Input System
  */
 
+const gpCore = () => window.ArcadeCore && window.ArcadeCore.Gamepad;
+
 window.StriderInput = {
   keys: {},
   mouseX: window.innerWidth / 2,
@@ -9,12 +11,21 @@ window.StriderInput = {
   mouseLeftDown: false,
   mouseAimActive: false,
 
-  gamepadSlot: -1,
-  gamepadConnected: false,
-  prevButtons: {},
-  prevHat: { up: false, down: false, left: false, right: false },
+  gp: gpCore() ? gpCore().createState() : {
+    connected: false,
+    index: null,
+    idLabel: '',
+    prevButtons: [],
+    axisLeftHeld: false,
+    axisRightHeld: false,
+    axisUpHeld: false,
+    axisDownHeld: false,
+    pauseFocusIdx: 0,
+    endFocusIdx: 0,
+    lastShownConnected: null,
+    lastShownLabel: ''
+  },
   prevTouchJump: false,
-  navCooldownAt: 0,
   inputLockUntil: 0,
 
   pauseFocusIdx: 0,
@@ -35,83 +46,34 @@ function applyFocusList(selector, key) {
   if (!items.length) return;
   const len = items.length;
   window.StriderInput[key] = ((window.StriderInput[key] % len) + len) % len;
-  items.forEach((el, idx) => el.classList.toggle('gp-focused', idx === window.StriderInput[key]));
+  gpCore()?.applyFocusRing(items, window.StriderInput[key]);
 }
 window.applyStriderPauseFocus = () => applyFocusList('.pause-menu-btn', 'pauseFocusIdx');
 window.applyStriderEndFocus = () => applyFocusList('.end-menu-btn', 'endFocusIdx');
 
 function findActiveGamepad() {
-  if (!navigator.getGamepads) return null;
-  const pads = navigator.getGamepads();
-  if (window.StriderInput.gamepadSlot >= 0) {
-    const p = pads[window.StriderInput.gamepadSlot];
-    if (p && p.connected) return p;
-  }
-  for (let i = 0; i < pads.length; i++) {
-    if (pads[i] && pads[i].connected) {
-      window.StriderInput.gamepadSlot = i;
-      return pads[i];
-    }
-  }
-  window.StriderInput.gamepadSlot = -1;
-  return null;
+  return gpCore() ? gpCore().resolveActiveGamepad(window.StriderInput.gp) : null;
 }
 
 function readHatDirs(gp) {
-  const dirs = { up: false, down: false, left: false, right: false };
-  if (gp.axes && gp.axes.length > 9) {
-    const h = gp.axes[9];
-    if (typeof h === 'number' && Math.abs(h) <= 1.05 && h < 1.1) {
-      if (h < -0.75) { dirs.up = true; }
-      else if (h < -0.35) { dirs.up = true; dirs.right = true; }
-      else if (h < -0.05) { dirs.right = true; }
-      else if (h < 0.25) { dirs.right = true; dirs.down = true; }
-      else if (h < 0.52) { dirs.down = true; }
-      else if (h < 0.78) { dirs.down = true; dirs.left = true; }
-      else if (h <= 0.92) { dirs.left = true; }
-      else { dirs.left = true; dirs.up = true; }
-    }
-  }
-  return dirs;
+  return gpCore() ? gpCore().decodeDpadHat(gp) : { up: false, down: false, left: false, right: false };
 }
 
 function radialStick(axX, axY, dz = 0.16) {
-  const m = Math.hypot(axX, axY);
-  if (m < dz) return { x: 0, y: 0 };
-  const c = Math.min(1, m);
-  const s = (c - dz) / (1 - dz);
-  return { x: (axX / m) * s, y: (axY / m) * s };
+  return gpCore() ? gpCore().applyRadialDeadzone(axX, axY, dz) : { x: axX, y: axY };
 }
 
-window.triggerStriderHaptic = async function(duration = 70, weak = 0.45, strong = 0.65) {
-  const gp = findActiveGamepad();
-  if (gp && gp.vibrationActuator && typeof gp.vibrationActuator.playEffect === 'function') {
-    try {
-      await gp.vibrationActuator.playEffect('dual-rumble', {
-        startDelay: 0, duration, weakMagnitude: weak, strongMagnitude: strong
-      });
-    } catch (e) {}
-  }
+window.triggerStriderHaptic = function(duration = 70, weak = 0.45, strong = 0.65) {
+  gpCore()?.triggerHaptic(window.StriderInput.gp, duration, weak, strong);
 };
 
-function updateGamepadBanner(gp) {
-  const pill = document.getElementById('gamepadPill');
-  const txt = document.getElementById('gamepadStatusText');
-  if (!pill || !txt) return;
-  if (gp) {
-    if (!window.StriderInput.gamepadConnected) {
-      window.StriderInput.gamepadConnected = true;
-      pill.classList.remove('disconnected');
-      const id = String(gp.id || '').toLowerCase();
-      txt.textContent = (id.includes('dualsense') || id.includes('054c') || id.includes('dualshock') || id.includes('playstation'))
-        ? 'PS5 DualSense متصل 100%'
-        : 'يد التحكم متصلة 100%';
-    }
-  } else if (window.StriderInput.gamepadConnected) {
-    window.StriderInput.gamepadConnected = false;
-    pill.classList.add('disconnected');
-    txt.textContent = 'لوحة المفاتيح جاهزة';
-  }
+function updateGamepadBanner() {
+  gpCore()?.updateBanner(
+    window.StriderInput.gp,
+    document.getElementById('gamepadPill'),
+    document.getElementById('gamepadStatusText'),
+    'لوحة المفاتيح جاهزة'
+  );
 }
 
 window.initStriderControls = function(getState) {
@@ -311,7 +273,7 @@ window.getStriderMoveVec = function() {
 
 window.pollStriderInputs = function(state) {
   const gp = findActiveGamepad();
-  updateGamepadBanner(gp);
+  updateGamepadBanner();
 
   let moveVec = window.getStriderMoveVec();
   if (Math.hypot(window.StriderInput.touchVecX, window.StriderInput.touchVecY) > 0.14) {
@@ -347,6 +309,7 @@ window.pollStriderInputs = function(state) {
     return { moveVec, aimVec };
   }
 
+  const gpState = window.StriderInput.gp;
   const ls = radialStick(gp.axes[0] || 0, gp.axes[1] || 0, 0.16);
   if (Math.hypot(ls.x, ls.y) > 0.06) moveVec = ls;
 
@@ -362,24 +325,17 @@ window.pollStriderInputs = function(state) {
     const b = gp.buttons[i];
     return !!(b && (b.pressed || b.value > 0.55));
   };
-  const edge = (i) => {
-    const cur = btnDown(i);
-    const prev = !!window.StriderInput.prevButtons[i];
-    window.StriderInput.prevButtons[i] = cur;
-    return !locked && cur && !prev;
-  };
+  const edge = (i) => !locked && (gpCore() ? gpCore().justPressed(gp, gpState, i) : false);
 
   const hat = readHatDirs(gp);
-  const dUpRaw = btnDown(12) || hat.up || (ls.y < -0.58);
-  const dDownRaw = btnDown(13) || hat.down || (ls.y > 0.58);
-  const dLeftRaw = btnDown(14) || hat.left || (ls.x < -0.58);
-  const dRightRaw = btnDown(15) || hat.right || (ls.x > 0.58);
+  const dLeftHold = btnDown(14) || hat.left;
+  const dRightHold = btnDown(15) || hat.right;
+  const dUpHold = btnDown(12) || hat.up;
+  const dDownHold = btnDown(13) || hat.down;
 
-  const edgeUp = !locked && ((btnDown(12) && !window.StriderInput.prevButtons[12]) || (hat.up && !window.StriderInput.prevHat.up));
-  const edgeDown = !locked && ((btnDown(13) && !window.StriderInput.prevButtons[13]) || (hat.down && !window.StriderInput.prevHat.down));
-  const edgeLeft = !locked && ((btnDown(14) && !window.StriderInput.prevButtons[14]) || (hat.left && !window.StriderInput.prevHat.left));
-  const edgeRight = !locked && ((btnDown(15) && !window.StriderInput.prevButtons[15]) || (hat.right && !window.StriderInput.prevHat.right));
-  window.StriderInput.prevHat = hat;
+  const { dLeft, dRight, dUp, dDown } = gpCore()
+    ? gpCore().sampleDirectionalNav(gp, gpState, 0.55)
+    : { dLeft: false, dRight: false, dUp: false, dDown: false };
 
   const eCross = edge(0);
   const eCircle = edge(1);
@@ -390,20 +346,16 @@ window.pollStriderInputs = function(state) {
   const eL2 = edge(6);
   const eR2 = edge(7);
   const eOptions = edge(9);
-  edge(12); edge(13); edge(14); edge(15);
-
-  const canRepeat = !locked && now >= window.StriderInput.navCooldownAt;
 
   if (state.mode === 'intro') {
-    if (edgeLeft || eL1 || (dLeftRaw && canRepeat)) {
+    if (!locked && (dLeft || eL1)) {
       window.cycleSeqFilter(-1);
-      window.StriderInput.navCooldownAt = now + 200;
-    } else if (edgeRight || eR1 || (dRightRaw && canRepeat)) {
+    } else if (!locked && (dRight || eR1)) {
       window.cycleSeqFilter(1);
-      window.StriderInput.navCooldownAt = now + 200;
     } else if (eCross) {
       window.startStriderFromIntro();
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null };
   }
 
@@ -415,6 +367,7 @@ window.pollStriderInputs = function(state) {
     else if (eR1) window.toggleSeqHint();
     else if (eL2) window.triggerSeqOverdriveBypass();
     else if (eOptions) window.openStriderPause();
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null };
   }
 
@@ -422,51 +375,51 @@ window.pollStriderInputs = function(state) {
     const items = Array.from(document.querySelectorAll('.pause-menu-btn'));
     if (eCircle || eOptions) {
       window.closeStriderPause();
-    } else if (edgeUp || (dUpRaw && canRepeat)) {
+    } else if (!locked && dUp) {
       window.StriderInput.pauseFocusIdx--;
       window.applyStriderPauseFocus();
       window.SeqAudio?.playUiTick?.();
-      window.StriderInput.navCooldownAt = now + 185;
-    } else if (edgeDown || (dDownRaw && canRepeat)) {
+    } else if (!locked && dDown) {
       window.StriderInput.pauseFocusIdx++;
       window.applyStriderPauseFocus();
       window.SeqAudio?.playUiTick?.();
-      window.StriderInput.navCooldownAt = now + 185;
     } else if (eCross) {
       items[window.StriderInput.pauseFocusIdx]?.click();
     } else if (eL1 || eR1) {
       window.cycleSeqFilter(eR1 ? 1 : -1);
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null };
   }
 
   if (state.mode === 'end') {
     const items = Array.from(document.querySelectorAll('.end-menu-btn'));
-    if (edgeUp || edgeDown || ((dUpRaw || dDownRaw) && canRepeat)) {
-      window.StriderInput.endFocusIdx++;
+    if (!locked && (dUp || dDown)) {
+      window.StriderInput.endFocusIdx += dUp ? -1 : 1;
       window.applyStriderEndFocus();
       window.SeqAudio?.playUiTick?.();
-      window.StriderInput.navCooldownAt = now + 200;
     } else if (eCross) {
       items[window.StriderInput.endFocusIdx]?.click();
     } else if (eCircle) {
       document.getElementById('btnHubEnd')?.click();
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null };
   }
 
-  // Play mode DualSense mapping (also allows D-Pad left/right walking!)
+  // Play mode DualSense mapping (also allows D-Pad 4-way movement!)
   if (Math.abs(moveVec.x) < 0.1) {
-    if (dLeftRaw) moveVec.x = -1;
-    else if (dRightRaw) moveVec.x = 1;
+    if (dLeftHold) moveVec.x = -1;
+    else if (dRightHold) moveVec.x = 1;
   }
   if (Math.abs(moveVec.y) < 0.1) {
-    if (dUpRaw) moveVec.y = -1;
-    else if (dDownRaw) moveVec.y = 1;
+    if (dUpHold) moveVec.y = -1;
+    else if (dDownHold) moveVec.y = 1;
   }
 
   if (eOptions) {
     window.openStriderPause();
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec, aimVec };
   }
   if (eCross) window.performJump(state);
@@ -479,5 +432,6 @@ window.pollStriderInputs = function(state) {
     window.performPulseShot(state);
   }
 
+  gpCore()?.snapshotButtons(gp, gpState);
   return { moveVec, aimVec };
 };

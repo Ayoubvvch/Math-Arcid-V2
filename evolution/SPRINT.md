@@ -33,15 +33,15 @@
   - Reorganized [games.json](file:///home/ubuntu/Math-Arcid-V2/games.json) from 10 fragmented 1-game category strings into **4 clean 2BAC PC Syllabus Domains** (`التحليل والدوال`, `الأعداد العقدية والفضاء`, `التعداد والاحتمالات`, `الأساسيات والتقويم`) ordered strictly monotonically by curriculum syllabus **`Topics 1 → 114`** (`limit-abyss` -> `asymptote-asylum` -> `sequence-strider` -> `complex-plane-duel` -> `logarithm-reactor` -> `integral-forge` -> `vector-odyssey` -> `quantum-casino`) followed by Foundations (`mathcore-survivor`, `math-battle`), with bilingual `keywords` & `topicRange`.
   - Upgraded [js/hub.js](file:///home/ubuntu/Math-Arcid-V2/js/hub.js) & [css/hub.css](file:///home/ubuntu/Math-Arcid-V2/css/hub.css) with RTL-aware `ArrowLeft`/`ArrowRight` + DualSense directional navigation, ordered Arabic category tabs (`L1/R1`), `<bdi dir="ltr">` `ArcadeCore.setBidiSafeMath` rendering in Showcase/Modals, logical CSS properties (`inset-inline-*`, `margin-inline-start`, `padding-inline-start`), zero `backdrop-filter`, and all 10 custom SVG tiles preserved 100%.
 
-### [NEXT — Cycle 018 Omega (2026-11-22 17:00 UTC)] Milestone 3.3: `ArcadeCore` Migration Batch A (Games 3–6)
-* **Target**: `games/limit-abyss/`, `games/asymptote-asylum/`, `games/sequence-strider/`, `games/complex-plane-duel/`
-* **Deliverables**:
-  - Integrate `<script src="../../shared/arcade-core.js"></script>` across all 4 titles.
-  - Replace local `setBidiSafeMath` / `window.setSeqBidiSafeMath` copies with `ArcadeCore.setBidiSafeMath` and unify DualSense helpers (`applyRadialDeadzone`, `decodeDpadHat`, `sampleDirectionalNav`, `triggerHaptic`) onto `ArcadeCore.Gamepad` (keeping all existing gameplay physics & controls intact).
-  - Wire `ArcadeCore.Progress` recording (`recordSealProgress`, `recordAnswer` with `topic` for weak-topic tracking, `recordRun` with Boss defeat & rank) into all 4 games.
-  - Verify all 6 modules, Fisher-Yates shuffling, >=2,800 LOC, locked 60FPS, and all 9 stages of `verify.sh`.
+### [COMPLETED — Cycle 018 Omega (2026-11-22 17:08 UTC)] Milestone 3.3: `ArcadeCore` Migration Batch A (Games 3–6)
+* **Target**: `games/limit-abyss/`, `games/asymptote-asylum/`, `games/sequence-strider/`, `games/complex-plane-duel/`, `shared/arcade-core.js`
+* **Delivered**:
+  - Wired `<script src="../../shared/arcade-core.js"></script>` across all 4 Batch A titles (`limit-abyss` v1.2.0 `4,585` LOC, `asymptote-asylum` v1.2.0 `4,147` LOC, `sequence-strider` v1.2.0 `3,328` LOC, `complex-plane-duel` v2.2.0 `3,779` LOC).
+  - Deduplicated local `setBidiSafeMath` / `setSeqBidiSafeMath` and DualSense Gamepad boilerplate onto `ArcadeCore.setBidiSafeMath` & `ArcadeCore.Gamepad` (`applyRadialDeadzone`, `decodeDpadHat`, `justPressed`, `snapshotButtons`, `sampleDirectionalNav`, `resolveActiveGamepad`, `updateBanner`, `applyFocusRing`, `triggerHaptic`), plus `ArcadeCore.CanvasAxisKit.clearWithGrid` in `limit-abyss/js/renderer.js`.
+  - Wired `ArcadeCore.Progress` (`recordAnswer` with `topic` for `weakTopics`/`masteredTopics`, `recordSealProgress`, and double-call-guarded `recordRun` with rank badge feedback) into all 4 games.
+  - **Omega Core & UX Fixes**: Hardened `shared/arcade-core.js` with `∛∜`, `τ`, `ᵃᵉʰᵐᵗᵘ`, `↦⇐⟹⟺` math glyphs, balanced-parenthesis trimming in `setBidiSafeMath`, 8-way W3C D-Pad hat decoding, and clean gamepad disconnect reset; fixed `limit-abyss` HUD mousedown torpedo bleed, square stick deadzone -> radial deadzone, and pause/override modal overlap.
 
-### [UPCOMING — Cycle 019 Alpha (2026-11-23 05:00 UTC)] Milestone 3.4: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Upgrade
+### [NEXT — Cycle 019 Alpha (2026-11-23 05:00 UTC)] Milestone 3.4: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Upgrade
 * **Target**: `games/logarithm-reactor/`, `games/integral-forge/`, `games/mathcore-survivor/`, `games/math-battle/`
 * **Deliverables**:
   - Integrate `shared/arcade-core.js` into `logarithm-reactor` and `integral-forge` (deduplicating `setBidiSafeMath` & DualSense boilerplate and wiring `ArcadeCore.Progress`).

@@ -508,6 +508,7 @@ window.AbyssWorld = (function() {
     if (!gate || gate.isUnlocked) return;
     gate.isUnlocked = true;
     state.gatesCleared++;
+    window.ArcadeCore?.Progress?.recordSealProgress('limit-abyss', state.gatesCleared);
     state.score += 500 * state.combo;
     state.player.hp = state.player.maxHp;
     state.player.energy = state.player.maxEnergy;

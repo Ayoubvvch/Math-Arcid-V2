@@ -77,43 +77,11 @@
 
   function setBidiSafeMath(el, text) {
     if (!el) return;
-    el.textContent = '';
-    const str = String(text || '');
-    const mathRe = /(?:[+\-](?=[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])|[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])(?:[ +\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→↔⇒⇔·×÷±≈'′∘^_:,.\\]*[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])*/g;
-    let lastIndex = 0;
-    let match;
-    while ((match = mathRe.exec(str)) !== null) {
-      let sIdx = match.index;
-      let eIdx = match.index + match[0].length;
-      while (eIdx > sIdx) {
-        const sub = str.slice(sIdx, eIdx);
-        const op = (sub.match(/\(/g) || []).length;
-        const cl = (sub.match(/\)/g) || []).length;
-        if ((sub.endsWith('(') && op > cl) || (sub.endsWith(')') && cl > op) || /\s$/.test(sub)) eIdx--;
-        else break;
-      }
-      while (sIdx < eIdx) {
-        const sub = str.slice(sIdx, eIdx);
-        const op = (sub.match(/\(/g) || []).length;
-        const cl = (sub.match(/\)/g) || []).length;
-        if ((sub.startsWith('(') && op > cl) || (sub.startsWith(')') && cl > op) || /^\s/.test(sub)) sIdx++;
-        else break;
-      }
-      const tok = str.slice(sIdx, eIdx);
-      if (!tok || /^[()\[\]\s]+$/.test(tok)) continue;
-      if (sIdx > lastIndex) {
-        el.appendChild(document.createTextNode(str.slice(lastIndex, sIdx)));
-      }
-      const bdi = document.createElement('bdi');
-      bdi.dir = 'ltr';
-      bdi.className = 'math-ltr';
-      bdi.textContent = tok;
-      el.appendChild(bdi);
-      lastIndex = eIdx;
+    if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
+      window.ArcadeCore.setBidiSafeMath(el, text);
+      return;
     }
-    if (lastIndex < str.length) {
-      el.appendChild(document.createTextNode(str.slice(lastIndex)));
-    }
+    el.textContent = String(text ?? '');
   }
   window.setBidiSafeMath = setBidiSafeMath;
 
@@ -203,8 +171,10 @@
     if (!btn || btn.disabled) return;
 
     state.stats.questionsAnswered++;
+    const isCorrect = optIdx === q.correctIndex;
+    window.ArcadeCore?.Progress?.recordAnswer('asymptote-asylum', q.topic, isCorrect);
 
-    if (optIdx === q.correctIndex) {
+    if (isCorrect) {
       state.stats.questionsCorrect++;
       btn.classList.add('opt-correct');
       resolveRitualSuccess(false);
@@ -268,6 +238,7 @@
       if (!s.broken) {
         s.broken = true;
         state.stats.brokenSeals++;
+        window.ArcadeCore?.Progress?.recordSealProgress('asymptote-asylum', state.stats.brokenSeals);
         state.stats.score += wasSacrifice ? 350 : 600;
         window.HorrorAudio?.playSealBreak?.();
         window.spawnGoreParticles(state, s.x, s.y, 28, s.color, 260);
@@ -313,9 +284,26 @@
   };
 
   window.triggerVictoryOrDeath = function(s, victory) {
+    if (s.mode === 'end') return;
     s.mode = 'end';
     document.getElementById('ritualModal')?.classList.add('hidden');
     document.getElementById('pauseModal')?.classList.add('hidden');
+
+    const acc = s.stats.questionsAnswered > 0
+      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
+      : 100;
+    const progressRes = window.ArcadeCore?.Progress?.recordRun('asymptote-asylum', {
+      score: s.stats.score,
+      sealsCleared: s.stats.brokenSeals,
+      victory: Boolean(victory),
+      runQuestionsAnswered: s.stats.questionsAnswered,
+      runQuestionsCorrect: s.stats.questionsCorrect,
+      bypasses: s.stats.sacrifices,
+      answersAlreadyRecorded: true
+    });
+    const rankSuffix = progressRes
+      ? ` • الرتبة: ${progressRes.rank}${progressRes.isNewBest && s.stats.score > 0 ? ' • 🏆 رقم قياسي جديد!' : ''}`
+      : '';
 
     const title = document.getElementById('endTitle');
     const sub = document.getElementById('endSubtitle');
@@ -323,19 +311,15 @@
     if (victory) {
       if (s.stats.sacrifices >= 2) {
         title.innerHTML = 'نجوت بدم الآخرين — <span>نهاية «الغاية تبرر الوسيلة»</span>';
-        sub.textContent = 'تحطّمت كل الأختام وتمزق شبح المقارب اللانهائي... لكن دماء القرابين ستلاحقك خارج المصحّة للأبد.';
+        sub.textContent = 'تحطّمت كل الأختام وتمزق شبح المقارب اللانهائي... لكن دماء القرابين ستلاحقك خارج المصحّة للأبد.' + rankSuffix;
       } else {
         title.innerHTML = 'انتصار العقل والنجاة — <span>نهاية المصحّة النقية</span>';
-        sub.textContent = 'أتقنت كل قواعد الاشتقاق ودراسة الدوال (23–38) وسحقت وحوش المصحّة دون التفريط بإنسانيتك!';
+        sub.textContent = 'أتقنت كل قواعد الاشتقاق ودراسة الدوال (23–38) وسحقت وحوش المصحّة دون التفريط بإنسانيتك!' + rankSuffix;
       }
     } else {
       title.innerHTML = 'التهمك الظلام في <span>مصحّة المشتقة</span>';
-      sub.textContent = 'توقفت نبضات قلبك قبل تحرير الأختام الأربعة. حاول مجدداً واستعمل الشعلة والتفادي والقرابين عند الحاجة!';
+      sub.textContent = 'توقفت نبضات قلبك قبل تحرير الأختام الأربعة. حاول مجدداً واستعمل الشعلة والتفادي والقرابين عند الحاجة!' + rankSuffix;
     }
-
-    const acc = s.stats.questionsAnswered > 0
-      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
-      : 100;
 
     document.getElementById('endSeals').textContent = `${s.stats.brokenSeals} / 4`;
     document.getElementById('endKills').textContent = String(s.stats.kills);
@@ -388,6 +372,7 @@
   });
 
   document.getElementById('btnHelpToggle')?.addEventListener('click', () => {
+    if (state.mode === 'end') return;
     state.mode = 'intro';
     document.getElementById('pauseModal')?.classList.add('hidden');
     document.getElementById('introModal')?.classList.remove('hidden');

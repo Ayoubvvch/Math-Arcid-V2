@@ -25,47 +25,14 @@ window.AbyssGame = (function() {
   let recentQuestionIds = [];
   let hudCache = {};
 
-  // BIDIRECTIONAL MATHEMATICAL ISOLATION (setBidiSafeMath with balanced parentheses)
+  // BIDIRECTIONAL MATHEMATICAL ISOLATION via shared ArcadeCore
   function setBidiSafeMath(el, text) {
     if (!el) return;
-    el.textContent = '';
-    const str = String(text || '');
-    const mathRe = /(?:[+\-](?=[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])|[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])(?:[ +\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→↔⇒⇔·×÷±≈'′∘^_:,.\\]*[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\])*/g;
-
-    let lastIdx = 0;
-    let match;
-    while ((match = mathRe.exec(str)) !== null) {
-      let sIdx = match.index;
-      let eIdx = sIdx + match[0].length;
-      while (eIdx > sIdx) {
-        const sub = str.slice(sIdx, eIdx);
-        const op = (sub.match(/\(/g) || []).length;
-        const cl = (sub.match(/\)/g) || []).length;
-        if ((sub.endsWith('(') && op > cl) || (sub.endsWith(')') && cl > op) || /\s$/.test(sub)) eIdx--;
-        else break;
-      }
-      while (sIdx < eIdx) {
-        const sub = str.slice(sIdx, eIdx);
-        const op = (sub.match(/\(/g) || []).length;
-        const cl = (sub.match(/\)/g) || []).length;
-        if ((sub.startsWith('(') && op > cl) || (sub.startsWith(')') && cl > op) || /^\s/.test(sub)) sIdx++;
-        else break;
-      }
-      const tok = str.slice(sIdx, eIdx);
-      if (!tok || /^[()\[\]\s]+$/.test(tok)) continue;
-      if (sIdx > lastIdx) {
-        el.appendChild(document.createTextNode(str.slice(lastIdx, sIdx)));
-      }
-      const bdi = document.createElement('bdi');
-      bdi.className = 'math-ltr';
-      bdi.dir = 'ltr';
-      bdi.textContent = tok;
-      el.appendChild(bdi);
-      lastIdx = eIdx;
+    if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
+      window.ArcadeCore.setBidiSafeMath(el, text);
+      return;
     }
-    if (lastIdx < str.length) {
-      el.appendChild(document.createTextNode(str.slice(lastIdx)));
-    }
+    el.textContent = String(text ?? '');
   }
   window.setBidiSafeMath = setBidiSafeMath;
   window.setSeqBidiSafeMath = setBidiSafeMath;
@@ -145,11 +112,20 @@ window.AbyssGame = (function() {
   window.startAbyssFromIntro = startGame;
 
   function togglePause() {
-    if (endModalShown) return;
-    isPaused = !isPaused;
+    if (endModalShown || isModalLocked) return;
+    const introModal = document.getElementById('introModal');
+    if (introModal && !introModal.classList.contains('hidden')) return;
+    const overrideModal = document.getElementById('overrideModal');
+    if (overrideModal && !overrideModal.classList.contains('hidden')) {
+      closeOverrideModal();
+      isPaused = true;
+    } else {
+      isPaused = !isPaused;
+    }
     const modal = document.getElementById('pauseModal');
     if (isPaused) {
       modal?.classList.remove('hidden');
+      window.applyAbyssPauseFocus?.();
       window.AbyssAudio?.playUiTick?.();
     } else {
       modal?.classList.add('hidden');
@@ -281,6 +257,7 @@ window.AbyssGame = (function() {
 
     const isCorrect = idx === activeQuestion.correctIndex;
     const clickedBtn = document.getElementById(`seqOpt${idx}`);
+    window.ArcadeCore?.Progress?.recordAnswer('limit-abyss', activeQuestion.topic, isCorrect);
 
     if (isCorrect) {
       wState.correctAnswers++;
@@ -417,21 +394,35 @@ window.AbyssGame = (function() {
     const title = document.getElementById('endTitle');
     const sub = document.getElementById('endSubtitle');
 
+    const accuracy = s.totalAnswers > 0 ? Math.round((s.correctAnswers / s.totalAnswers) * 100) : 100;
+    const progressRes = window.ArcadeCore?.Progress?.recordRun('limit-abyss', {
+      score: s.score,
+      sealsCleared: s.gatesCleared,
+      victory: Boolean(s.isVictory),
+      runQuestionsAnswered: s.totalAnswers,
+      runQuestionsCorrect: s.correctAnswers,
+      bypasses: s.bypassesUsed,
+      answersAlreadyRecorded: true
+    });
+    const rankSuffix = progressRes
+      ? ` • الرتبة: ${progressRes.rank}${progressRes.isNewBest && s.score > 0 ? ' • 🏆 رقم قياسي جديد!' : ''}`
+      : '';
+
     if (s.isVictory) {
       title.innerHTML = 'تحرير <span>الهاوية وقاع الخندق!</span>';
-      sub.textContent = 'تم إبادة لوفياثان الانقطاع العظيم وكسر أختام الضغط الأربعة بنجاح منهجي 100% في مقرر 2BAC PC!';
+      sub.textContent = 'تم إبادة لوفياثان الانقطاع العظيم وكسر أختام الضغط الأربعة بنجاح منهجي 100% في مقرر 2BAC PC!' + rankSuffix;
     } else {
       title.innerHTML = 'انهيار <span>هيكل الغواصة</span>';
-      sub.textContent = 'تجاوز ضغط الماء قدرة تحمل الهيكل. تذكر دائماً: إزالة عدم التحديد قبل التعويض المباشر!';
+      sub.textContent = 'تجاوز ضغط الماء قدرة تحمل الهيكل. تذكر دائماً: إزالة عدم التحديد قبل التعويض المباشر!' + rankSuffix;
     }
 
-    const accuracy = s.totalAnswers > 0 ? Math.round((s.correctAnswers / s.totalAnswers) * 100) : 100;
     document.getElementById('endGates').textContent = `${s.gatesCleared} / 4`;
     document.getElementById('endScore').textContent = s.score.toLocaleString();
     document.getElementById('endAccuracy').textContent = `${accuracy}%`;
     document.getElementById('endBypasses').textContent = s.bypassesUsed;
 
     modal?.classList.remove('hidden');
+    window.applyAbyssEndFocus?.();
   }
 
   // MAIN 60FPS LOOP (Polls Gamepad in all states so DualSense works inside every modal!)

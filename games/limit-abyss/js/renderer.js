@@ -641,21 +641,30 @@ window.drawLimitGraph = function(canvas, graphSpec) {
   const W = canvas.width;
   const H = canvas.height;
 
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#030814';
-  ctx.fillRect(0, 0, W, H);
-  ctx.direction = 'ltr';
+  if (window.ArcadeCore && window.ArcadeCore.CanvasAxisKit) {
+    window.ArcadeCore.CanvasAxisKit.clearWithGrid(ctx, W, H, {
+      bg: '#030814',
+      gridColor: 'rgba(255, 255, 255, 0.08)',
+      step: 30,
+      offset: 0
+    });
+  } else {
+    ctx.clearRect(0, 0, W, H);
+    ctx.fillStyle = '#030814';
+    ctx.fillRect(0, 0, W, H);
 
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.lineWidth = 1;
-  ctx.beginPath();
-  for (let x = 0; x < W; x += 30) {
-    ctx.moveTo(x, 0); ctx.lineTo(x, H);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    for (let x = 0; x < W; x += 30) {
+      ctx.moveTo(x, 0); ctx.lineTo(x, H);
+    }
+    for (let y = 0; y < H; y += 25) {
+      ctx.moveTo(0, y); ctx.lineTo(W, y);
+    }
+    ctx.stroke();
   }
-  for (let y = 0; y < H; y += 25) {
-    ctx.moveTo(0, y); ctx.lineTo(W, y);
-  }
-  ctx.stroke();
+  ctx.direction = 'ltr';
 
   const ox = W * 0.45;
   const oy = H * 0.58;

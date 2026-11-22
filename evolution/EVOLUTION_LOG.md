@@ -3,6 +3,17 @@
 
 ---
 
+### [Cycle 018-OMEGA] 2026-11-22 17:08 UTC | Milestone: `ArcadeCore` Migration Batch A & Bidi/Gamepad Core Hardening (Milestone 3.3)
+* **Phase**: OMEGA (Shared Core Deduplication, Progress Telemetry & Gameplay/UX Audit)
+* **Target**: `shared/arcade-core.js`, `games/limit-abyss/` (v1.2.0), `games/asymptote-asylum/` (v1.2.0), `games/sequence-strider/` (v1.2.0), `games/complex-plane-duel/` (v2.2.0), `games.json`
+* **Changes Delivered**:
+  - **Batch A `ArcadeCore` Integration (Games 3–6)**: Wired `../../shared/arcade-core.js` across `limit-abyss` (`4,585` LOC), `asymptote-asylum` (`4,147` LOC), `sequence-strider` (`3,328` LOC), and `complex-plane-duel` (`3,779` LOC), removing ~225 net LOC of duplicated Bidi & DualSense boilerplate and connecting `ArcadeCore.Progress` (`recordAnswer` per topic, `recordSealProgress`, and double-call-guarded `recordRun` with rank display), plus `ArcadeCore.CanvasAxisKit.clearWithGrid` in `limit-abyss/js/renderer.js`.
+  - **Core Engine & UX Fixes (`shared/arcade-core.js`, `limit-abyss`)**: Extended `ArcadeCore.setBidiSafeMath` with missing Moroccan math glyphs (`∛∜`, `τ`, `ᵃᵉʰᵐᵗᵘ`, `↦⇐⟹⟺`) and balanced-parenthesis trimming (dropping unbalanced `<bdi>` splits from 16 to 0 across Batch A), upgraded `decodeDpadHat` to 8-way W3C hat decoding + disconnect cleanup in `resolveActiveGamepad`, upgraded `limit-abyss` from square to radial stick deadzones, and fixed HUD button mousedown torpedo misfires and Pause/Override modal overlap.
+* **Verification**: Passed Node VM mock-browser gameplay/telemetry simulations across all 4 Batch A games, lossless Bidi checks across all 285 Qs, and all 9 stages of `evolution/scripts/verify.sh` (94 `graphSpec` plots + 11 Chromium pages with 0 console errors).
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 017-HARDENING] 2026-11-22 12:20 UTC | Milestone: Supreme Autonomous Resilience, Absolute Ordering & 9-Stage Gate
 * **Phase**: Owner-Authorized Hardening & Real-Bug Remediation
 * **Target**: `evolution/scripts/{trigger.sh,verify.sh}`, `evolution/{GOLD_STANDARD.md,STATE.json,SPRINT.md,ROADMAP.md}`, `games.json`, `js/hub.js`, `css/hub.css`, `shared/gamepad.js`, `games/{asymptote-asylum,sequence-strider}/js/curriculum.js`, `games/math-battle/js/audio.js`
@@ -128,19 +139,4 @@
     - Refined `ipp_area_ln` (IPP bounding rectangle $e - (e-1) = 1$) and `volume_revolution_ox` (3D-sliced cylindrical cross-section discs $dV = \pi f(x)^2 dx$) in `js/renderer.js`, and standardized pure-math LTR canvas labels in `integral_phi_deriv`.
     - Expanded `js/curriculum.js` from 30 to **37 Moroccan 2BAC PC National Exam questions** (+7 parameter-integral, sequence-integral squeeze, $u.v = \|\vec{i}\|^3$ unit-trap, RC ODE, and 2nd-order discriminant parameter questions) and upgraded `js/renderer.js` to **13 live `graphSpec` visualizers** (`ipp_x_exp_area`, `volume_cone_disc`, `ode_damped_pos_disc`).
 * **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/37-question/13-graphSpec verification passed 100%.
-* **Author**: Autonomous AGY Core ("My Homie").
-
----
-
-### [Cycle 009-ALPHA] 2026-11-18 05:08 UTC | Milestone: Integral Forge (محرقة التكامل والمعادلات) Gold-Standard Launch
-* **Phase**: Alpha (New 6-Module Game Construction >= 2,800 LOC)
-* **Target**: `games/integral-forge/` (Topics 79–90: الدوال الأصلية، التكامل بالأجزاء، المساحات والحجوم، والمعادلات التفاضلية)
-* **Changes Delivered**:
-  - Engineered **محرقة التكامل والمعادلات — Integral Forge v1.0.0** (**4,485 Lines of Code** across 6 modules + Molten Foundry CSS):
-    - Full-Screen 100vw × 100dvh 60FPS **2D Heavy Mech Siege & Area Slicer** (`2600 × 1700` molten foundry) with `TITAN-∫`, twin magnetic gantry cranes (`y: 490..1410` with terminal dwell & `override` bullet-time freeze), one-way foundry catwalks, molten slag cooling channels with splash/sizzle physics & Aegis neutralization, and 4 Containment Wings (`α, β, γ, δ`).
-    - Complete **Topics 79–90 Curriculum Engine** (`js/curriculum.js`): **30 Moroccan 2BAC PC National Exam questions** covering every topic from `79` to `90`, `setBidiSafeMath` isolation, and Fisher-Yates shuffled options (`pickForgeChallenge`).
-    - **10 Interactive HTML5 Canvas `graphSpec` Plotters** (`primitive_shift`, `chasles_split`, `riemann_integral_sign`, `ipp_area_ln`, `integral_phi_deriv`, `area_below_ox`, `area_between_curves`, `volume_revolution_ox`, `ode_first_order`, `ode_second_harmonic`).
-    - 3 Foundry Enemy Archetypes (`drone_riemann`, `turret_flux`, `golem_ode` with Stagger/Execute `[▢ / E]`), 6 PlayStation Mech Abilities (`✕` Magnetic Double-Jump, `◯` Area Slicer Cleave `|f-g|` destroying bolts & slicing foes, `▢` Seal Override / Golem Execute, `△` Chasles Thermal Aegis `∫_a^c + ∫_c^b`, `R2` Riemann Plasma Cannon, `L2` Volume of Revolution Shockwave `π∫f² dx`), and the 3-Phase **Differential Colossus Boss (`عملاق المعادلات التفاضلية`)** with rotating Characteristic Root Window `r₀` in Phase 3.
-    - Full DualSense/DualShock gameplay + modal polling + haptics (`js/controls.js`), procedural Web Audio forge synthesizer (`js/audio.js`), zero per-frame DOM writes in `js/game.js`, bespoke integral/revolution/ODE SVG tile in `js/hub.js`, and registration in `games.json`.
-* **Verification**: All 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`) + Node physics, Area Slicer, 3-Phase Boss, 30-question curriculum & 10-graphSpec simulation passed 100%.
 * **Author**: Autonomous AGY Core ("My Homie").

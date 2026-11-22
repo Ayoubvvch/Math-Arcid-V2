@@ -5,20 +5,28 @@
  */
 
 window.AbyssInput = (function() {
+  const gpCore = () => window.ArcadeCore && window.ArcadeCore.Gamepad;
+
   const state = {
     keys: {},
     mouseX: window.innerWidth / 2,
     mouseY: window.innerHeight / 2,
     isMouseDown: false,
 
-    gamepadSlot: -1,
-    gamepadConnected: false,
-    prevButtons: {},
-    prevHat: { up: false, down: false, left: false, right: false },
-    navCooldownUntil: 0,
-
-    pauseFocusIdx: 0,
-    endFocusIdx: 0,
+    gp: gpCore() ? gpCore().createState() : {
+      connected: false,
+      index: null,
+      idLabel: '',
+      prevButtons: [],
+      axisLeftHeld: false,
+      axisRightHeld: false,
+      axisUpHeld: false,
+      axisDownHeld: false,
+      pauseFocusIdx: 0,
+      endFocusIdx: 0,
+      lastShownConnected: null,
+      lastShownLabel: ''
+    },
 
     touchActive: false,
     touchStartX: 0,
@@ -44,55 +52,28 @@ window.AbyssInput = (function() {
 
     setupTouchControls();
     hookDeckButtons();
+    updateGamepadBanner();
   }
 
   function findActiveGamepad() {
-    if (!navigator.getGamepads) return null;
-    const pads = navigator.getGamepads();
-    if (state.gamepadSlot >= 0 && pads[state.gamepadSlot]?.connected) {
-      return pads[state.gamepadSlot];
-    }
-    for (let i = 0; i < pads.length; i++) {
-      if (pads[i] && pads[i].connected) {
-        state.gamepadSlot = i;
-        if (!state.gamepadConnected) updateGamepadUI(true, pads[i].id);
-        return pads[i];
-      }
-    }
-    state.gamepadSlot = -1;
-    return null;
+    return gpCore() ? gpCore().resolveActiveGamepad(state.gp) : null;
   }
 
   function readHatDirs(gp) {
-    const dirs = { up: false, down: false, left: false, right: false };
-    if (gp.axes && gp.axes.length > 9) {
-      const h = gp.axes[9];
-      if (typeof h === 'number' && Math.abs(h) <= 1.05 && h < 1.1) {
-        if (h < -0.75) { dirs.up = true; }
-        else if (h < -0.35) { dirs.up = true; dirs.right = true; }
-        else if (h < -0.05) { dirs.right = true; }
-        else if (h < 0.25) { dirs.right = true; dirs.down = true; }
-        else if (h < 0.52) { dirs.down = true; }
-        else if (h < 0.78) { dirs.down = true; dirs.left = true; }
-        else if (h <= 0.92) { dirs.left = true; }
-        else { dirs.left = true; dirs.up = true; }
-      }
-    }
-    return dirs;
+    return gpCore() ? gpCore().decodeDpadHat(gp) : { up: false, down: false, left: false, right: false };
   }
 
-  async function triggerHaptic(duration = 80, weak = 0.4, strong = 0.65) {
-    const gp = findActiveGamepad();
-    if (gp && gp.vibrationActuator && typeof gp.vibrationActuator.playEffect === 'function') {
-      try {
-        await gp.vibrationActuator.playEffect('dual-rumble', {
-          startDelay: 0,
-          duration,
-          weakMagnitude: weak,
-          strongMagnitude: strong
-        });
-      } catch (e) {}
-    }
+  function triggerHaptic(duration = 80, weak = 0.4, strong = 0.65) {
+    gpCore()?.triggerHaptic(state.gp, duration, weak, strong);
+  }
+
+  function updateGamepadBanner() {
+    gpCore()?.updateBanner(
+      state.gp,
+      document.getElementById('gamepadPill'),
+      document.getElementById('gamepadStatusText'),
+      'لوحة المفاتيح جاهزة'
+    );
   }
 
   function onKeyDown(e) {
@@ -172,6 +153,9 @@ window.AbyssInput = (function() {
 
   function onMouseDown(e) {
     if (e.button === 0) {
+      if (e.target?.closest?.('button, a, .hud-header, .bottom-deck, .modal-card, .touch-joystick')) {
+        return;
+      }
       state.isMouseDown = true;
       const isModalOpen = !document.getElementById('overrideModal')?.classList.contains('hidden') ||
                           !document.getElementById('pauseModal')?.classList.contains('hidden') ||
@@ -189,35 +173,22 @@ window.AbyssInput = (function() {
   }
 
   function onGamepadConnected(e) {
-    state.gamepadSlot = e.gamepad.index;
-    state.gamepadConnected = true;
-    updateGamepadUI(true, e.gamepad.id);
+    state.gp.index = e.gamepad.index;
+    state.gp.connected = true;
+    const idLow = String(e.gamepad.id || '').toLowerCase();
+    state.gp.idLabel = (idLow.includes('dualsense') || idLow.includes('054c') || idLow.includes('dualshock') || idLow.includes('playstation'))
+      ? 'DualSense PS5 جاهزة'
+      : (idLow.includes('xbox') ? 'Xbox Controller' : 'يد تحكم متصلة');
+    updateGamepadBanner();
   }
 
   function onGamepadDisconnected(e) {
-    if (state.gamepadSlot === e.gamepad.index) {
-      state.gamepadSlot = -1;
-      state.gamepadConnected = false;
-      updateGamepadUI(false);
-    }
-  }
-
-  function updateGamepadUI(connected, name = '') {
-    const pill = document.getElementById('gamepadPill');
-    const label = document.getElementById('gamepadStatusText');
-    if (!pill || !label) return;
-    if (connected) {
-      pill.classList.remove('disconnected');
-      pill.classList.add('connected');
-      const idLow = String(name).toLowerCase();
-      const shortName = (idLow.includes('dualsense') || idLow.includes('054c') || idLow.includes('playstation'))
-        ? 'DualSense PS5 جاهزة'
-        : (idLow.includes('xbox') ? 'Xbox Controller' : 'يد تحكم متصلة');
-      label.textContent = shortName;
-    } else {
-      pill.classList.remove('connected');
-      pill.classList.add('disconnected');
-      label.textContent = 'لوحة المفاتيح جاهزة';
+    if (state.gp.index === e.gamepad.index) {
+      state.gp.index = null;
+      state.gp.connected = false;
+      state.gp.idLabel = '';
+      state.gp.prevButtons.length = 0;
+      updateGamepadBanner();
     }
   }
 
@@ -296,28 +267,38 @@ window.AbyssInput = (function() {
   function navigatePauseMenu(delta) {
     const btns = Array.from(document.querySelectorAll('.pause-menu-btn'));
     if (!btns.length) return;
-    state.pauseFocusIdx = ((state.pauseFocusIdx + delta) % btns.length + btns.length) % btns.length;
-    btns.forEach((b, i) => b.classList.toggle('gp-focused', i === state.pauseFocusIdx));
+    state.gp.pauseFocusIdx = ((state.gp.pauseFocusIdx + delta) % btns.length + btns.length) % btns.length;
+    gpCore()?.applyFocusRing(btns, state.gp.pauseFocusIdx);
     window.AbyssAudio?.playUiTick?.();
   }
 
   function activatePauseMenu() {
     const btns = Array.from(document.querySelectorAll('.pause-menu-btn'));
-    if (btns[state.pauseFocusIdx]) btns[state.pauseFocusIdx].click();
+    if (btns[state.gp.pauseFocusIdx]) btns[state.gp.pauseFocusIdx].click();
   }
+
+  window.applyAbyssPauseFocus = function applyAbyssPauseFocus() {
+    state.gp.pauseFocusIdx = 0;
+    gpCore()?.applyFocusRing(Array.from(document.querySelectorAll('.pause-menu-btn')), state.gp.pauseFocusIdx);
+  };
 
   function navigateEndMenu(delta) {
     const btns = Array.from(document.querySelectorAll('.end-menu-btn'));
     if (!btns.length) return;
-    state.endFocusIdx = ((state.endFocusIdx + delta) % btns.length + btns.length) % btns.length;
-    btns.forEach((b, i) => b.classList.toggle('gp-focused', i === state.endFocusIdx));
+    state.gp.endFocusIdx = ((state.gp.endFocusIdx + delta) % btns.length + btns.length) % btns.length;
+    gpCore()?.applyFocusRing(btns, state.gp.endFocusIdx);
     window.AbyssAudio?.playUiTick?.();
   }
 
   function activateEndMenu() {
     const btns = Array.from(document.querySelectorAll('.end-menu-btn'));
-    if (btns[state.endFocusIdx]) btns[state.endFocusIdx].click();
+    if (btns[state.gp.endFocusIdx]) btns[state.gp.endFocusIdx].click();
   }
+
+  window.applyAbyssEndFocus = function applyAbyssEndFocus() {
+    state.gp.endFocusIdx = 0;
+    gpCore()?.applyFocusRing(Array.from(document.querySelectorAll('.end-menu-btn')), state.gp.endFocusIdx);
+  };
 
   // 60FPS POLL INPUT (Runs in both gameplay & modals so DualSense controls all menus cleanly)
   function pollInput() {
@@ -338,12 +319,13 @@ window.AbyssInput = (function() {
     }
 
     const gp = findActiveGamepad();
+    updateGamepadBanner();
     if (gp && gp.connected) {
-      const deadzone = 0.18;
-      const ax0 = gp.axes[0] || 0;
-      const ax1 = gp.axes[1] || 0;
-      if (Math.abs(ax0) > deadzone) moveX += ax0;
-      if (Math.abs(ax1) > deadzone) moveY += ax1;
+      const lStick = gpCore()
+        ? gpCore().applyRadialDeadzone(gp.axes[0] || 0, gp.axes[1] || 0, 0.18)
+        : { x: gp.axes[0] || 0, y: gp.axes[1] || 0 };
+      moveX += lStick.x;
+      moveY += lStick.y;
 
       const btnDown = idx => {
         const b = gp.buttons[idx];
@@ -351,22 +333,18 @@ window.AbyssInput = (function() {
       };
 
       const hat = readHatDirs(gp);
-      const dUp = btnDown(12) || hat.up;
-      const dDown = btnDown(13) || hat.down;
-      const dLeft = btnDown(14) || hat.left;
-      const dRight = btnDown(15) || hat.right;
+      if (btnDown(14) || hat.left) moveX -= 1;
+      if (btnDown(15) || hat.right) moveX += 1;
+      if (btnDown(12) || hat.up) moveY -= 1;
+      if (btnDown(13) || hat.down) moveY += 1;
 
-      if (dLeft) moveX -= 1;
-      if (dRight) moveX += 1;
-      if (dUp) moveY -= 1;
-      if (dDown) moveY += 1;
-
-      // Right Analog Stick aiming (overrides sub orientation cleanly while pushed)
+      // Right Analog Stick aiming (radial deadzone via ArcadeCore)
       if (gp.axes.length >= 4) {
-        const ax2 = gp.axes[2] || 0;
-        const ax3 = gp.axes[3] || 0;
-        if (Math.hypot(ax2, ax3) > 0.28) {
-          p.angle = Math.atan2(ax3, ax2);
+        const rStick = gpCore()
+          ? gpCore().applyRadialDeadzone(gp.axes[2] || 0, gp.axes[3] || 0, 0.24)
+          : { x: gp.axes[2] || 0, y: gp.axes[3] || 0 };
+        if (Math.hypot(rStick.x, rStick.y) > 0.08) {
+          p.angle = Math.atan2(rStick.y, rStick.x);
         }
       }
 
@@ -375,8 +353,10 @@ window.AbyssInput = (function() {
       const isIntroOpen = !document.getElementById('introModal')?.classList.contains('hidden');
       const isEndOpen = !document.getElementById('endModal')?.classList.contains('hidden');
 
-      const now = performance.now();
-      const btnJustPressed = idx => btnDown(idx) && !state.prevButtons[idx];
+      const btnJustPressed = idx => (gpCore() ? gpCore().justPressed(gp, state.gp, idx) : false);
+      const { dUp: navUp, dDown: navDown } = gpCore()
+        ? gpCore().sampleDirectionalNav(gp, state.gp, 0.55)
+        : { dUp: false, dDown: false };
 
       if (isOverrideOpen) {
         if (btnJustPressed(0)) window.selectAbyssOption?.(0); // ✕
@@ -387,19 +367,15 @@ window.AbyssInput = (function() {
         if (btnJustPressed(6)) window.triggerAbyssBypass?.(); // L2
         if (btnJustPressed(9)) window.toggleAbyssPause?.();   // Options
       } else if (isPauseOpen) {
-        if (now > state.navCooldownUntil) {
-          if (dUp || ax1 < -0.45) { navigatePauseMenu(-1); state.navCooldownUntil = now + 180; }
-          if (dDown || ax1 > 0.45) { navigatePauseMenu(1); state.navCooldownUntil = now + 180; }
-        }
+        if (navUp) navigatePauseMenu(-1);
+        if (navDown) navigatePauseMenu(1);
         if (btnJustPressed(0)) activatePauseMenu(); // ✕
         if (btnJustPressed(1) || btnJustPressed(9)) window.toggleAbyssPause?.(); // ◯ or Options
       } else if (isIntroOpen) {
         if (btnJustPressed(0) || btnJustPressed(9)) window.startAbyssFromIntro?.();
       } else if (isEndOpen) {
-        if (now > state.navCooldownUntil) {
-          if (dUp || ax1 < -0.45) { navigateEndMenu(-1); state.navCooldownUntil = now + 180; }
-          if (dDown || ax1 > 0.45) { navigateEndMenu(1); state.navCooldownUntil = now + 180; }
-        }
+        if (navUp) navigateEndMenu(-1);
+        if (navDown) navigateEndMenu(1);
         if (btnJustPressed(0)) activateEndMenu();
         if (btnJustPressed(1)) document.getElementById('btnHubEnd')?.click();
       } else {
@@ -412,10 +388,7 @@ window.AbyssInput = (function() {
         if (btnJustPressed(9)) window.toggleAbyssPause?.();          // Options
       }
 
-      for (let i = 0; i < gp.buttons.length; i++) {
-        state.prevButtons[i] = btnDown(i);
-      }
-      state.prevHat = hat;
+      gpCore()?.snapshotButtons(gp, state.gp);
     }
 
     if (state.isMouseDown) {

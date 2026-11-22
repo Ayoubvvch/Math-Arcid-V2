@@ -1,6 +1,6 @@
 {
   "project": "Math-Arcid-V2",
-  "version": "2.17.1",
+  "version": "2.18.0",
   "repository": "https://github.com/Ayoubvvch/Math-Arcid-V2",
   "deployment": "https://ayoubvvch.github.io/Math-Arcid-V2/",
   "owner": "Ayoub (eulerx0)",
@@ -20,9 +20,9 @@
     "lastArchitectTimestamp": "2026-11-21T05:00:00Z"
   },
   "metrics": {
-    "totalCyclesCompleted": 17,
-    "lastCycleTimestamp": "2026-11-22T12:20:00Z",
-    "lastCyclePhase": "Cycle 017-HARDENING: Absolute Syllabus Ordering (01-08 / 1-114), Fisher-Yates Option Shuffling Fix (Games 3-4), Math-Battle AudioContext Fix, Hub Radial Deadzone, Isolated Auto Session + Quota Fallback, & 9-Stage Ironclad Gate",
+    "totalCyclesCompleted": 18,
+    "lastCycleTimestamp": "2026-11-22T17:08:30Z",
+    "lastCyclePhase": "Cycle 018-OMEGA: ArcadeCore Migration Batch A (limit-abyss, asymptote-asylum, sequence-strider, complex-plane-duel), Bidi/Gamepad Core Hardening & Telemetry Wiring (Milestone 3.3)",
     "totalGamesLive": 10,
     "verificationStatus": "PASSED_9_STAGE_IRONCLAD_GATE"
   },
@@ -34,8 +34,8 @@
       "slug": "limit-abyss",
       "title": "Limit Abyss — هاوية النهايات والاتصال",
       "category": "التحليل والدوال (الدروس 1–22)",
-      "version": "1.1.0",
-      "linesOfCode": 4610,
+      "version": "1.2.0",
+      "linesOfCode": 4585,
       "status": "GOLD_STANDARD_VERIFIED"
     },
     {
@@ -45,8 +45,8 @@
       "slug": "asymptote-asylum",
       "title": "Asymptote Asylum — مصحّة المشتقة",
       "category": "التحليل والدوال (الدروس 23–38)",
-      "version": "1.1.0",
-      "linesOfCode": 4236,
+      "version": "1.2.0",
+      "linesOfCode": 4147,
       "status": "GOLD_STANDARD_VERIFIED"
     },
     {
@@ -56,8 +56,8 @@
       "slug": "sequence-strider",
       "title": "Sequence Strider — عدّاء المتتاليات",
       "category": "التحليل والدوال (الدروس 39–50)",
-      "version": "1.1.0",
-      "linesOfCode": 3383,
+      "version": "1.2.0",
+      "linesOfCode": 3328,
       "status": "GOLD_STANDARD_VERIFIED"
     },
     {
@@ -67,8 +67,8 @@
       "slug": "complex-plane-duel",
       "title": "Argand Citadel — قلعة أرغاند العقدية",
       "category": "الأعداد العقدية والفضاء (الدروس 51–64)",
-      "version": "2.1.0",
-      "linesOfCode": 3835,
+      "version": "2.2.0",
+      "linesOfCode": 3779,
       "status": "GOLD_STANDARD_VERIFIED"
     },
     {
@@ -140,9 +140,9 @@
     "id": "SPRINT_03",
     "name": "Organization, Absolute Syllabus Ordering & UX Masterclass (التنظيم والترتيب المطلق وتجربة المستخدم)",
     "status": "ACTIVE",
-    "nextCycleNumber": 18,
-    "nextOmegaMilestone": "Milestone 3.3 (Cycle 018): Migrate Batch A (limit-abyss, asymptote-asylum, sequence-strider, complex-plane-duel) onto shared/arcade-core.js (setBidiSafeMath, DualSense Gamepad, Progress telemetry & weakTopics recording)",
-    "nextAlphaMilestone": "Milestone 3.4 (Cycle 019): Migrate Batch B (logarithm-reactor, integral-forge, mathcore-survivor, math-battle) onto shared/arcade-core.js & localize games/math-battle/ to cohesive Arabic RTL (<html lang=\"ar\" dir=\"rtl\">)"
+    "nextCycleNumber": 19,
+    "nextAlphaMilestone": "Milestone 3.4 (Cycle 019): Migrate Batch B (logarithm-reactor, integral-forge, mathcore-survivor, math-battle) onto shared/arcade-core.js & localize games/math-battle/ to cohesive Arabic RTL (<html lang=\"ar\" dir=\"rtl\">)",
+    "nextOmegaMilestone": "Milestone 3.5 (Cycle 020): Wire live ArcadeCore.Progress telemetry dashboard (mastery rings, seals, boss trophies, rank badges, Smart Review filter & JSON backup/reset modal) into the PS5 Console Hub"
   },
   "perpetualRoadmapPolicy": {
     "enabled": true,

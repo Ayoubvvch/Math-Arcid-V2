@@ -4,6 +4,8 @@
  * and clean modal-transition isolation.
  */
 
+const gpCore = () => window.ArcadeCore && window.ArcadeCore.Gamepad;
+
 window.AsylumInput = {
   keys: {},
   mouseX: window.innerWidth / 2,
@@ -11,11 +13,20 @@ window.AsylumInput = {
   mouseLeftDown: false,
   mouseAimActive: false,
 
-  gamepadSlot: -1,
-  gamepadConnected: false,
-  prevButtons: {},
-  prevHat: { up: false, down: false, left: false, right: false },
-  navCooldownAt: 0,
+  gp: gpCore() ? gpCore().createState() : {
+    connected: false,
+    index: null,
+    idLabel: '',
+    prevButtons: [],
+    axisLeftHeld: false,
+    axisRightHeld: false,
+    axisUpHeld: false,
+    axisDownHeld: false,
+    pauseFocusIdx: 0,
+    endFocusIdx: 0,
+    lastShownConnected: null,
+    lastShownLabel: ''
+  },
   inputLockUntil: 0,
 
   introFilterIdx: 0,
@@ -30,8 +41,6 @@ window.AsylumInput = {
   touchVecY: 0
 };
 
-const FILTER_ORDER = ['all', 'sectionA', 'sectionB'];
-
 function lockInputBriefly(ms = 220) {
   window.AsylumInput.inputLockUntil = performance.now() + ms;
 }
@@ -43,92 +52,31 @@ function applyListFocus(selector, idxKey) {
   if (!items.length) return;
   const len = items.length;
   window.AsylumInput[idxKey] = ((window.AsylumInput[idxKey] % len) + len) % len;
-  items.forEach((el, idx) => {
-    el.classList.toggle('gp-focused', idx === window.AsylumInput[idxKey]);
-  });
+  gpCore()?.applyFocusRing(items, window.AsylumInput[idxKey]);
 }
 
 window.applyPauseMenuFocus = () => applyListFocus('.pause-menu-btn', 'pauseFocusIdx');
 window.applyEndMenuFocus = () => applyListFocus('.end-menu-btn', 'endFocusIdx');
 
 function findActiveGamepad() {
-  if (!navigator.getGamepads) return null;
-  const pads = navigator.getGamepads();
-  if (window.AsylumInput.gamepadSlot >= 0) {
-    const p = pads[window.AsylumInput.gamepadSlot];
-    if (p && p.connected) return p;
-  }
-  for (let i = 0; i < pads.length; i++) {
-    if (pads[i] && pads[i].connected) {
-      window.AsylumInput.gamepadSlot = i;
-      return pads[i];
-    }
-  }
-  window.AsylumInput.gamepadSlot = -1;
-  return null;
-}
-
-function readHatDirections(gp) {
-  const dirs = { up: false, down: false, left: false, right: false };
-  if (gp.axes && gp.axes.length > 9) {
-    const h = gp.axes[9];
-    if (typeof h === 'number' && Math.abs(h) <= 1.05 && h < 1.1) {
-      if (h < -0.75) { dirs.up = true; }
-      else if (h < -0.35) { dirs.up = true; dirs.right = true; }
-      else if (h < -0.05) { dirs.right = true; }
-      else if (h < 0.25) { dirs.right = true; dirs.down = true; }
-      else if (h < 0.52) { dirs.down = true; }
-      else if (h < 0.78) { dirs.down = true; dirs.left = true; }
-      else if (h <= 0.92) { dirs.left = true; }
-      else { dirs.left = true; dirs.up = true; }
-    }
-  }
-  return dirs;
+  return gpCore() ? gpCore().resolveActiveGamepad(window.AsylumInput.gp) : null;
 }
 
 function radialStick(axX, axY, deadzone = 0.16) {
-  const mag = Math.hypot(axX, axY);
-  if (mag < deadzone) return { x: 0, y: 0 };
-  const clamped = Math.min(1, mag);
-  const rescaled = (clamped - deadzone) / (1 - deadzone);
-  return {
-    x: (axX / mag) * rescaled,
-    y: (axY / mag) * rescaled
-  };
+  return gpCore() ? gpCore().applyRadialDeadzone(axX, axY, deadzone) : { x: axX, y: axY };
 }
 
-window.triggerGamepadHaptic = async function(duration = 70, weak = 0.45, strong = 0.65) {
-  const gp = findActiveGamepad();
-  if (gp && gp.vibrationActuator && typeof gp.vibrationActuator.playEffect === 'function') {
-    try {
-      await gp.vibrationActuator.playEffect('dual-rumble', {
-        startDelay: 0,
-        duration,
-        weakMagnitude: weak,
-        strongMagnitude: strong
-      });
-    } catch (e) {}
-  }
+window.triggerGamepadHaptic = function(duration = 70, weak = 0.45, strong = 0.65) {
+  gpCore()?.triggerHaptic(window.AsylumInput.gp, duration, weak, strong);
 };
 
-function updateGamepadBanner(gp) {
-  const pill = document.getElementById('gamepadPill');
-  const txt = document.getElementById('gamepadStatusText');
-  if (!pill || !txt) return;
-  if (gp) {
-    if (!window.AsylumInput.gamepadConnected) {
-      window.AsylumInput.gamepadConnected = true;
-      pill.classList.remove('disconnected');
-      const id = String(gp.id || '').toLowerCase();
-      txt.textContent = (id.includes('dualsense') || id.includes('054c') || id.includes('dualshock') || id.includes('playstation'))
-        ? 'PS5 DualSense متصل 100%'
-        : 'يد التحكم متصلة 100%';
-    }
-  } else if (window.AsylumInput.gamepadConnected) {
-    window.AsylumInput.gamepadConnected = false;
-    pill.classList.add('disconnected');
-    txt.textContent = 'لوحة المفاتيح جاهزة';
-  }
+function updateGamepadBanner() {
+  gpCore()?.updateBanner(
+    window.AsylumInput.gp,
+    document.getElementById('gamepadPill'),
+    document.getElementById('gamepadStatusText'),
+    'لوحة المفاتيح جاهزة'
+  );
 }
 
 window.initAsylumControls = function(getState) {
@@ -337,7 +285,7 @@ window.getKeyboardMoveVector = function() {
  */
 window.pollAsylumInputs = function(state) {
   const gp = findActiveGamepad();
-  updateGamepadBanner(gp);
+  updateGamepadBanner();
 
   let moveVec = window.getKeyboardMoveVector();
   if (Math.hypot(window.AsylumInput.touchVecX, window.AsylumInput.touchVecY) > 0.12) {
@@ -367,7 +315,7 @@ window.pollAsylumInputs = function(state) {
     return { moveVec, aimVec };
   }
 
-  // Merge Left & Right Sticks
+  const gpState = window.AsylumInput.gp;
   const ls = radialStick(gp.axes[0] || 0, gp.axes[1] || 0, 0.16);
   if (Math.hypot(ls.x, ls.y) > 0.05) {
     moveVec = ls;
@@ -381,32 +329,15 @@ window.pollAsylumInputs = function(state) {
     }
   }
 
-  // Read edge-triggered buttons safely
   const btnDown = (i) => {
     const b = gp.buttons[i];
     return !!(b && (b.pressed || b.value > 0.55));
   };
-  const edge = (i) => {
-    const cur = btnDown(i);
-    const prev = !!window.AsylumInput.prevButtons[i];
-    window.AsylumInput.prevButtons[i] = cur;
-    return !locked && cur && !prev;
-  };
+  const edge = (i) => !locked && (gpCore() ? gpCore().justPressed(gp, gpState, i) : false);
+  const { dLeft, dRight, dUp, dDown } = gpCore()
+    ? gpCore().sampleDirectionalNav(gp, gpState, 0.55)
+    : { dLeft: false, dRight: false, dUp: false, dDown: false };
 
-  const hat = readHatDirections(gp);
-  const dUpRaw = btnDown(12) || hat.up || (ls.y < -0.58);
-  const dDownRaw = btnDown(13) || hat.down || (ls.y > 0.58);
-  const dLeftRaw = btnDown(14) || hat.left || (ls.x < -0.58);
-  const dRightRaw = btnDown(15) || hat.right || (ls.x > 0.58);
-
-  const edgeUp = !locked && ((btnDown(12) && !window.AsylumInput.prevButtons[12]) || (hat.up && !window.AsylumInput.prevHat.up));
-  const edgeDown = !locked && ((btnDown(13) && !window.AsylumInput.prevButtons[13]) || (hat.down && !window.AsylumInput.prevHat.down));
-  const edgeLeft = !locked && ((btnDown(14) && !window.AsylumInput.prevButtons[14]) || (hat.left && !window.AsylumInput.prevHat.left));
-  const edgeRight = !locked && ((btnDown(15) && !window.AsylumInput.prevButtons[15]) || (hat.right && !window.AsylumInput.prevHat.right));
-
-  window.AsylumInput.prevHat = hat;
-
-  // Capture all button edges cleanly
   const eCross = edge(0);
   const eCircle = edge(1);
   const eSquare = edge(2);
@@ -416,20 +347,16 @@ window.pollAsylumInputs = function(state) {
   const eL2 = edge(6);
   const eR2 = edge(7);
   const eOptions = edge(9);
-  edge(12); edge(13); edge(14); edge(15);
-
-  const canRepeat = !locked && now >= window.AsylumInput.navCooldownAt;
 
   if (state.mode === 'intro') {
-    if (edgeLeft || eL1 || (dLeftRaw && canRepeat)) {
+    if (!locked && (dLeft || eL1)) {
       window.cycleTopicFilter(-1);
-      window.AsylumInput.navCooldownAt = now + 200;
-    } else if (edgeRight || eR1 || (dRightRaw && canRepeat)) {
+    } else if (!locked && (dRight || eR1)) {
       window.cycleTopicFilter(1);
-      window.AsylumInput.navCooldownAt = now + 200;
     } else if (eCross) {
       window.startAsylumFromIntro();
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null };
   }
 
@@ -441,6 +368,7 @@ window.pollAsylumInputs = function(state) {
     else if (eR1) window.toggleRitualHint();
     else if (eL2) window.triggerForbiddenRitualBypass();
     else if (eOptions) window.openAsylumPause();
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null };
   }
 
@@ -448,42 +376,42 @@ window.pollAsylumInputs = function(state) {
     const items = Array.from(document.querySelectorAll('.pause-menu-btn'));
     if (eCircle || eOptions) {
       window.closeAsylumPause();
-    } else if (eUpRawOrEdge(edgeUp, dUpRaw, canRepeat)) {
+    } else if (!locked && dUp) {
       window.AsylumInput.pauseFocusIdx--;
       window.applyPauseMenuFocus();
       window.HorrorAudio?.playUiTick?.();
-      window.AsylumInput.navCooldownAt = now + 185;
-    } else if (eUpRawOrEdge(edgeDown, dDownRaw, canRepeat)) {
+    } else if (!locked && dDown) {
       window.AsylumInput.pauseFocusIdx++;
       window.applyPauseMenuFocus();
       window.HorrorAudio?.playUiTick?.();
-      window.AsylumInput.navCooldownAt = now + 185;
     } else if (eCross) {
       items[window.AsylumInput.pauseFocusIdx]?.click();
     } else if (eL1 || eR1) {
       window.cycleTopicFilter(eR1 ? 1 : -1);
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null };
   }
 
   if (state.mode === 'end') {
     const items = Array.from(document.querySelectorAll('.end-menu-btn'));
-    if (eUpRawOrEdge(edgeUp, dUpRaw, canRepeat) || eUpRawOrEdge(edgeDown, dDownRaw, canRepeat)) {
-      window.AsylumInput.endFocusIdx++;
+    if (!locked && (dUp || dDown)) {
+      window.AsylumInput.endFocusIdx += dUp ? -1 : 1;
       window.applyEndMenuFocus();
       window.HorrorAudio?.playUiTick?.();
-      window.AsylumInput.navCooldownAt = now + 200;
     } else if (eCross) {
       items[window.AsylumInput.endFocusIdx]?.click();
     } else if (eCircle) {
       document.getElementById('btnHubEnd')?.click();
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null };
   }
 
   // PLAY MODE DualSense Actions
   if (eOptions) {
     window.openAsylumPause();
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec, aimVec };
   }
   if (eCross) window.performSlashAttack(state);
@@ -498,9 +426,6 @@ window.pollAsylumInputs = function(state) {
     window.performBloodBolt(state);
   }
 
+  gpCore()?.snapshotButtons(gp, gpState);
   return { moveVec, aimVec };
 };
-
-function eUpRawOrEdge(edgeFlag, holdFlag, canRepeat) {
-  return edgeFlag || (holdFlag && canRepeat);
-}
