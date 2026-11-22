@@ -1,15 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-  <title>Math Arcade | PlayStation Console Hub for Mathematical Games</title>
-  <meta name="description" content="Cinematic PlayStation-inspired console hub for visual mathematical games and calculus simulators. 100% DualSense & keyboard ready, 60 FPS on any hardware." />
+  <title>Math-Arcid-V2 | منصة ألعاب البكالوريا 2BAC PC بنظام PlayStation</title>
+  <meta name="description" content="منصة أركيد تعليمية على طراز PlayStation 5 لإتقان مقرر الرياضيات للثانية بكالوريا علوم فيزيائية (البنود 1–114) بسرعة 60FPS ودعم كامل ليد التحكم DualSense." />
   <meta name="theme-color" content="#05070e" />
 
   <!-- OpenGraph / Social Meta -->
-  <meta property="og:title" content="Math Arcade | Console Hub for Mathematical Games" />
-  <meta property="og:description" content="Explore calculus battles and algebra survival games in a zero-lag PlayStation 5 style console launcher." />
+  <meta property="og:title" content="Math-Arcid-V2 | منصة ألعاب البكالوريا 2BAC PC" />
+  <meta property="og:description" content="تحدى النهايات، الاشتقاق، المتتاليات، الأعداد العقدية، اللوغاريتم، التكامل، الفلكة والاحتمالات بسرعة 60FPS وبنظام PlayStation DualSense." />
   <meta property="og:type" content="website" />
 
   <!-- Stylesheets -->
@@ -17,131 +17,131 @@
   <link rel="stylesheet" href="css/hub.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=Inter:wght@500;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
 </head>
 <body class="console-body">
 
-  <!-- Cinematic PS5-Inspired Boot Sequence (GPU-composited transform/opacity only) -->
+  <!-- شاشة الإقلاع السريعة على طراز PS5 (تحريك GPU فقط عبر transform و opacity) -->
   <div id="ps5-boot" class="ps5-boot" aria-hidden="true">
     <div class="boot-ambient-ring"></div>
     <div class="boot-core">
-      <div class="boot-glyphs">
+      <div class="boot-glyphs" dir="ltr">
         <span class="boot-glyph g-cross">✕</span>
         <span class="boot-glyph g-circle">◯</span>
         <span class="boot-glyph g-square">▢</span>
         <span class="boot-glyph g-triangle">△</span>
       </div>
-      <div class="boot-emblem">∫∂</div>
-      <div class="boot-brand">MATH ARCADE</div>
-      <div class="boot-sub">CONSOLE ENGINE • PURE WEB STANDARDS</div>
+      <div class="boot-emblem" dir="ltr">∫∂</div>
+      <div class="boot-brand" dir="ltr">MATH-ARCID V2</div>
+      <div class="boot-sub">منصة ترويض البكالوريا 2BAC PC • مقرر الدروس 1–114</div>
       <div class="boot-progress-track">
         <div class="boot-progress-fill"></div>
       </div>
-      <div class="boot-skip-hint">Press ✕ / Space / Click to enter</div>
+      <div class="boot-skip-hint">اضغط ✕ أو Space أو انقر للدخول الفوري</div>
     </div>
   </div>
 
-  <!-- Launch Transition Curtain -->
+  <!-- ستار انتقال تشغيل اللعبة -->
   <div id="launch-curtain" class="launch-curtain" aria-hidden="true">
     <div class="launch-curtain-inner">
-      <div id="launch-icon" class="launch-icon">∫</div>
-      <div id="launch-label" class="launch-label">LAUNCHING GAME...</div>
+      <div id="launch-icon" class="launch-icon" dir="ltr">∫</div>
+      <div id="launch-label" class="launch-label">جارٍ تحميل الميدان...</div>
     </div>
   </div>
 
-  <!-- Dynamic Ambient Console Backdrop (smoothly shifts per selected game) -->
+  <!-- خلفية إضاءة متكيفة حسب اللعبة المختارة (بدون ضبابية) -->
   <div class="ambient-backdrop" aria-hidden="true">
     <div id="ambient-glow-primary" class="ambient-glow primary"></div>
     <div id="ambient-glow-secondary" class="ambient-glow secondary"></div>
   </div>
 
-  <!-- PS5 Console Shell (100vw x 100dvh, zero vertical page scroll) -->
+  <!-- هيكل منصة PlayStation (100vw × 100dvh بدون تمرير عمودي) -->
   <div id="console-shell" class="console-shell">
 
-    <!-- Top Console Bar -->
+    <!-- الشريط العلوي -->
     <header class="console-topbar">
       <div class="topbar-left">
         <div class="brand-chip">
-          <span class="brand-mark" aria-hidden="true">∫∂</span>
-          <span class="brand-name">MATH ARCADE</span>
+          <span class="brand-mark" aria-hidden="true" dir="ltr">∫∂</span>
+          <span class="brand-name" dir="ltr">MATH-ARCID V2</span>
         </div>
 
-        <nav id="category-tabs" class="category-tabs" aria-label="Game Categories">
-          <!-- Dynamically populated by hub.js -->
+        <nav id="category-tabs" class="category-tabs" aria-label="مجالات مقرر البكالوريا">
+          <!-- يملأ ديناميكياً من hub.js حسب مجالات 2BAC PC الأربعة -->
         </nav>
       </div>
 
       <div class="topbar-right">
-        <button id="btn-search-trigger" class="top-pill" title="Search Games [△ or /]">
+        <button id="btn-search-trigger" class="top-pill" title="بحث سريع [△ أو /]" type="button">
           <span class="gp-dot gp-tri">△</span>
-          <span class="pill-label">Search</span>
+          <span class="pill-label">بحث</span>
         </button>
 
-        <button id="btn-add-game-guide" class="top-pill" title="Add a New Game [Select or G]">
+        <button id="btn-add-game-guide" class="top-pill" title="دليل المطور والمعايير الذهبية [Select أو G]" type="button">
           <span class="pill-icon">＋</span>
-          <span class="pill-label">Add Game</span>
+          <span class="pill-label">دليل المطور</span>
         </button>
 
-        <button id="sound-toggle" class="top-pill" title="Toggle Audio [Options or M]">
+        <button id="sound-toggle" class="top-pill" title="تبديل الصوت [Options أو M]" type="button">
           <span id="sound-icon">🔊</span>
-          <span id="sound-label" class="pill-label">Audio</span>
+          <span id="sound-label" class="pill-label">الصوت</span>
         </button>
 
-        <a href="https://github.com/Ayoubvvch/Math-Arcid-V2" target="_blank" rel="noopener noreferrer" class="top-pill" title="GitHub Repository">
+        <a href="https://github.com/Ayoubvvch/Math-Arcid-V2" target="_blank" rel="noopener noreferrer" class="top-pill" title="مستودع GitHub">
           <svg width="15" height="15" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          <span class="pill-label">GitHub</span>
+          <span class="pill-label" dir="ltr">GitHub</span>
         </a>
 
         <div id="controller-pill" class="controller-pill" aria-live="polite">
           <span class="ctrl-status-dot"></span>
-          <span id="controller-label">Keyboard</span>
+          <span id="controller-label">لوحة المفاتيح</span>
         </div>
 
-        <time id="console-clock" class="console-clock">00:00</time>
+        <time id="console-clock" class="console-clock" dir="ltr">00:00</time>
       </div>
     </header>
 
-    <!-- Main PS5 Home Content -->
+    <!-- المحتوى الرئيسي -->
     <main class="console-main">
 
-      <!-- Horizontal PS5 Game Launcher Strip (Immediately visible at top!) -->
-      <section class="ps5-rail-section" aria-label="Installed Games">
+      <!-- شريط الألعاب الأفقي المرتب حسب تسلسل المقرر (1 → 114) -->
+      <section class="ps5-rail-section" aria-label="الألعاب المثبتة">
         <div class="rail-header-row">
-          <div id="rail-filter-status" class="rail-status-text">ALL GAMES • READY TO PLAY</div>
-          <div id="stats-counter" class="rail-counter">Loading...</div>
+          <div id="rail-filter-status" class="rail-status-text">المقرر الكامل 2BAC PC (1–114) • جاهز للتشغيل</div>
+          <div id="stats-counter" class="rail-counter">جارٍ التحميل...</div>
         </div>
 
-        <div id="games-rail" class="games-rail" role="listbox" aria-label="Game Selection">
-          <!-- Rendered dynamically by hub.js -->
+        <div id="games-rail" class="games-rail" role="listbox" aria-label="اختيار اللعبة">
+          <!-- يرسم ديناميكياً عبر hub.js -->
         </div>
       </section>
 
-      <!-- Hero Game Showcase (Selected Game Preview & Instant Play) -->
+      <!-- واجهة العرض البطل (المفاهيم الرياضية وأزرار التحكم والتشغيل الفوري) -->
       <section id="ps5-showcase" class="ps5-showcase" aria-live="polite">
         <div class="showcase-left">
           <div class="showcase-badges">
-            <span id="showcase-category" class="badge-category">Category</span>
-            <span id="showcase-difficulty" class="badge-diff">Difficulty</span>
-            <span id="showcase-version" class="badge-version">v1.0</span>
-            <span id="showcase-status" class="badge-ready">● READY</span>
+            <span id="showcase-category" class="badge-category">المجال الدراسي</span>
+            <span id="showcase-difficulty" class="badge-diff">الدروس</span>
+            <span id="showcase-version" class="badge-version" dir="ltr">v1.0</span>
+            <span id="showcase-status" class="badge-ready">● جاهز للعب</span>
           </div>
 
-          <h1 id="showcase-title" class="showcase-title">Math Arcade</h1>
-          <p id="showcase-desc" class="showcase-desc">Select a mathematical game from the PS5 home bar above.</p>
+          <h1 id="showcase-title" class="showcase-title">Math-Arcid V2</h1>
+          <p id="showcase-desc" class="showcase-desc">اختر لعبتك من شريط مقرر الثانية بكالوريا أعلاه لبدء التحدي.</p>
 
           <div id="showcase-concepts" class="showcase-concepts">
-            <!-- Concept chips -->
+            <!-- شارات المحاور -->
           </div>
 
           <div class="showcase-actions">
             <button id="btn-play-selected" class="cta-play" type="button">
               <span class="gp-dot gp-cross">✕</span>
-              <span>Play Game</span>
+              <span>ابدأ اللعب الآن</span>
             </button>
 
             <button id="btn-info-selected" class="cta-secondary" type="button">
               <span class="gp-dot gp-sq">▢</span>
-              <span>Math & Controls</span>
+              <span>تفاصيل المقرر والتحكم</span>
             </button>
           </div>
         </div>
@@ -149,11 +149,11 @@
         <aside class="showcase-right">
           <div class="blueprint-card">
             <div class="blueprint-head">
-              <div class="blueprint-title">DUALSENSE CONTROL MAP</div>
-              <div id="blueprint-art-badge" class="blueprint-art-badge">∑</div>
+              <div class="blueprint-title">خريطة أزرار DUALSENSE / لوحة المفاتيح</div>
+              <div id="blueprint-art-badge" class="blueprint-art-badge" dir="ltr">∑</div>
             </div>
             <ul id="showcase-controls" class="blueprint-controls">
-              <!-- Populated dynamically from games.json -->
+              <!-- يملأ ديناميكياً من games.json -->
             </ul>
           </div>
         </aside>
@@ -161,64 +161,68 @@
 
     </main>
 
-    <!-- Slim Bottom Console Legend Bar -->
+    <!-- شريط الاختصارات السفلي -->
     <footer class="console-footer">
       <div class="legend-items">
-        <span class="legend-item"><kbd>◀ ▶</kbd> Switch Game</span>
-        <span class="legend-item"><span class="gp-dot gp-cross">✕</span> Play</span>
-        <span class="legend-item"><span class="gp-dot gp-sq">▢</span> Info</span>
-        <span class="legend-item"><span class="gp-dot gp-tri">△</span> Search</span>
-        <span class="legend-item"><kbd>L1/R1</kbd> Category</span>
-        <span class="legend-item"><span class="gp-dot gp-cir">◯</span> Back</span>
+        <span class="legend-item"><kbd dir="ltr">◀ ▶</kbd> تبديل اللعبة</span>
+        <span class="legend-item"><span class="gp-dot gp-cross">✕</span> تشغيل</span>
+        <span class="legend-item"><span class="gp-dot gp-sq">▢</span> التفاصيل</span>
+        <span class="legend-item"><span class="gp-dot gp-tri">△</span> بحث المقرر</span>
+        <span class="legend-item"><kbd dir="ltr">L1/R1</kbd> المجال</span>
+        <span class="legend-item"><span class="gp-dot gp-cir">◯</span> رجوع</span>
       </div>
       <div class="footer-credit">
-        <span>Math Arcade OS</span> • <a href="https://github.com/Ayoubvvch" target="_blank" rel="noopener noreferrer">Ayoub (eulerx0)</a>
+        <span dir="ltr">Math-Arcid V2 OS</span> • <a href="https://github.com/Ayoubvvch" target="_blank" rel="noopener noreferrer">Ayoub (<span dir="ltr">eulerx0</span>)</a>
       </div>
     </footer>
   </div>
 
-  <!-- Quick Search & Filter Overlay (Triggered by △ or /) -->
+  <!-- نافذة البحث والتصفية السريعة (تُفتح عبر △ أو /) -->
   <div id="search-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="search-modal-title">
     <div class="modal-box modal-search-box">
       <div class="modal-header">
-        <h2 id="search-modal-title" class="modal-title">Quick Search & Filter</h2>
-        <button id="btn-close-search" class="modal-close" type="button" aria-label="Close Search">&times;</button>
+        <h2 id="search-modal-title" class="modal-title">البحث السريع في المقرر (2BAC PC)</h2>
+        <button id="btn-close-search" class="modal-close" type="button" aria-label="إغلاق البحث">&times;</button>
       </div>
       <div class="modal-body">
         <div class="search-input-wrap">
           <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-          <input type="text" id="search-input" class="search-input" placeholder="Search by title, math concept (d/dx, ax=b, Parity)..." autocomplete="off" />
-          <button id="btn-clear-search" class="search-clear-btn" type="button">Clear</button>
+          <input type="text" id="search-input" class="search-input" placeholder="ابحث بالاسم أو الدرس أو المفهوم (النهايات، TVI، العقدية، ln، برنولي...)" autocomplete="off" />
+          <button id="btn-clear-search" class="search-clear-btn" type="button">مسح</button>
         </div>
-        <div class="quick-tags-label">Quick Mathematical Filters (D-Pad + ✕):</div>
+        <div class="quick-tags-label">فلاتر المحاور السريعة (الأسهم + ✕):</div>
         <div id="quick-tags" class="quick-tags">
-          <button class="quick-tag-btn" data-query="">All Games</button>
-          <button class="quick-tag-btn" data-query="calculus">Calculus / d/dx</button>
-          <button class="quick-tag-btn" data-query="linear">Linear Equations</button>
-          <button class="quick-tag-btn" data-query="parity">Parity (2n)</button>
-          <button class="quick-tag-btn" data-query="trig">Trigonometric</button>
+          <button class="quick-tag-btn" data-query="" type="button">عرض الكل</button>
+          <button class="quick-tag-btn" data-query="النهايات" type="button">النهايات و TVI (1–22)</button>
+          <button class="quick-tag-btn" data-query="الاشتقاق" type="button">الاشتقاق والفروع (23–38)</button>
+          <button class="quick-tag-btn" data-query="المتتاليات" type="button">المتتاليات (39–50)</button>
+          <button class="quick-tag-btn" data-query="العقدية" type="button">الأعداد العقدية ℂ (51–64)</button>
+          <button class="quick-tag-btn" data-query="اللوغاريتم" type="button">اللوغاريتم والأسي (65–78)</button>
+          <button class="quick-tag-btn" data-query="التكامل" type="button">التكامل والمعادلات (79–90)</button>
+          <button class="quick-tag-btn" data-query="الفضائية" type="button">الهندسة الفضائية ℝ³ (91–102)</button>
+          <button class="quick-tag-btn" data-query="الاحتمالات" type="button">التعداد والاحتمالات (103–114)</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Game Details Modal (Triggered by ▢ or Info button) -->
+  <!-- نافذة تفاصيل اللعبة (تُفتح عبر ▢) -->
   <div id="game-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="modal-game-title">
     <div class="modal-box">
       <div class="modal-header">
-        <h2 id="modal-game-title" class="modal-title">Game Title</h2>
-        <button id="btn-close-game-modal" class="modal-close" type="button" aria-label="Close Details">&times;</button>
+        <h2 id="modal-game-title" class="modal-title">عنوان اللعبة</h2>
+        <button id="btn-close-game-modal" class="modal-close" type="button" aria-label="إغلاق التفاصيل">&times;</button>
       </div>
       <div class="modal-body">
-        <p id="modal-game-desc" class="modal-desc-text">Detailed mathematical description.</p>
+        <p id="modal-game-desc" class="modal-desc-text">وصف اللعبة والمحور الدراسي.</p>
 
         <div class="modal-section">
-          <h3 class="modal-section-title">Core Mathematical Concepts</h3>
+          <h3 class="modal-section-title">البنود والمحاور الرياضية المغطاة</h3>
           <ul id="modal-game-concepts" class="modal-list"></ul>
         </div>
 
         <div class="modal-section">
-          <h3 class="modal-section-title">Controller & Keyboard Bindings</h3>
+          <h3 class="modal-section-title">أزرار التحكم (DualSense / لوحة المفاتيح)</h3>
           <ul id="modal-game-controls" class="modal-list"></ul>
         </div>
 
@@ -227,37 +231,36 @@
     </div>
   </div>
 
-  <!-- Contributor / Add Game Guide Modal -->
+  <!-- نافذة دليل المطور والهيكل السداسي الذهبي -->
   <div id="guide-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="guide-modal-title">
     <div class="modal-box modal-guide-box">
       <div class="modal-header">
-        <h2 id="guide-modal-title" class="modal-title">How to Add a New Math Game</h2>
-        <button id="btn-close-guide-modal" class="modal-close" type="button" aria-label="Close Guide">&times;</button>
+        <h2 id="guide-modal-title" class="modal-title">دليل إضافة لعبة وفق المعيار الذهبي</h2>
+        <button id="btn-close-guide-modal" class="modal-close" type="button" aria-label="إغلاق الدليل">&times;</button>
       </div>
       <div class="modal-body">
-        <p>This console hub is built for zero-build extensibility — any game registered in <code>games.json</code> automatically appears in the PS5 launcher strip.</p>
+        <p>تعتمد منصة <strong dir="ltr">Math-Arcid-V2</strong> على التحميل الديناميكي الصفر-بناء من ملف <code dir="ltr">games.json</code> وعلى النواة الموحدة <code dir="ltr">shared/arcade-core.js</code>.</p>
 
         <div class="modal-section">
-          <h3 class="modal-section-title">Step 1: Create 6-Module Gold-Standard Directory</h3>
+          <h3 class="modal-section-title">1. الهيكل السداسي الإلزامي (`≥ 2,800 LOC`)</h3>
           <ul class="modal-list">
-            <li>Create <code>games/&lt;your-game-slug&gt;/index.html</code> (<code>100vw × 100dvh</code> RTL canvas &amp; <code>?from=game</code> Hub exit)</li>
-            <li>Include <code>../../shared/arcade-core.js</code> (Bidi, DualSense, Progress &amp; Axes), plus Hub ES utilities <code>gamepad.js</code> &amp; <code>retro-audio.js</code></li>
+            <li>إنشاء <code dir="ltr">games/&lt;slug&gt;/index.html</code> بواجهة <code dir="ltr">&lt;html lang="ar" dir="rtl"&gt;</code> وشاشة كاملة <code dir="ltr">100vw × 100dvh</code> ورابط رجوع <code dir="ltr">../../index.html?from=game</code>.</li>
+            <li>استيراد <code dir="ltr">../../shared/arcade-core.js</code> (عزل <code dir="ltr">setBidiSafeMath</code>، معايرة <code dir="ltr">DualSense</code>، مخزن التقدم <code dir="ltr">Progress</code>، وأدوات <code dir="ltr">CanvasAxisKit</code>) مع الوحدات الست (<code dir="ltr">curriculum, world, renderer, controls, audio, game</code>).</li>
           </ul>
         </div>
 
         <div class="modal-section">
-          <h3 class="modal-section-title">Step 2: Register in games.json</h3>
-          <pre class="code-snippet">{
+          <h3 class="modal-section-title">2. التسجيل في games.json و SVG في hub.js</h3>
+          <pre class="code-snippet" dir="ltr">{
   "id": "my-game",
-  "title": "My Calculus Game",
-  "category": "Calculus",
-  "difficulty": "Intermediate",
-  "difficultyLevel": 2,
-  "description": "Short description...",
-  "mathConcepts": ["Concept 1", "Concept 2"],
-  "controls": ["✕: Action 1", "Left Stick: Move"],
+  "title": "عنوان اللعبة — بالعربية",
+  "category": "التحليل والدوال",
+  "topicRange": "الدروس 1–22",
+  "difficulty": "تحدي وطني (2BAC PC)",
+  "difficultyLevel": 5,
   "path": "games/my-game/index.html",
-  "icon": "∫",
+  "badge": "1–22 • lim",
+  "icon": "lim",
   "accentColor": "#00e5ff",
   "status": "ready"
 }</pre>
@@ -266,14 +269,15 @@
         <div class="modal-actions-row">
           <button id="btn-guide-done" class="cta-play" type="button">
             <span class="gp-dot gp-cir">◯</span>
-            <span>Back to Console</span>
+            <span>العودة للمنصة</span>
           </button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- النواة المشتركة ووحدة تحكم المنصة -->
+  <script src="shared/arcade-core.js"></script>
   <script type="module" src="js/hub.js"></script>
 </body>
 </html>

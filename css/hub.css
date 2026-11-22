@@ -482,7 +482,7 @@
   outline: none;
   border: none;
   background: transparent;
-  text-align: left;
+  text-align: start;
   color: inherit;
   font-family: inherit;
 }
@@ -518,15 +518,14 @@
 }
 
 .console-main.zone-rail .ps5-tile.selected .tile-art-frame::after {
-  content: "PLAY";
+  content: "ابدأ ✕";
   position: absolute;
   bottom: 8px;
-  right: 8px;
-  font-family: var(--font-mono);
-  font-size: 0.65rem;
+  inset-inline-end: 8px;
+  font-family: inherit;
+  font-size: 0.68rem;
   font-weight: 800;
-  letter-spacing: 0.08em;
-  padding: 0.16rem 0.45rem;
+  padding: 0.16rem 0.5rem;
   border-radius: 6px;
   background: rgba(5, 7, 14, 0.88);
   border: 1px solid rgba(255, 255, 255, 0.28);
@@ -542,11 +541,10 @@
 .tile-badge-pill {
   position: absolute;
   top: 8px;
-  left: 8px;
+  inset-inline-start: 8px;
   font-family: var(--font-mono);
   font-size: 0.64rem;
   font-weight: 800;
-  text-transform: uppercase;
   padding: 0.16rem 0.45rem;
   border-radius: 6px;
   background: rgba(5, 7, 14, 0.85);
@@ -655,7 +653,7 @@
   font-size: 0.7rem;
   font-weight: 700;
   color: #34d399;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .showcase-title {
@@ -841,11 +839,13 @@
   font-size: 0.73rem;
   color: var(--accent-cyan);
   white-space: nowrap;
+  direction: ltr;
+  unicode-bidi: isolate;
 }
 
 .ctrl-desc {
   color: #cbd5e1;
-  text-align: right;
+  text-align: end;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1060,14 +1060,22 @@
 
 .modal-list li {
   position: relative;
-  padding-left: 1.1rem;
+  padding-inline-start: 1.15rem;
 }
 
 .modal-list li::before {
-  content: "▸";
+  content: "◂";
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   color: var(--accent-cyan);
+}
+
+.math-ltr {
+  font-family: var(--font-mono);
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+  margin-inline: 2px;
 }
 
 .modal-actions-row {
@@ -1086,6 +1094,7 @@
   font-size: 0.75rem;
   color: var(--accent-cyan);
   overflow-x: auto;
+  text-align: left;
 }
 
 /* Search Modal Specifics */
@@ -1098,7 +1107,7 @@
 
 .search-input-wrap svg {
   position: absolute;
-  left: 0.9rem;
+  inset-inline-start: 0.9rem;
   color: var(--text-dim);
   pointer-events: none;
 }
@@ -1108,7 +1117,9 @@
   background: #060911;
   border: 1.5px solid rgba(255, 255, 255, 0.14);
   border-radius: 12px;
-  padding: 0.75rem 1rem 0.75rem 2.65rem;
+  padding: 0.75rem 2.65rem 0.75rem 1rem;
+  padding-inline-start: 2.65rem;
+  padding-inline-end: 1rem;
   color: #ffffff;
   font-family: inherit;
   font-size: 0.92rem;

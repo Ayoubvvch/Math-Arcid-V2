@@ -625,7 +625,7 @@ class ArcadeConsoleHub {
   toggleAudio() {
     const isMuted = sound.toggleMute();
     if (this.soundIcon) this.soundIcon.textContent = isMuted ? '🔇' : '🔊';
-    if (this.soundLabel) this.soundLabel.textContent = isMuted ? 'Muted' : 'Audio';
+    if (this.soundLabel) this.soundLabel.textContent = isMuted ? 'صامت' : 'الصوت';
     if (!isMuted) sound.playClick();
   }
 
@@ -637,7 +637,7 @@ class ArcadeConsoleHub {
         this.controllerLabel.textContent = gamepad.getControllerType();
       } else {
         this.controllerPill.classList.remove('connected');
-        this.controllerLabel.textContent = 'Keyboard';
+        this.controllerLabel.textContent = 'لوحة المفاتيح';
       }
     };
 
@@ -806,12 +806,16 @@ class ArcadeConsoleHub {
   }
 
   handleDirection(dir) {
+    const isRtl = document.documentElement.dir === 'rtl';
     const activeModal = this.getActiveModal();
     if (activeModal) {
       this.navZone = 'modal';
       const items = this.getModalFocusables(activeModal);
       if (items.length === 0) return;
-      const delta = (dir === 'right' || dir === 'down') ? 1 : -1;
+      const forward = isRtl
+        ? (dir === 'left' || dir === 'down')
+        : (dir === 'right' || dir === 'down');
+      const delta = forward ? 1 : -1;
       this.modalFocusIndex = (this.modalFocusIndex + delta + items.length) % items.length;
       sound.playNavTick();
       this.updateZoneUI();
@@ -821,7 +825,10 @@ class ArcadeConsoleHub {
     if (this.navZone === 'rail') {
       if (dir === 'left' || dir === 'right') {
         if (this.filteredGames.length > 1) {
-          const delta = dir === 'right' ? 1 : -1;
+          // In RTL rail, cards flow right-to-left so ArrowLeft advances forward (+1)
+          const delta = isRtl
+            ? (dir === 'left' ? 1 : -1)
+            : (dir === 'right' ? 1 : -1);
           this.selectGame((this.selectedIndex + delta + this.filteredGames.length) % this.filteredGames.length);
         }
       } else if (dir === 'down') {
@@ -913,13 +920,25 @@ class ArcadeConsoleHub {
 
   renderCategories() {
     if (!this.categoryTabs) return;
-    const categories = ['All', ...new Set(this.games.map((g) => g.category).filter(Boolean))];
+    const domainOrder = [
+      'التحليل والدوال',
+      'الأعداد العقدية والفضاء',
+      'التعداد والاحتمالات',
+      'الأساسيات والتقويم'
+    ];
+    const present = Array.from(new Set(this.games.map((g) => g.category).filter(Boolean)));
+    present.sort((a, b) => {
+      const ia = domainOrder.indexOf(a);
+      const ib = domainOrder.indexOf(b);
+      return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+    });
+    const categories = ['All', ...present];
 
     this.categoryTabs.innerHTML = categories
       .map(
         (cat) => `
           <button class="category-tab ${cat === this.activeCategory ? 'active' : ''}" data-cat="${cat}" type="button">
-            ${cat === 'All' ? 'All Games' : cat}
+            ${cat === 'All' ? 'الكل' : cat}
           </button>
         `
       )
@@ -946,6 +965,9 @@ class ArcadeConsoleHub {
         game.title,
         game.description,
         game.category,
+        game.topicRange || '',
+        game.badge || '',
+        ...(game.keywords || []),
         ...(game.mathConcepts || []),
       ]
         .join(' ')
@@ -967,24 +989,24 @@ class ArcadeConsoleHub {
     if (!this.rail) return;
 
     const filterLabel = this.searchQuery
-      ? `FILTER: "${this.searchQuery.toUpperCase()}"`
+      ? `تصفية البحث: "${this.searchQuery}"`
       : this.activeCategory === 'All'
-      ? 'ALL GAMES • READY TO PLAY'
-      : `${this.activeCategory.toUpperCase()}`;
+      ? 'المقرر الكامل 2BAC PC (1–114) • جاهز للتشغيل'
+      : `المجال: ${this.activeCategory}`;
 
     if (this.railStatusText) this.railStatusText.textContent = filterLabel;
     if (this.statsCounter) {
-      this.statsCounter.textContent = `${this.filteredGames.length} of ${this.games.length} Games`;
+      this.statsCounter.textContent = `${this.filteredGames.length} من ${this.games.length} ألعاب`;
     }
 
     if (this.filteredGames.length === 0) {
       this.rail.innerHTML = `
         <div class="rail-empty-card">
           <div>
-            <div style="font-weight:800; color:#fff; margin-bottom:0.2rem;">No matching games found</div>
-            <div style="font-size:0.84rem; color:var(--text-muted);">Clear your filter or add a new game to games.json.</div>
+            <div style="font-weight:800; color:#fff; margin-bottom:0.2rem;">لا توجد ألعاب مطابقة للبحث</div>
+            <div style="font-size:0.84rem; color:var(--text-muted);">امسح كلمة البحث أو اختر مجالاً آخر من المقرر.</div>
           </div>
-          <button id="btn-reset-filters-inline" class="cta-secondary" type="button">Reset Filter</button>
+          <button id="btn-reset-filters-inline" class="cta-secondary" type="button">إعادة ضبط التصفية</button>
         </div>
       `;
       document.getElementById('btn-reset-filters-inline')?.addEventListener('click', () => {
@@ -1001,6 +1023,8 @@ class ArcadeConsoleHub {
       .map((game, idx) => {
         const isSelected = idx === this.selectedIndex;
         const accent = game.accentColor || '#00e5ff';
+        const pillText = game.badge || game.category;
+        const rangeLabel = game.topicRange || `المستوى ${game.difficultyLevel || 3}`;
         return `
           <button
             class="ps5-tile ${isSelected ? 'selected' : ''}"
@@ -1012,11 +1036,11 @@ class ArcadeConsoleHub {
           >
             <div class="tile-art-frame">
               ${getGameArtworkSVG(game)}
-              <span class="tile-badge-pill">${game.badge || game.category}</span>
+              <span class="tile-badge-pill" dir="ltr">${pillText}</span>
             </div>
             <div class="tile-meta">
               <span class="tile-title">${game.title}</span>
-              <span class="tile-lvl">Lvl ${game.difficultyLevel || 3}</span>
+              <span class="tile-lvl">${rangeLabel}</span>
             </div>
           </button>
         `;
@@ -1061,12 +1085,21 @@ class ArcadeConsoleHub {
     }
   }
 
+  setSafeText(el, text) {
+    if (!el) return;
+    if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
+      window.ArcadeCore.setBidiSafeMath(el, text);
+    } else {
+      el.textContent = String(text ?? '');
+    }
+  }
+
   renderShowcase(animate = false) {
     const game = this.filteredGames[this.selectedIndex];
 
     if (!game) {
-      if (this.showcaseTitle) this.showcaseTitle.textContent = 'No Game Selected';
-      if (this.showcaseDesc) this.showcaseDesc.textContent = 'Clear active filters or register a game in games.json.';
+      if (this.showcaseTitle) this.showcaseTitle.textContent = 'لا توجد لعبة محددة';
+      if (this.showcaseDesc) this.showcaseDesc.textContent = 'امسح الفلتر أو أضف لعبة إلى games.json.';
       if (this.showcaseConcepts) this.showcaseConcepts.innerHTML = '';
       if (this.showcaseControls) this.showcaseControls.innerHTML = '';
       if (this.btnPlaySelected) this.btnPlaySelected.disabled = true;
@@ -1084,35 +1117,47 @@ class ArcadeConsoleHub {
       this.btnPlaySelected.classList.toggle('disabled', !playable);
     }
 
-    if (this.showcaseCategory) this.showcaseCategory.textContent = game.category || 'Math';
-    if (this.showcaseDiff) this.showcaseDiff.textContent = `Lvl ${game.difficultyLevel || 3} • ${game.difficulty || 'Normal'}`;
+    if (this.showcaseCategory) this.showcaseCategory.textContent = game.category || 'الرياضيات';
+    if (this.showcaseDiff) {
+      this.showcaseDiff.textContent = game.topicRange
+        ? `${game.topicRange} • ${game.difficulty || '2BAC PC'}`
+        : `المستوى ${game.difficultyLevel || 3} • ${game.difficulty || 'قياسي'}`;
+    }
     if (this.showcaseVersion) this.showcaseVersion.textContent = `v${game.version || '1.0'}`;
     if (this.showcaseStatus) {
-      this.showcaseStatus.textContent = game.status === 'ready' ? '● READY TO PLAY' : '● IN DEVELOPMENT';
+      this.showcaseStatus.textContent = game.status === 'ready' ? '● جاهز للعب' : '● قيد التطوير';
     }
     if (this.showcaseTitle) this.showcaseTitle.textContent = game.title;
-    if (this.showcaseDesc) this.showcaseDesc.textContent = game.description;
+    this.setSafeText(this.showcaseDesc, game.description);
     if (this.blueprintArtBadge) this.blueprintArtBadge.textContent = game.icon || '∫';
 
     if (this.showcaseConcepts) {
-      this.showcaseConcepts.innerHTML = (game.mathConcepts || [])
-        .map((c) => `<span class="concept-pill">${c}</span>`)
-        .join('');
+      this.showcaseConcepts.textContent = '';
+      for (const concept of game.mathConcepts || []) {
+        const pill = document.createElement('span');
+        pill.className = 'concept-pill';
+        this.setSafeText(pill, concept);
+        this.showcaseConcepts.appendChild(pill);
+      }
     }
 
     if (this.showcaseControls) {
-      this.showcaseControls.innerHTML = (game.controls || ['Left Stick / WASD: Move'])
-        .slice(0, 6)
-        .map((entry) => {
-          const { key, desc } = formatControlEntry(entry);
-          return `
-            <li class="blueprint-control-row">
-              <span class="ctrl-key">${key}</span>
-              <span class="ctrl-desc">${desc}</span>
-            </li>
-          `;
-        })
-        .join('');
+      this.showcaseControls.textContent = '';
+      for (const entry of (game.controls || ['Left Stick / WASD: تحرك']).slice(0, 6)) {
+        const { key, desc } = formatControlEntry(entry);
+        const li = document.createElement('li');
+        li.className = 'blueprint-control-row';
+        const kSpan = document.createElement('span');
+        kSpan.className = 'ctrl-key';
+        kSpan.dir = 'ltr';
+        kSpan.textContent = key;
+        const dSpan = document.createElement('span');
+        dSpan.className = 'ctrl-desc';
+        this.setSafeText(dSpan, desc);
+        li.appendChild(kSpan);
+        li.appendChild(dSpan);
+        this.showcaseControls.appendChild(li);
+      }
     }
 
     // Shift ambient glow color subtly to match game theme (pure CSS opacity/background, zero blur)
@@ -1132,7 +1177,7 @@ class ArcadeConsoleHub {
     gamepad.triggerHaptic(110, 0.7, 0.7);
 
     if (this.launchIcon) this.launchIcon.textContent = game.icon || '∫';
-    if (this.launchLabel) this.launchLabel.textContent = `STARTING ${game.title.toUpperCase()}...`;
+    if (this.launchLabel) this.launchLabel.textContent = `جارٍ تشغيل ${game.title}...`;
     this.launchCurtain?.classList.add('active');
 
     setTimeout(() => {
@@ -1145,7 +1190,7 @@ class ArcadeConsoleHub {
     this.searchModal?.classList.add('active');
     this.searchModal?.setAttribute('aria-hidden', 'false');
     this.navZone = 'modal';
-    this.modalFocusIndex = 1; // focus first quick tag or search cleanly
+    this.modalFocusIndex = 1;
     this.updateZoneUI();
     setTimeout(() => this.searchInput?.focus(), 60);
   }
@@ -1159,22 +1204,32 @@ class ArcadeConsoleHub {
     const actionEl = document.getElementById('modal-game-action');
 
     if (titleEl) titleEl.textContent = game.title;
-    if (descEl) descEl.textContent = game.description;
+    this.setSafeText(descEl, game.description);
     if (conceptsEl) {
-      conceptsEl.innerHTML = (game.mathConcepts || []).map((c) => `<li>${c}</li>`).join('');
+      conceptsEl.textContent = '';
+      for (const c of game.mathConcepts || []) {
+        const li = document.createElement('li');
+        this.setSafeText(li, c);
+        conceptsEl.appendChild(li);
+      }
     }
     if (controlsEl) {
-      controlsEl.innerHTML = (game.controls || ['Standard Gamepad / Keyboard']).map((c) => `<li>${c}</li>`).join('');
+      controlsEl.textContent = '';
+      for (const c of game.controls || ['يد التحكم DualSense / لوحة المفاتيح']) {
+        const li = document.createElement('li');
+        this.setSafeText(li, c);
+        controlsEl.appendChild(li);
+      }
     }
     if (actionEl) {
       actionEl.innerHTML = `
         <button id="btn-modal-launch" class="cta-play" type="button">
           <span class="gp-dot gp-cross">✕</span>
-          <span>Launch ${game.title}</span>
+          <span>تشغيل ${game.title}</span>
         </button>
         <button id="btn-modal-back" class="cta-secondary" type="button">
           <span class="gp-dot gp-cir">◯</span>
-          <span>Back</span>
+          <span>رجوع</span>
         </button>
       `;
       document.getElementById('btn-modal-launch')?.addEventListener('click', () => this.launchSelectedGame());
@@ -1184,7 +1239,7 @@ class ArcadeConsoleHub {
     this.gameModal?.classList.add('active');
     this.gameModal?.setAttribute('aria-hidden', 'false');
     this.navZone = 'modal';
-    this.modalFocusIndex = 1; // Launch button
+    this.modalFocusIndex = 1;
     this.updateZoneUI();
   }
 

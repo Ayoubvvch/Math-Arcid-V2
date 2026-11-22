@@ -1,166 +1,11 @@
 [
   {
-    "id": "mathcore-survivor",
-    "title": "MathCore: PlayStation Survivor",
-    "slug": "mathcore-survivor",
-    "category": "Algebra & Survival",
-    "difficulty": "Intermediate",
-    "difficultyLevel": 3,
-    "version": "2.0.0",
-    "description": "Tactical 2D mathematical survival sandbox engineered exclusively for PlayStation controller (✕, ◯, ▢, △). Match linear equations, track targets with the mathematical threat compass, and unleash chain lightning strikes.",
-    "mathConcepts": [
-      "Linear Equations (ax = b)",
-      "Arithmetic Parity (2n, 2n+1)",
-      "Divisibility Rules (3n)",
-      "Cartesian Geometry"
-    ],
-    "controls": [
-      "Left Stick / WASD: Move Mathematical Core Craft",
-      "✕, ◯, ▢, △: 4 PlayStation Core Math Operations",
-      "R2 / Space: EMP Shockwave & Kinetic Plasma",
-      "L2 / F / Right Click: Place Geometric Parity Turret",
-      "L1 / R1 / D-Pad ◀▶: Cycle Turret Blueprints",
-      "D-Pad ▲▼: Step X value by ±1",
-      "Options / Share: Pause Menu & Live Sandbox Modder"
-    ],
-    "path": "games/mathcore-survivor/index.html",
-    "badge": "Algebra",
-    "icon": "∑",
-    "accentColor": "#00f3ff",
-    "status": "ready",
-    "featured": true
-  },
-  {
-    "id": "math-battle",
-    "title": "Math Battle: Calculus Showdown",
-    "slug": "math-battle",
-    "category": "Calculus & Analysis",
-    "difficulty": "Advanced",
-    "difficultyLevel": 4,
-    "version": "2.0.0",
-    "description": "PlayStation-exclusive mathematical calculus combat arcade. Pilot the d/dx operator to differentiate polynomial bosses, trigonometric waves, and exponential eigenfunction swarms down to zero annihilation.",
-    "mathConcepts": [
-      "Power Rule: d/dx(xⁿ) = n·xⁿ⁻¹",
-      "Trigonometric Cycle: sin → cos → -sin → -cos → 0",
-      "Exponential Invariant: d/dx(eˣ) = eˣ",
-      "Constant Derivative: d/dx(1) = 0 Annihilation"
-    ],
-    "controls": [
-      "✕ (Cross): Triple Dash (Chain Rule)",
-      "▢ (Square): Calculus Beam Weapon",
-      "◯ (Circle): Leibniz Supernova Bomb",
-      "△ (Triangle): Euler Slow-Mo Time Dilation",
-      "L1 / R1: Switch Match Roster (x³, x⁴, sin, exp)",
-      "L2 / R2: Air-Brake / Continuous Beam Fire",
-      "Options / Select: Pause Menu & Auto-Pilot AI"
-    ],
-    "path": "games/math-battle/index.html",
-    "badge": "Calculus",
-    "icon": "∫",
-    "accentColor": "#b537f2",
-    "status": "ready",
-    "featured": true
-  },
-  {
-    "id": "asymptote-asylum",
-    "title": "Asymptote Asylum — مصحّة المشتقة",
-    "slug": "asymptote-asylum",
-    "category": "Horror Calculus",
-    "difficulty": "Master (2BAC)",
-    "difficultyLevel": 5,
-    "version": "1.0.0",
-    "description": "لعبة رعب وبقاء دموية 2D بسرعة 60FPS! اهرب من مصحّة معزولة، مزّق الوحوش بالمنشار، وحطّم الأختام الأربعة عبر قواعد الاشتقاق ودراسة الدوال (23–38) — أو اتّبع عقيدة «الغاية تبرر الوسيلة» بالتضحية بالضحايا ودمك لفتح الطريق.",
-    "mathConcepts": [
-      "قواعد الاشتقاق والمماسات ونصف المماس (23–29)",
-      "الرتابة والدالة المساعدة والمبيان والتحدب (30–34)",
-      "الفروع اللانهائية كاملة والوضع النسبي (35–36)",
-      "التماثل والإنشاء الهندسي للمنحنى و Cf⁻¹ (37–38)"
-    ],
-    "controls": [
-      "Left Stick / WASD: تحريك الناجي ومصباح الظلام",
-      "Right Stick / Mouse: توجيه المصباح وإطلاق نصل الدم",
-      "✕ (Cross / J): ضربة منشار / إعدام الوحش المشلول",
-      "▢ (Square / L): فتح طقس المذبح لتحطيم الختم",
-      "◯ (Circle / Shift): اندفاع دموي وتفادي الضربات",
-      "△ (Triangle / Q): شعلة UV لكشف الظلام وتبطيء الوحوش",
-      "R2 / Space / كليك: إطلاق نصل دموي سريع",
-      "L2 / F: تضحية محرّمة «الغاية تبرر الوسيلة» (قربان / تجاوز)"
-    ],
-    "path": "games/asymptote-asylum/index.html",
-    "badge": "Horror",
-    "icon": "∂",
-    "accentColor": "#ef4444",
-    "status": "ready",
-    "featured": true
-  },
-  {
-    "id": "sequence-strider",
-    "title": "Sequence Strider — عدّاء المتتاليات",
-    "slug": "sequence-strider",
-    "category": "Suites",
-    "difficulty": "Master (2BAC)",
-    "difficultyLevel": 5,
-    "version": "1.0.0",
-    "description": "لعبة منصّات وأكشن 2D بسرعة 60FPS! اقفز واندفع بين سقف المكبر M وقاع المصغر m، واخترق البوابات الأربع عبر البرهان بالترجع، المتتالية المساعدة (1.1.1)، الدركيين (1.1.2)، والنقطة الصامدة (39–50).",
-    "mathConcepts": [
-      "البرهان بالترجع والمكبورة/المصغورة والرتابة (39–41)",
-      "الحسابية والهندسية والمساعدة التآلفية والمتخاطة (42–44)",
-      "نهايات qⁿ والتقارب الرتيب والدركيين والحصر (45–47)",
-      "نهاية المركب والنقطة الصامدة uₙ₊₁=f(uₙ) والنمذجة (48–50)"
-    ],
-    "controls": [
-      "Left Stick / A-D: الجري فوق منصات المتتالية",
-      "✕ (Cross / W): قفز وقفز مزدوج لتفادي m و M",
-      "◯ (Circle / Shift): اندفاع سريع عبر حواجز الليزر",
-      "▢ (Square / E): اختراق بوابة القطاع بالمبيان العنكبوتي",
-      "△ (Triangle / Q): درع الترجع للحماية وتبطيء المتباعدات",
-      "R2 / Space / كليك: إطلاق نبضة تقليص نحو الأعداء",
-      "L2 / F: موجة الترجع الكبرى لتدمير أسراب qⁿ"
-    ],
-    "path": "games/sequence-strider/index.html",
-    "badge": "Suites",
-    "icon": "uₙ",
-    "accentColor": "#22d3ee",
-    "status": "ready",
-    "featured": true
-  },
-  {
-    "id": "complex-plane-duel",
-    "title": "Argand Citadel — قلعة أرغاند العقدية",
-    "slug": "complex-plane-duel",
-    "category": "Complexes ℂ",
-    "difficulty": "Master (2BAC)",
-    "difficultyLevel": 5,
-    "version": "2.1.0",
-    "description": "معركة مدارية وهندسية 2D بسرعة 60FPS في مستوى أرغاند-كوشي! قُد مقاتلة اللحق العقدي M(z) عبر الأرباع الأربعة، حطّم الأختام الهندسية عبر الشكل الجبري والمثلثي والأسي وصيغتي أولير وموافر والتحويلات العقدية (51–64)، ودمّر نواة موافر عند المركز O(0,0).",
-    "mathConcepts": [
-      "الشكل الجبري، المرافق z̄، المعيار ومجموعات النقط (51–53)",
-      "العمدة والشكل المثلثي، الترميز الأسي وصيغتا أولير وموافر والإخطاط (54–57)",
-      "قياس الزوايا الموجهة، الاستقامية والتعامد وطبيعة المثلثات (58–61)",
-      "المعادلات في ℂ، جذور الوحدة zⁿ=1، الإزاحة، التحاكي والدوران (62–64)"
-    ],
-    "controls": [
-      "Left Stick / WASD: تحليق 360° في المستوى العقدي أرغاند",
-      "✕ (Cross / Space): اندفاع دوران أولير المداري (z · e^{iπ/3})",
-      "◯ (Circle / Shift): انعكاس المرافق العقدي السريع (z ↦ z̄)",
-      "▢ (Square / E): اختراق ختم أرغاند بالتمثيل الهندسي العقدي",
-      "△ (Triangle / Q): تفعيل درع مضلع جذور الوحدة (z⁶ = 1)",
-      "R2 / J / كليك: إطلاق شعاع اللحق العقدي الموجه",
-      "L2 / F: موجة التحاكي الانفجارية z' - ω = k(z - ω)"
-    ],
-    "path": "games/complex-plane-duel/index.html",
-    "badge": "Complexes ℂ",
-    "icon": "ℂ",
-    "accentColor": "#fbbf24",
-    "status": "ready",
-    "featured": true
-  },
-  {
     "id": "limit-abyss",
     "title": "Limit Abyss — هاوية النهايات والاتصال",
     "slug": "limit-abyss",
-    "category": "Limits & Continuity",
-    "difficulty": "Master (2BAC)",
+    "category": "التحليل والدوال",
+    "topicRange": "الدروس 1–22",
+    "difficulty": "تحدي وطني (2BAC PC)",
     "difficultyLevel": 5,
     "version": "1.1.0",
     "description": "لعبة استكشاف وغوص أعماق 2D بسرعة 60FPS في خندق ماريانا الرياضي! قُد غواصة نوتيلوس Nautilus-ε عبر 4 طبقات مائية سحيقة، حطّم أختام الضغط الهيدروستاتيكي الأربعة عبر إتقان النهايات والأشكال غير المحددة والاتصال و TVI والدالة العكسية f⁻¹ (البنود 1–22)، واسحق لوفياثان الانقطاع العظيم في قاع الخندق.",
@@ -170,6 +15,7 @@
       "صورة مجال ومبرهنة القيم الوسيطية TVI والحل الوحيد (12–17)",
       "مبرهنة التقابل والدالة العكسية f⁻¹ وتماثل y=x والجذور النونية (18–22)"
     ],
+    "keywords": ["النهايات", "الاتصال", "TVI", "f-1", "limits", "continuity", "الدروس 1-22"],
     "controls": [
       "Left Stick / WASD: الملاحة الهيدروديناميكية في خندق الأعماق",
       "✕ (Cross / Space): نفاثة الدفع الهيدروليكي السريع",
@@ -181,9 +27,109 @@
       "Options / P: قائمة الإيقاف المؤقت وتبديل محاور الأسئلة"
     ],
     "path": "games/limit-abyss/index.html",
-    "badge": "Limits",
+    "badge": "1–22 • lim",
     "icon": "lim",
     "accentColor": "#00f3ff",
+    "status": "ready",
+    "featured": true
+  },
+  {
+    "id": "asymptote-asylum",
+    "title": "Asymptote Asylum — مصحّة المشتقة",
+    "slug": "asymptote-asylum",
+    "category": "التحليل والدوال",
+    "topicRange": "الدروس 23–38",
+    "difficulty": "تحدي وطني (2BAC PC)",
+    "difficultyLevel": 5,
+    "version": "1.0.0",
+    "description": "لعبة رعب وبقاء دموية 2D بسرعة 60FPS! اهرب من مصحّة معزولة، مزّق الوحوش بالمنشار، وحطّم الأختام الأربعة عبر قواعد الاشتقاق ودراسة الدوال والفروع اللانهائية (23–38) — أو اتّبع عقيدة «الغاية تبرر الوسيلة» بالتضحية لفتح الطريق.",
+    "mathConcepts": [
+      "قواعد الاشتقاق والمماسات ونصف المماس (23–29)",
+      "الرتابة والدالة المساعدة والمبيان والتحدب (30–34)",
+      "الفروع اللانهائية كاملة والوضع النسبي (35–36)",
+      "التماثل والإنشاء الهندسي للمنحنى و Cf⁻¹ (37–38)"
+    ],
+    "keywords": ["الاشتقاق", "الفروع اللانهائية", "التقعر", "derivatives", "asymptotes", "23-38"],
+    "controls": [
+      "Left Stick / WASD: تحريك الناجي ومصباح الظلام",
+      "Right Stick / Mouse: توجيه المصباح وإطلاق نصل الدم",
+      "✕ (Cross / J): ضربة منشار / إعدام الوحش المشلول",
+      "▢ (Square / L): فتح طقس المذبح لتحطيم الختم",
+      "◯ (Circle / Shift): اندفاع دموي وتفادي الضربات",
+      "△ (Triangle / Q): شعلة UV لكشف الظلام وتبطيء الوحوش",
+      "R2 / Space / كليك: إطلاق نصل دموي سريع",
+      "L2 / F: تضحية محرّمة «الغاية تبرر الوسيلة» (قربان / تجاوز)"
+    ],
+    "path": "games/asymptote-asylum/index.html",
+    "badge": "23–38 • ∂",
+    "icon": "∂",
+    "accentColor": "#ef4444",
+    "status": "ready",
+    "featured": true
+  },
+  {
+    "id": "sequence-strider",
+    "title": "Sequence Strider — عدّاء المتتاليات",
+    "slug": "sequence-strider",
+    "category": "التحليل والدوال",
+    "topicRange": "الدروس 39–50",
+    "difficulty": "تحدي وطني (2BAC PC)",
+    "difficultyLevel": 5,
+    "version": "1.0.0",
+    "description": "لعبة منصّات وأكشن 2D بسرعة 60FPS! اقفز واندفع بين سقف المكبر M وقاع المصغر m، واخترق البوابات الأربع عبر البرهان بالترجع، المتتالية المساعدة (1.1.1)، الدركيين (1.1.2)، والنقطة الصامدة (39–50).",
+    "mathConcepts": [
+      "البرهان بالترجع والمكبورة/المصغورة والرتابة (39–41)",
+      "الحسابية والهندسية والمساعدة التآلفية والمتخاطة (42–44)",
+      "نهايات qⁿ والتقارب الرتيب والدركيين والحصر (45–47)",
+      "نهاية المركب والنقطة الصامدة uₙ₊₁=f(uₙ) والنمذجة (48–50)"
+    ],
+    "keywords": ["المتتاليات", "الترجع", "التقارب", "suites", "sequences", "39-50"],
+    "controls": [
+      "Left Stick / A-D: الجري فوق منصات المتتالية",
+      "✕ (Cross / W): قفز وقفز مزدوج لتفادي m و M",
+      "◯ (Circle / Shift): اندفاع سريع عبر حواجز الليزر",
+      "▢ (Square / E): اختراق بوابة القطاع بالمبيان العنكبوتي",
+      "△ (Triangle / Q): درع الترجع للحماية وتبطيء المتباعدات",
+      "R2 / Space / كليك: إطلاق نبضة تقليص نحو الأعداء",
+      "L2 / F: موجة الترجع الكبرى لتدمير أسراب qⁿ"
+    ],
+    "path": "games/sequence-strider/index.html",
+    "badge": "39–50 • uₙ",
+    "icon": "uₙ",
+    "accentColor": "#22d3ee",
+    "status": "ready",
+    "featured": true
+  },
+  {
+    "id": "complex-plane-duel",
+    "title": "Argand Citadel — قلعة أرغاند العقدية",
+    "slug": "complex-plane-duel",
+    "category": "الأعداد العقدية والفضاء",
+    "topicRange": "الدروس 51–64",
+    "difficulty": "تحدي وطني (2BAC PC)",
+    "difficultyLevel": 5,
+    "version": "2.1.0",
+    "description": "معركة مدارية وهندسية 2D بسرعة 60FPS في مستوى أرغاند-كوشي! قُد مقاتلة اللحق العقدي M(z) عبر الأرباع الأربعة، حطّم الأختام الهندسية عبر الشكل الجبري والمثلثي والأسي وصيغتي أولير وموافر والتحويلات العقدية (51–64)، ودمّر نواة موافر عند المركز O(0,0).",
+    "mathConcepts": [
+      "الشكل الجبري، المرافق z̄، المعيار ومجموعات النقط (51–53)",
+      "العمدة والشكل المثلثي، الترميز الأسي وصيغتا أولير وموافر والإخطاط (54–57)",
+      "قياس الزوايا الموجهة، الاستقامية والتعامد وطبيعة المثلثات (58–61)",
+      "المعادلات في ℂ، جذور الوحدة zⁿ=1، الإزاحة، التحاكي والدوران (62–64)"
+    ],
+    "keywords": ["العقدية", "أرغاند", "موافر", "الدوران", "complexes", "argand", "51-64"],
+    "controls": [
+      "Left Stick / WASD: تحليق 360° في المستوى العقدي أرغاند",
+      "✕ (Cross / Space): اندفاع دوران أولير المداري (z · e^{iπ/3})",
+      "◯ (Circle / Shift): انعكاس المرافق العقدي السريع (z ↦ z̄)",
+      "▢ (Square / E): اختراق ختم أرغاند بالتمثيل الهندسي العقدي",
+      "△ (Triangle / Q): تفعيل درع مضلع جذور الوحدة (z⁶ = 1)",
+      "R2 / J / كليك: إطلاق شعاع اللحق العقدي الموجه",
+      "L2 / F: موجة التحاكي الانفجارية z' - ω = k(z - ω)"
+    ],
+    "path": "games/complex-plane-duel/index.html",
+    "badge": "51–64 • ℂ",
+    "icon": "ℂ",
+    "accentColor": "#fbbf24",
     "status": "ready",
     "featured": true
   },
@@ -191,8 +137,9 @@
     "id": "logarithm-reactor",
     "title": "Logarithm Reactor — مفاعل اللوغاريتم والأسي",
     "slug": "logarithm-reactor",
-    "category": "Logarithms & Exp",
-    "difficulty": "Master (2BAC)",
+    "category": "التحليل والدوال",
+    "topicRange": "الدروس 65–78",
+    "difficulty": "تحدي وطني (2BAC PC)",
     "difficultyLevel": 5,
     "version": "1.1.0",
     "description": "مغامرة ميترويدفانيا بيو-سيبرانية 2D بسرعة 60FPS داخل منشأة المفاعل! تسلل عبر المنصات والمصاعد الآلية، تفادَ أحواض الحمض ln(x≤0) وأشعة المقاربات، اخترق أختام الأجنحة الأربعة عبر قواعد الدالة اللوغاريتمية والأسية والنمو المقارن (65–78)، وأوقف انهيار مُفاعل المقاربات الأعظم.",
@@ -202,6 +149,7 @@
       "الدالة الأسية eˣ كعكسية لـ ln x، الإشارة، المشتقة u'eᵘ والأساس a (71–74)",
       "النمو المقارن eˣ ≫ xⁿ ≫ ln x، الفروع اللانهائية والمعادلات التربيعية (75–78)"
     ],
+    "keywords": ["اللوغاريتم", "الأسي", "ln", "exp", "النمو المقارن", "65-78"],
     "controls": [
       "Left Stick / WASD: التسلل والقفز فوق منصات ومصاعد المفاعل",
       "✕ (Cross / Space / W): قفز نفاث مزدوج (وبالأسفل للهبوط عبر المنصة)",
@@ -212,7 +160,7 @@
       "L2 / F: صدمة النمو المقارن (eˣ ≫ xⁿ) وتحطيم درع الزعيم"
     ],
     "path": "games/logarithm-reactor/index.html",
-    "badge": "ln & eˣ",
+    "badge": "65–78 • ln",
     "icon": "ln",
     "accentColor": "#10b981",
     "status": "ready",
@@ -222,8 +170,9 @@
     "id": "integral-forge",
     "title": "Integral Forge — محرقة التكامل والمعادلات",
     "slug": "integral-forge",
-    "category": "Integrals & ODEs",
-    "difficulty": "Master (2BAC)",
+    "category": "التحليل والدوال",
+    "topicRange": "الدروس 79–90",
+    "difficulty": "تحدي وطني (2BAC PC)",
     "difficultyLevel": 5,
     "version": "1.1.0",
     "description": "حصار آلي ثقيل ومقصّ المساحات 2D بسرعة 60FPS داخل المسبك المصهور! قُد الآلي TITAN-∫ عبر الرافعات الجسرية وقنوات الخبث، حطّم الأختام الأربعة بإتقان الدوال الأصلية، المكاملة بالأجزاء، المساحات والحجوم، والمعادلات التفاضلية (79–90)، واسحق عملاق المعادلات التفاضلية.",
@@ -233,6 +182,7 @@
       "حساب المساحات (cm²) والوضع النسبي وحجم الدوران π∫f² dx (85–87)",
       "المعادلات التفاضلية y'=ay و y'=ay+b و y''+ay'+by=0 (88–90)"
     ],
+    "keywords": ["التكامل", "الأصلية", "المكاملة بالأجزاء", "المعادلات التفاضلية", "integral", "ode", "79-90"],
     "controls": [
       "Left Stick / WASD: تحريك الآلي TITAN-∫ والرافعات الجسرية",
       "✕ (Cross / Space / W): دفع نفاث مزدوج (وبالأسفل للهبوط عبر المنصة)",
@@ -243,7 +193,7 @@
       "L2 / F: صدمة حجم الدوران π∫f² dx وتحطيم درع الزعيم"
     ],
     "path": "games/integral-forge/index.html",
-    "badge": "∫ & ODEs",
+    "badge": "79–90 • ∫",
     "icon": "∫",
     "accentColor": "#f59e0b",
     "status": "ready",
@@ -253,10 +203,11 @@
     "id": "vector-odyssey",
     "title": "Vector Odyssey — أوديسا الفضاء المتجهي",
     "slug": "vector-odyssey",
-    "category": "Space Geometry ℝ³",
-    "difficulty": "Master (2BAC)",
+    "category": "الأعداد العقدية والفضاء",
+    "topicRange": "الدروس 91–102",
+    "difficulty": "تحدي وطني (2BAC PC)",
     "difficultyLevel": 5,
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "غارة فضائية ثلاثية البُعد 2.5D داخل خنادق الليزر والألغام المدارية بسرعة 60FPS! قُد المقاتلة VECTRA-ℝ³، واخترق الأختام الأربعة بإتقان المستوى والمستقيم والجداء المتجهي والفلكة والأوضاع النسبية والوسائط (91–102)، ثم استهدف نقطة التماس H لتدمير نواة الفلكة الأم Ω.",
     "mathConcepts": [
       "معادلة المستوى بمتجهة منظمية والمسافة d(A,(P)) وتقاطع مستقيم ومستوى (91–93)",
@@ -264,6 +215,7 @@
       "معادلة الفلكة بالمركز والشعاع وبأحد أقطارها [AB] وتحديد Ω و R (97–98)",
       "الوضع النسبي لفلكة ومستوى (تماس H أو دائرة تقاطع r²=R²-d²) وفلكة ومستقيم ورباعي الأوجه (99–102)"
     ],
+    "keywords": ["الفضائية", "الفلكة", "الجداء المتجهي", "المستوى", "R3", "sphere", "91-102"],
     "controls": [
       "Left Stick / WASD / اللمس: قيادة المقاتلة VECTRA-ℝ³ حرة في الفضاء (2600×1700)",
       "Right Stick / الماوس + R2 / J: تصويب وإطلاق مدفع المتجهة الليزري",
@@ -274,7 +226,7 @@
       "R1 / L2 (F / R): موجة الفلكة ||ΩM||=R وتحطيم درع الزعيم Ω"
     ],
     "path": "games/vector-odyssey/index.html",
-    "badge": "ℝ³ & Ω",
+    "badge": "91–102 • ℝ³",
     "icon": "∧",
     "accentColor": "#38bdf8",
     "status": "ready",
@@ -284,10 +236,11 @@
     "id": "quantum-casino",
     "title": "Quantum Casino — كازينو الاحتمالات الكمومي",
     "slug": "quantum-casino",
-    "category": "Probability & B(n,p)",
-    "difficulty": "Master (2BAC)",
+    "category": "التعداد والاحتمالات",
+    "topicRange": "الدروس 103–114",
+    "difficulty": "تحدي وطني (2BAC PC)",
     "difficultyLevel": 5,
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "سطو تكتيكي وتمديد الزمن 2D بسرعة 60FPS داخل خزائن الكازينو الكمومي! تسلل خلف طاولات الرهان، أبطئ الزمن والطلقات إلى 28%، ارتد بالرقائق عن الطاولات، واخترق الأختام الأربعة عبر إتقان التعداد، السحب، الاحتمال الشرطي، شجرة الاحتمالات، المتغير العشوائي وقانون برنولي (103–114)، ثم اسحق نواة نقابة برنولي.",
     "mathConcepts": [
       "التعداد، السحب التزامني Cₙᵖ والتتابعي Aₙᵖ / nᵖ ومعامل الترتيب (103–105)",
@@ -295,6 +248,7 @@
       "شجرة الاحتمالات الموزونة، الاحتمالات الكلية واستقلالية حدثين (109–111)",
       "المتغير العشوائي X، الأمل E(X)، المغايرة V(X) والقانون الحداني B(n,p) (112–114)"
     ],
+    "keywords": ["الاحتمالات", "التعداد", "برنولي", "المتغير العشوائي", "probability", "binomial", "103-114"],
     "controls": [
       "Left Stick / WASD / اللمس: تحرك وتسلل خلف طاولات الخزنة (2560×1600)",
       "Right Stick / الماوس + R2 / J: تصويب وإطلاق الرقائق الكمومية P(A)",
@@ -305,9 +259,75 @@
       "R1 / L2 (F / R): صدمة برنولي B(n,p) وتحطيم درع الزعيم"
     ],
     "path": "games/quantum-casino/index.html",
-    "badge": "P(X) & B(n,p)",
+    "badge": "103–114 • ♠",
     "icon": "♠",
     "accentColor": "#10b981",
+    "status": "ready",
+    "featured": true
+  },
+  {
+    "id": "mathcore-survivor",
+    "title": "MathCore Survivor — نجاة الجبر والزوجية",
+    "slug": "mathcore-survivor",
+    "category": "الأساسيات والتقويم",
+    "topicRange": "تأسيس • الجبر والزوجية",
+    "difficulty": "تمهيدي • متدرج",
+    "difficultyLevel": 3,
+    "version": "2.0.0",
+    "description": "ميدان بقاء تكتيكي 2D مصمم لأزرار PlayStation (✕، ◯، ▢، △)! طابق المعادلات الخطية ax=b، وحلل زوجية الأعداد (2n, 2n+1) وقابلية القسمة عبر الأبراج الهندسية والنبضات الكهربائية.",
+    "mathConcepts": [
+      "المعادلات الخطية (ax = b) وحساب الجداءات",
+      "الزوجية والفردية في ℕ (2n, 2n+1)",
+      "مضاعفات الأعداد وقابلية القسمة (3n)",
+      "التوجيه الديكارتي وتتبع الأهداف"
+    ],
+    "keywords": ["جبر", "الزوجية", "معادلات خطية", "algebra", "parity", "linear"],
+    "controls": [
+      "Left Stick / WASD: تحريك نواة النجاة",
+      "✕, ◯, ▢, △: العمليات الأربع المباشرة على الأعداء",
+      "R2 / Space: موجة كهرومغناطيسية EMP وبلازما",
+      "L2 / F / كليك يمين: وضع برج زوجية هندسي",
+      "L1 / R1 / D-Pad ◀▶: تبديل مخطط الأبراج",
+      "D-Pad ▲▼: تعديل قيمة X بمقدار ±1",
+      "Options / Share: الإيقاف المؤقت ومعدّل النمط الحر"
+    ],
+    "path": "games/mathcore-survivor/index.html",
+    "badge": "أساسيات • ∑",
+    "icon": "∑",
+    "accentColor": "#00f3ff",
+    "status": "ready",
+    "featured": true
+  },
+  {
+    "id": "math-battle",
+    "title": "Math Battle — نزال المشتقات التفاضلي",
+    "slug": "math-battle",
+    "category": "الأساسيات والتقويم",
+    "topicRange": "تأسيس • الاشتقاق",
+    "difficulty": "متوسط • تحدي السرعة",
+    "difficultyLevel": 4,
+    "version": "2.0.0",
+    "description": "أركيد قتالي للمؤثر التفاضلي d/dx! وجّه شعاع الاشتقاق لتفكيك زعماء الحدوديات xⁿ والدوال المثلثية (sin → cos → -sin → -cos → 0) والدالة الأسية eˣ حتى الصفر المطلق.",
+    "mathConcepts": [
+      "اشتقاق القوى: d/dx(xⁿ) = n·xⁿ⁻¹",
+      "الدورة المثلثية: sin → cos → -sin → -cos → 0",
+      "ثبات الأسية: d/dx(eˣ) = eˣ",
+      "إبادة الثوابت: d/dx(1) = 0"
+    ],
+    "keywords": ["الاشتقاق", "تفاضل", "دوال مثلثية", "calculus", "d/dx", "trig"],
+    "controls": [
+      "✕ (Cross): اندفاع ثلاثي (قاعدة السلسلة)",
+      "▢ (Square): شعاع الاشتقاق التفاضلي d/dx",
+      "◯ (Circle): قنبلة لايبنتز الفائقة",
+      "△ (Triangle): تبطيء الزمن لأولير",
+      "L1 / R1: تبديل خصوم النزال (x³, x⁴, sin, exp)",
+      "L2 / R2: كبح هوائي / إطلاق مستمر لشعاع المشتقة",
+      "Options / Select: الإيقاف المؤقت والطيار الآلي"
+    ],
+    "path": "games/math-battle/index.html",
+    "badge": "أساسيات • d/dx",
+    "icon": "d/dx",
+    "accentColor": "#b537f2",
     "status": "ready",
     "featured": true
   }

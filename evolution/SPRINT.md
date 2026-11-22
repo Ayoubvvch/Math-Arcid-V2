@@ -26,18 +26,14 @@
     - Wired `<script src="../../shared/arcade-core.js"></script>` across Games 9–10 (`game.js`, `controls.js`, `renderer.js`), deduplicating ~250 LOC cleanly (`vector-odyssey` 5,288 LOC, `quantum-casino` 5,136 LOC) and persisting live runs/seals/questions.
     - Updated `games/README.md` & root `index.html` contributor modal cleanly to document `shared/arcade-core.js`.
 
-### [NEXT — Cycle 017 Alpha (2026-11-22 05:00 UTC)] Milestone 3.2: PS5 Console Hub Arabic RTL & 2BAC PC Syllabus Reorganization
-* **Target**: `index.html`, `js/hub.js`, `css/hub.css`, `games.json`
-* **Deliverables**:
-  - Upgrade `index.html` to cohesive Arabic/Bilingual RTL console chrome (`<html lang="ar" dir="rtl">` preserving locked 60FPS `Zero backdrop-filter` CSS & PS5 dual-rail layout): localize navigation chrome, Search Modal quick tags (Arabic 2BAC PC chapters), Boot copy, and DualSense control guide.
-  - Reorganize `games.json` into **4 clean, pedagogical 2BAC PC Domains** sorted strictly in Moroccan curriculum progression (`Topics 1 → 114`):
-    1. `الأساسيات والتقويم` (Foundations: `mathcore-survivor`, `math-battle`)
-    2. `التحليل والدوال` (`Topics 1–50 & 65–90`: `limit-abyss`, `asymptote-asylum`, `sequence-strider`, `logarithm-reactor`, `integral-forge`)
-    3. `الأعداد العقدية والفضاء` (`Topics 51–64 & 91–102`: `complex-plane-duel`, `vector-odyssey`)
-    4. `التعداد والاحتمالات` (`Topics 103–114`: `quantum-casino`)
-  - Upgrade `js/hub.js` rail cards, showcase metadata, and DualSense `L1`/`R1` category switching cleanly so all 10 `getGameArtworkSVG` bespoke tiles remain intact alongside clear `الدرس XX–XX` curriculum pills and zero RTL layout glitches.
+### [COMPLETED — Cycle 017 Alpha (2026-11-22 05:00 UTC)] Milestone 3.2: PS5 Console Hub Arabic RTL & 2BAC PC Syllabus Reorganization
+* **Target**: `index.html`, `js/hub.js`, `css/hub.css`, `css/common.css`, `games.json`
+* **Delivered**:
+  - Transformed root [index.html](file:///home/ubuntu/Math-Arcid-V2/index.html) into cohesive Arabic RTL PS5 console chrome (`<html lang="ar" dir="rtl">`, loaded `Cairo` font in `css/common.css`, localized boot screen, topbar, showcase, DualSense footer legend, Quick Search modal with 9 Moroccan 2BAC PC topic pills, Game Details modal, and Contributor Guide, plus `<script src="shared/arcade-core.js"></script>`).
+  - Reorganized [games.json](file:///home/ubuntu/Math-Arcid-V2/games.json) from 10 fragmented 1-game category strings into **4 clean 2BAC PC Syllabus Domains** (`التحليل والدوال`, `الأعداد العقدية والفضاء`, `التعداد والاحتمالات`, `الأساسيات والتقويم`) ordered strictly monotonically by curriculum syllabus **`Topics 1 → 114`** (`limit-abyss` -> `asymptote-asylum` -> `sequence-strider` -> `complex-plane-duel` -> `logarithm-reactor` -> `integral-forge` -> `vector-odyssey` -> `quantum-casino`) followed by Foundations (`mathcore-survivor`, `math-battle`), with bilingual `keywords` & `topicRange`.
+  - Upgraded [js/hub.js](file:///home/ubuntu/Math-Arcid-V2/js/hub.js) & [css/hub.css](file:///home/ubuntu/Math-Arcid-V2/css/hub.css) with RTL-aware `ArrowLeft`/`ArrowRight` + DualSense directional navigation, ordered Arabic category tabs (`L1/R1`), `<bdi dir="ltr">` `ArcadeCore.setBidiSafeMath` rendering in Showcase/Modals, logical CSS properties (`inset-inline-*`, `margin-inline-start`, `padding-inline-start`), zero `backdrop-filter`, and all 10 custom SVG tiles preserved 100%.
 
-### [UPCOMING — Cycle 018 Omega (2026-11-22 17:00 UTC)] Milestone 3.3: `ArcadeCore` Migration Batch A (Games 3–6)
+### [NEXT — Cycle 018 Omega (2026-11-22 17:00 UTC)] Milestone 3.3: `ArcadeCore` Migration Batch A (Games 3–6)
 * **Target**: `games/limit-abyss/`, `games/asymptote-asylum/`, `games/sequence-strider/`, `games/complex-plane-duel/`
 * **Deliverables**:
   - Integrate `shared/arcade-core.js` across all 4 titles.

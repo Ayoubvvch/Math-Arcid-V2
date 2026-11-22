@@ -3,6 +3,17 @@
 
 ---
 
+### [Cycle 017-ALPHA] 2026-11-22 05:04 UTC | Milestone: PS5 Hub Arabic RTL Overhaul & 2BAC PC Syllabus Reorganization (Milestone 3.2)
+* **Phase**: ALPHA (Console Shell UX Overhaul & Curriculum Grouping)
+* **Target**: `index.html`, `games.json`, `js/hub.js`, `css/hub.css`, `css/common.css`
+* **Changes Delivered**:
+  - **Arabic RTL Console Shell (`index.html`, `css/common.css`, `css/hub.css`)**: Switched root document to `<html lang="ar" dir="rtl">`, loaded `Cairo` font cleanly in `css/common.css`, localized boot screen, topbar pills, showcase blueprint panel, DualSense bottom legend, Quick Search modal (`9` Moroccan 2BAC PC topic quick-filters), Game Details modal, and Contributor Guide, loaded `shared/arcade-core.js` before `js/hub.js`, replaced physical RTL-breaking CSS offsets (`margin-left`, `left`, `padding-left`) with logical inline properties (`inset-inline-*`, `margin-inline-start`, `padding-inline-start`), and added `.math-ltr` isolation styling with zero `backdrop-filter`.
+  - **Syllabus Reorganization (`games.json`, `js/hub.js`)**: Consolidated `10` single-game categories into **4 clean 2BAC PC Domains** (`التحليل والدوال`, `الأعداد العقدية والفضاء`, `التعداد والاحتمالات`, `الأساسيات والتقويم`) ordered strictly along Moroccan curriculum progression **`Topics 1 → 114`** (`limit-abyss` → `quantum-casino`, followed by `mathcore-survivor` and `math-battle`), added bilingual search indexing (`topicRange`, `badge`, `keywords`), RTL-aware `ArrowLeft`/`ArrowRight` + modal DualSense navigation, `<bdi dir="ltr">` `ArcadeCore.setBidiSafeMath` formatting in Showcase & Modals, and preserved all 10 custom SVG tiles 100%.
+* **Verification**: Verified `4` domain categories, `47` DOM ID bindings, `9`+ bilingual search queries, ESM `ArcadeConsoleHub` RTL simulation (`firstGame: Limit Abyss`), and all 7 stages of `evolution/scripts/verify.sh` passed 100%.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 016-OMEGA] 2026-11-21 17:04 UTC | Milestone: Unified `shared/arcade-core.js` Engine & Pilot Refactor (Milestone 3.1)
 * **Phase**: OMEGA (Shared Infrastructure Consolidation, Bugfix & Telemetry Pilot)
 * **Target**: `shared/arcade-core.js`, `games/vector-odyssey/` (v1.2.0), `games/quantum-casino/` (v1.2.0), `games/README.md`, `index.html`
@@ -138,19 +149,4 @@
     - Cached `coneGrad` and `darkGrad` radial gradients in `games/asymptote-asylum/js/renderer.js` (zero per-frame gradient allocation).
     - Added full X+Y viewport culling across particles, projectiles, orbs, and floating texts plus cached HUD element references & state flags in `logarithm-reactor`, `asymptote-asylum`, `sequence-strider`, and `complex-plane-duel`.
 * **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/curriculum/13-graphSpec & 5-renderer smoke tests passed 100%.
-* **Author**: Autonomous AGY Core ("My Homie").
-
----
-
-### [Cycle 007-ALPHA] 2026-11-17 05:08 UTC | Milestone: Logarithm Reactor (مفاعل اللوغاريتم والأسي) Gold-Standard Launch
-* **Phase**: Alpha (New 6-Module Game Construction >= 2,800 LOC)
-* **Target**: `games/logarithm-reactor/` (Topics 65–78: الدوال اللوغاريتمية والأسية، المعادلات والمتراجحات، والنمو المقارن)
-* **Changes Delivered**:
-  - Engineered **مفاعل اللوغاريتم والأسي — Logarithm Reactor v1.0.0** (**4,183 Lines of Code** across 6 modules + Bio-Cyber CSS):
-    - Full-Screen 100vw × 100dvh 60FPS **2D Bio-Cyber Metroidvania Lab** (`2800 × 1800`) featuring one-way drop-through catwalks, twin vertical bio-elevators, `ln(x ≤ 0)` bio-acid vats, and 4 Containment Wings (`α, β, γ, δ`).
-    - Complete **Topics 65–78 Curriculum Engine** (`js/curriculum.js`): **32 Moroccan National Exam questions** covering every topic from `65` to `78`, `setBidiSafeMath` isolation, and Fisher-Yates shuffled options (`pickReactorChallenge`).
-    - **10 Interactive HTML5 Canvas `graphSpec` Plotters** (`ln_domain_band`, `primitive_area_inv`, `ln_curve_tangent`, `ln_abs_both_sides`, `exp_ln_symmetry`, `exp_quad_roots`, `exp_tangent_bound`, `growth_comparison`, `ln_branch_parabolic`, `exp_parabolic_y`).
-    - 3 Bio-Cyber enemy archetypes (`mutant_ln`, `drone_exp`, `sentinel_asym`) with Stagger/Execute (`▢ / E`), 6 PlayStation abilities (`✕` Double-Jump Thruster, `◯` Phase Dash, `▢` Seal Override, `△` Bio-Aegis `e^{ln x}=x`, `R2` Derivative Plasma `u'/u`, `L2` Growth-Comparison Shockwave `e^x ≫ xⁿ`), and the 3-Phase **Asymptote Containment Boss (`مُفاعل المقاربات الأعظم`)** with telegraphed asymptote beams and Phase 3 containment shield.
-    - Full DualSense/DualShock gameplay + modal polling + haptics (`js/controls.js`), procedural Web Audio synthesizer with reactor hum & pre-allocated noise buffer (`js/audio.js`), bespoke SVG tile in `js/hub.js`, and registration in `games.json`.
-* **Verification**: All 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`) + Node Metroidvania physics, 3-Phase Boss & curriculum simulation passed 100%.
 * **Author**: Autonomous AGY Core ("My Homie").
