@@ -7,10 +7,27 @@ class RetroAudioEngine {
   constructor() {
     this.ctx = null;
     this.enabled = true;
+    this.unlocked = false;
     this.lastTimes = { wall: 0, ball: 0, beam: 0 };
+    if (typeof window !== 'undefined') {
+      const unlock = () => {
+        this.unlocked = true;
+        this.init();
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume().catch(() => {});
+        }
+      };
+      window.addEventListener('pointerdown', unlock, { once: true, passive: true });
+      window.addEventListener('keydown', unlock, { once: true, passive: true });
+      window.addEventListener('touchstart', unlock, { once: true, passive: true });
+    }
   }
 
   init() {
+    if (!this.unlocked && typeof navigator !== 'undefined' && navigator.userActivation && !navigator.userActivation.hasBeenActive) {
+      return;
+    }
+    this.unlocked = true;
     if (this.ctx) return;
     try {
       const AudioContext = window.AudioContext || window.webkitAudioContext;

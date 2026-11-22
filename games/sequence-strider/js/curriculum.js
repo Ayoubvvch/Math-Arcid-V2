@@ -416,5 +416,19 @@ window.pickSequenceChallenge = function(filterMode = 'all', sectorTopics = null,
 
   let fresh = pool.filter(q => !recentIds.includes(q.id));
   if (fresh.length === 0) fresh = pool;
-  return fresh[Math.floor(Math.random() * fresh.length)];
+
+  const base = fresh[Math.floor(Math.random() * fresh.length)];
+  const indexed = base.options.map((text, idx) => ({ text, isCorrect: idx === base.correctIndex }));
+  for (let i = indexed.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = indexed[i];
+    indexed[i] = indexed[j];
+    indexed[j] = tmp;
+  }
+
+  return {
+    ...base,
+    options: indexed.map(o => o.text),
+    correctIndex: indexed.findIndex(o => o.isCorrect)
+  };
 };

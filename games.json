@@ -1,6 +1,11 @@
 [
   {
     "id": "limit-abyss",
+    "subject": "math",
+    "order": 1,
+    "unitLabel": "الوحدة 01",
+    "topicStart": 1,
+    "topicEnd": 22,
     "title": "Limit Abyss — هاوية النهايات والاتصال",
     "slug": "limit-abyss",
     "category": "التحليل والدوال",
@@ -15,7 +20,7 @@
       "صورة مجال ومبرهنة القيم الوسيطية TVI والحل الوحيد (12–17)",
       "مبرهنة التقابل والدالة العكسية f⁻¹ وتماثل y=x والجذور النونية (18–22)"
     ],
-    "keywords": ["النهايات", "الاتصال", "TVI", "f-1", "limits", "continuity", "الدروس 1-22"],
+    "keywords": ["النهايات", "الاتصال", "TVI", "f-1", "limits", "continuity", "الدروس 1-22", "الوحدة 01"],
     "controls": [
       "Left Stick / WASD: الملاحة الهيدروديناميكية في خندق الأعماق",
       "✕ (Cross / Space): نفاثة الدفع الهيدروليكي السريع",
@@ -27,7 +32,7 @@
       "Options / P: قائمة الإيقاف المؤقت وتبديل محاور الأسئلة"
     ],
     "path": "games/limit-abyss/index.html",
-    "badge": "1–22 • lim",
+    "badge": "01 • 1–22",
     "icon": "lim",
     "accentColor": "#00f3ff",
     "status": "ready",
@@ -35,13 +40,18 @@
   },
   {
     "id": "asymptote-asylum",
+    "subject": "math",
+    "order": 2,
+    "unitLabel": "الوحدة 02",
+    "topicStart": 23,
+    "topicEnd": 38,
     "title": "Asymptote Asylum — مصحّة المشتقة",
     "slug": "asymptote-asylum",
     "category": "التحليل والدوال",
     "topicRange": "الدروس 23–38",
     "difficulty": "تحدي وطني (2BAC PC)",
     "difficultyLevel": 5,
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "لعبة رعب وبقاء دموية 2D بسرعة 60FPS! اهرب من مصحّة معزولة، مزّق الوحوش بالمنشار، وحطّم الأختام الأربعة عبر قواعد الاشتقاق ودراسة الدوال والفروع اللانهائية (23–38) — أو اتّبع عقيدة «الغاية تبرر الوسيلة» بالتضحية لفتح الطريق.",
     "mathConcepts": [
       "قواعد الاشتقاق والمماسات ونصف المماس (23–29)",
@@ -49,7 +59,7 @@
       "الفروع اللانهائية كاملة والوضع النسبي (35–36)",
       "التماثل والإنشاء الهندسي للمنحنى و Cf⁻¹ (37–38)"
     ],
-    "keywords": ["الاشتقاق", "الفروع اللانهائية", "التقعر", "derivatives", "asymptotes", "23-38"],
+    "keywords": ["الاشتقاق", "الفروع اللانهائية", "التقعر", "derivatives", "asymptotes", "23-38", "الوحدة 02"],
     "controls": [
       "Left Stick / WASD: تحريك الناجي ومصباح الظلام",
       "Right Stick / Mouse: توجيه المصباح وإطلاق نصل الدم",
@@ -61,7 +71,7 @@
       "L2 / F: تضحية محرّمة «الغاية تبرر الوسيلة» (قربان / تجاوز)"
     ],
     "path": "games/asymptote-asylum/index.html",
-    "badge": "23–38 • ∂",
+    "badge": "02 • 23–38",
     "icon": "∂",
     "accentColor": "#ef4444",
     "status": "ready",
@@ -69,13 +79,18 @@
   },
   {
     "id": "sequence-strider",
+    "subject": "math",
+    "order": 3,
+    "unitLabel": "الوحدة 03",
+    "topicStart": 39,
+    "topicEnd": 50,
     "title": "Sequence Strider — عدّاء المتتاليات",
     "slug": "sequence-strider",
     "category": "التحليل والدوال",
     "topicRange": "الدروس 39–50",
     "difficulty": "تحدي وطني (2BAC PC)",
     "difficultyLevel": 5,
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "لعبة منصّات وأكشن 2D بسرعة 60FPS! اقفز واندفع بين سقف المكبر M وقاع المصغر m، واخترق البوابات الأربع عبر البرهان بالترجع، المتتالية المساعدة (1.1.1)، الدركيين (1.1.2)، والنقطة الصامدة (39–50).",
     "mathConcepts": [
       "البرهان بالترجع والمكبورة/المصغورة والرتابة (39–41)",
@@ -83,7 +98,7 @@
       "نهايات qⁿ والتقارب الرتيب والدركيين والحصر (45–47)",
       "نهاية المركب والنقطة الصامدة uₙ₊₁=f(uₙ) والنمذجة (48–50)"
     ],
-    "keywords": ["المتتاليات", "الترجع", "التقارب", "suites", "sequences", "39-50"],
+    "keywords": ["المتتاليات", "الترجع", "التقارب", "suites", "sequences", "39-50", "الوحدة 03"],
     "controls": [
       "Left Stick / A-D: الجري فوق منصات المتتالية",
       "✕ (Cross / W): قفز وقفز مزدوج لتفادي m و M",
@@ -94,7 +109,7 @@
       "L2 / F: موجة الترجع الكبرى لتدمير أسراب qⁿ"
     ],
     "path": "games/sequence-strider/index.html",
-    "badge": "39–50 • uₙ",
+    "badge": "03 • 39–50",
     "icon": "uₙ",
     "accentColor": "#22d3ee",
     "status": "ready",
@@ -102,6 +117,11 @@
   },
   {
     "id": "complex-plane-duel",
+    "subject": "math",
+    "order": 4,
+    "unitLabel": "الوحدة 04",
+    "topicStart": 51,
+    "topicEnd": 64,
     "title": "Argand Citadel — قلعة أرغاند العقدية",
     "slug": "complex-plane-duel",
     "category": "الأعداد العقدية والفضاء",
@@ -116,7 +136,7 @@
       "قياس الزوايا الموجهة، الاستقامية والتعامد وطبيعة المثلثات (58–61)",
       "المعادلات في ℂ، جذور الوحدة zⁿ=1، الإزاحة، التحاكي والدوران (62–64)"
     ],
-    "keywords": ["العقدية", "أرغاند", "موافر", "الدوران", "complexes", "argand", "51-64"],
+    "keywords": ["العقدية", "أرغاند", "موافر", "الدوران", "complexes", "argand", "51-64", "الوحدة 04"],
     "controls": [
       "Left Stick / WASD: تحليق 360° في المستوى العقدي أرغاند",
       "✕ (Cross / Space): اندفاع دوران أولير المداري (z · e^{iπ/3})",
@@ -127,7 +147,7 @@
       "L2 / F: موجة التحاكي الانفجارية z' - ω = k(z - ω)"
     ],
     "path": "games/complex-plane-duel/index.html",
-    "badge": "51–64 • ℂ",
+    "badge": "04 • 51–64",
     "icon": "ℂ",
     "accentColor": "#fbbf24",
     "status": "ready",
@@ -135,6 +155,11 @@
   },
   {
     "id": "logarithm-reactor",
+    "subject": "math",
+    "order": 5,
+    "unitLabel": "الوحدة 05",
+    "topicStart": 65,
+    "topicEnd": 78,
     "title": "Logarithm Reactor — مفاعل اللوغاريتم والأسي",
     "slug": "logarithm-reactor",
     "category": "التحليل والدوال",
@@ -149,7 +174,7 @@
       "الدالة الأسية eˣ كعكسية لـ ln x، الإشارة، المشتقة u'eᵘ والأساس a (71–74)",
       "النمو المقارن eˣ ≫ xⁿ ≫ ln x، الفروع اللانهائية والمعادلات التربيعية (75–78)"
     ],
-    "keywords": ["اللوغاريتم", "الأسي", "ln", "exp", "النمو المقارن", "65-78"],
+    "keywords": ["اللوغاريتم", "الأسي", "ln", "exp", "النمو المقارن", "65-78", "الوحدة 05"],
     "controls": [
       "Left Stick / WASD: التسلل والقفز فوق منصات ومصاعد المفاعل",
       "✕ (Cross / Space / W): قفز نفاث مزدوج (وبالأسفل للهبوط عبر المنصة)",
@@ -160,7 +185,7 @@
       "L2 / F: صدمة النمو المقارن (eˣ ≫ xⁿ) وتحطيم درع الزعيم"
     ],
     "path": "games/logarithm-reactor/index.html",
-    "badge": "65–78 • ln",
+    "badge": "05 • 65–78",
     "icon": "ln",
     "accentColor": "#10b981",
     "status": "ready",
@@ -168,6 +193,11 @@
   },
   {
     "id": "integral-forge",
+    "subject": "math",
+    "order": 6,
+    "unitLabel": "الوحدة 06",
+    "topicStart": 79,
+    "topicEnd": 90,
     "title": "Integral Forge — محرقة التكامل والمعادلات",
     "slug": "integral-forge",
     "category": "التحليل والدوال",
@@ -182,7 +212,7 @@
       "حساب المساحات (cm²) والوضع النسبي وحجم الدوران π∫f² dx (85–87)",
       "المعادلات التفاضلية y'=ay و y'=ay+b و y''+ay'+by=0 (88–90)"
     ],
-    "keywords": ["التكامل", "الأصلية", "المكاملة بالأجزاء", "المعادلات التفاضلية", "integral", "ode", "79-90"],
+    "keywords": ["التكامل", "الأصلية", "المكاملة بالأجزاء", "المعادلات التفاضلية", "integral", "ode", "79-90", "الوحدة 06"],
     "controls": [
       "Left Stick / WASD: تحريك الآلي TITAN-∫ والرافعات الجسرية",
       "✕ (Cross / Space / W): دفع نفاث مزدوج (وبالأسفل للهبوط عبر المنصة)",
@@ -193,7 +223,7 @@
       "L2 / F: صدمة حجم الدوران π∫f² dx وتحطيم درع الزعيم"
     ],
     "path": "games/integral-forge/index.html",
-    "badge": "79–90 • ∫",
+    "badge": "06 • 79–90",
     "icon": "∫",
     "accentColor": "#f59e0b",
     "status": "ready",
@@ -201,6 +231,11 @@
   },
   {
     "id": "vector-odyssey",
+    "subject": "math",
+    "order": 7,
+    "unitLabel": "الوحدة 07",
+    "topicStart": 91,
+    "topicEnd": 102,
     "title": "Vector Odyssey — أوديسا الفضاء المتجهي",
     "slug": "vector-odyssey",
     "category": "الأعداد العقدية والفضاء",
@@ -215,7 +250,7 @@
       "معادلة الفلكة بالمركز والشعاع وبأحد أقطارها [AB] وتحديد Ω و R (97–98)",
       "الوضع النسبي لفلكة ومستوى (تماس H أو دائرة تقاطع r²=R²-d²) وفلكة ومستقيم ورباعي الأوجه (99–102)"
     ],
-    "keywords": ["الفضائية", "الفلكة", "الجداء المتجهي", "المستوى", "R3", "sphere", "91-102"],
+    "keywords": ["الفضائية", "الفلكة", "الجداء المتجهي", "المستوى", "R3", "sphere", "91-102", "الوحدة 07"],
     "controls": [
       "Left Stick / WASD / اللمس: قيادة المقاتلة VECTRA-ℝ³ حرة في الفضاء (2600×1700)",
       "Right Stick / الماوس + R2 / J: تصويب وإطلاق مدفع المتجهة الليزري",
@@ -226,7 +261,7 @@
       "R1 / L2 (F / R): موجة الفلكة ||ΩM||=R وتحطيم درع الزعيم Ω"
     ],
     "path": "games/vector-odyssey/index.html",
-    "badge": "91–102 • ℝ³",
+    "badge": "07 • 91–102",
     "icon": "∧",
     "accentColor": "#38bdf8",
     "status": "ready",
@@ -234,6 +269,11 @@
   },
   {
     "id": "quantum-casino",
+    "subject": "math",
+    "order": 8,
+    "unitLabel": "الوحدة 08",
+    "topicStart": 103,
+    "topicEnd": 114,
     "title": "Quantum Casino — كازينو الاحتمالات الكمومي",
     "slug": "quantum-casino",
     "category": "التعداد والاحتمالات",
@@ -248,7 +288,7 @@
       "شجرة الاحتمالات الموزونة، الاحتمالات الكلية واستقلالية حدثين (109–111)",
       "المتغير العشوائي X، الأمل E(X)، المغايرة V(X) والقانون الحداني B(n,p) (112–114)"
     ],
-    "keywords": ["الاحتمالات", "التعداد", "برنولي", "المتغير العشوائي", "probability", "binomial", "103-114"],
+    "keywords": ["الاحتمالات", "التعداد", "برنولي", "المتغير العشوائي", "probability", "binomial", "103-114", "الوحدة 08"],
     "controls": [
       "Left Stick / WASD / اللمس: تحرك وتسلل خلف طاولات الخزنة (2560×1600)",
       "Right Stick / الماوس + R2 / J: تصويب وإطلاق الرقائق الكمومية P(A)",
@@ -259,7 +299,7 @@
       "R1 / L2 (F / R): صدمة برنولي B(n,p) وتحطيم درع الزعيم"
     ],
     "path": "games/quantum-casino/index.html",
-    "badge": "103–114 • ♠",
+    "badge": "08 • 103–114",
     "icon": "♠",
     "accentColor": "#10b981",
     "status": "ready",
@@ -267,6 +307,11 @@
   },
   {
     "id": "mathcore-survivor",
+    "subject": "math",
+    "order": 9,
+    "unitLabel": "تأسيس 01",
+    "topicStart": null,
+    "topicEnd": null,
     "title": "MathCore Survivor — نجاة الجبر والزوجية",
     "slug": "mathcore-survivor",
     "category": "الأساسيات والتقويم",
@@ -292,7 +337,7 @@
       "Options / Share: الإيقاف المؤقت ومعدّل النمط الحر"
     ],
     "path": "games/mathcore-survivor/index.html",
-    "badge": "أساسيات • ∑",
+    "badge": "تأسيس • ∑",
     "icon": "∑",
     "accentColor": "#00f3ff",
     "status": "ready",
@@ -300,6 +345,11 @@
   },
   {
     "id": "math-battle",
+    "subject": "math",
+    "order": 10,
+    "unitLabel": "تأسيس 02",
+    "topicStart": null,
+    "topicEnd": null,
     "title": "Math Battle — نزال المشتقات التفاضلي",
     "slug": "math-battle",
     "category": "الأساسيات والتقويم",
@@ -325,7 +375,7 @@
       "Options / Select: الإيقاف المؤقت والطيار الآلي"
     ],
     "path": "games/math-battle/index.html",
-    "badge": "أساسيات • d/dx",
+    "badge": "تأسيس • d/dx",
     "icon": "d/dx",
     "accentColor": "#b537f2",
     "status": "ready",

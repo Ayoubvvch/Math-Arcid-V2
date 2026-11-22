@@ -1,128 +1,155 @@
 {
   "project": "Math-Arcid-V2",
-  "version": "2.17.0",
+  "version": "2.17.1",
   "repository": "https://github.com/Ayoubvvch/Math-Arcid-V2",
   "deployment": "https://ayoubvvch.github.io/Math-Arcid-V2/",
   "owner": "Ayoub (eulerx0)",
   "chatId": "8959256425",
   "autoEvolutionPaused": false,
-  "evolutionMode": "Perpetual Autonomous Twice-Daily (Alpha / Omega + Auto-Architect Roadmap Loop)",
+  "evolutionMode": "Perpetual Autonomous Twice-Daily Self-Healing Monster (Alpha / Omega + Bi-Weekly Auto-Architect)",
   "goldStandardCharter": "/home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md",
   "schedule": {
     "morningPhase": "05:00 UTC - Phase Alpha (Primary Sprint Build / Feature / Structural Milestone)",
-    "eveningPhase": "17:00 UTC - Phase Omega (Deep Gameplay, Boss Patterns, Question Bank Expansion, UX & 60FPS Audit)",
-    "architectPhase": "Auto-triggered on Sprint completion -> Full Project Audit & Next Multi-Day Roadmap Generation (Endless until paused by Owner)"
+    "eveningPhase": "17:00 UTC - Phase Omega (Deep Gameplay, Boss Patterns, Curriculum Expansion, UX & 60FPS Audit)",
+    "architectPhase": "Auto-triggered on Sprint completion OR every <= 14 days (28 cycles) -> Truthful Full Codebase/Browser Audit & Next Multi-Day Roadmap Generation"
+  },
+  "architectPolicy": {
+    "cadenceDays": 14,
+    "maxCyclesBetweenAudits": 28,
+    "lastArchitectCycle": 15,
+    "lastArchitectTimestamp": "2026-11-21T05:00:00Z"
   },
   "metrics": {
     "totalCyclesCompleted": 17,
-    "lastCycleTimestamp": "2026-11-22T05:04:00Z",
-    "lastCyclePhase": "Phase ALPHA (Milestone 3.2): Rebuilt PS5 Console Hub in cohesive Arabic RTL (<html lang=\"ar\" dir=\"rtl\">), grouped games.json into 4 2BAC PC domains sorted by Topics 1-114 & wired RTL DualSense/Bidi navigation",
+    "lastCycleTimestamp": "2026-11-22T12:20:00Z",
+    "lastCyclePhase": "Cycle 017-HARDENING: Absolute Syllabus Ordering (01-08 / 1-114), Fisher-Yates Option Shuffling Fix (Games 3-4), Math-Battle AudioContext Fix, Hub Radial Deadzone, Isolated Auto Session + Quota Fallback, & 9-Stage Ironclad Gate",
     "totalGamesLive": 10,
-    "verificationStatus": "PASSED_7_STAGE_IRONCLAD_GATE"
+    "verificationStatus": "PASSED_9_STAGE_IRONCLAD_GATE"
   },
   "liveGames": [
     {
-      "id": "mathcore-survivor",
-      "slug": "mathcore-survivor",
-      "title": "MathCore: PlayStation Survivor",
-      "category": "Algebra & Parity",
-      "version": "2.0.0",
-      "status": "STABLE_PS5_OPTIMIZED"
-    },
-    {
-      "id": "math-battle",
-      "slug": "math-battle",
-      "title": "Math Battle: Calculus Showdown",
-      "category": "Differential Calculus",
-      "version": "2.0.0",
-      "status": "STABLE_PS5_OPTIMIZED"
-    },
-    {
-      "id": "asymptote-asylum",
-      "slug": "asymptote-asylum",
-      "title": "Asymptote Asylum — مصحّة المشتقة",
-      "category": "Horror Calculus (Topics 23-38)",
-      "version": "1.0.0",
-      "linesOfCode": 4222,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "sequence-strider",
-      "slug": "sequence-strider",
-      "title": "Sequence Strider — عدّاء المتتاليات",
-      "category": "Suites (Topics 39-50)",
-      "version": "1.0.0",
-      "linesOfCode": 3369,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "complex-plane-duel",
-      "slug": "complex-plane-duel",
-      "title": "Argand Citadel — قلعة أرغاند العقدية",
-      "category": "Complexes ℂ (Topics 51-64)",
-      "version": "2.1.0",
-      "linesOfCode": 3835,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
       "id": "limit-abyss",
+      "subject": "math",
+      "order": 1,
       "slug": "limit-abyss",
       "title": "Limit Abyss — هاوية النهايات والاتصال",
-      "category": "Limits & Continuity (Topics 1-22)",
+      "category": "التحليل والدوال (الدروس 1–22)",
       "version": "1.1.0",
       "linesOfCode": 4610,
       "status": "GOLD_STANDARD_VERIFIED"
     },
     {
+      "id": "asymptote-asylum",
+      "subject": "math",
+      "order": 2,
+      "slug": "asymptote-asylum",
+      "title": "Asymptote Asylum — مصحّة المشتقة",
+      "category": "التحليل والدوال (الدروس 23–38)",
+      "version": "1.1.0",
+      "linesOfCode": 4236,
+      "status": "GOLD_STANDARD_VERIFIED"
+    },
+    {
+      "id": "sequence-strider",
+      "subject": "math",
+      "order": 3,
+      "slug": "sequence-strider",
+      "title": "Sequence Strider — عدّاء المتتاليات",
+      "category": "التحليل والدوال (الدروس 39–50)",
+      "version": "1.1.0",
+      "linesOfCode": 3383,
+      "status": "GOLD_STANDARD_VERIFIED"
+    },
+    {
+      "id": "complex-plane-duel",
+      "subject": "math",
+      "order": 4,
+      "slug": "complex-plane-duel",
+      "title": "Argand Citadel — قلعة أرغاند العقدية",
+      "category": "الأعداد العقدية والفضاء (الدروس 51–64)",
+      "version": "2.1.0",
+      "linesOfCode": 3835,
+      "status": "GOLD_STANDARD_VERIFIED"
+    },
+    {
       "id": "logarithm-reactor",
+      "subject": "math",
+      "order": 5,
       "slug": "logarithm-reactor",
       "title": "Logarithm Reactor — مفاعل اللوغاريتم والأسي",
-      "category": "Logarithms & Exp (Topics 65-78)",
+      "category": "التحليل والدوال (الدروس 65–78)",
       "version": "1.1.0",
       "linesOfCode": 4678,
       "status": "GOLD_STANDARD_VERIFIED"
     },
     {
       "id": "integral-forge",
+      "subject": "math",
+      "order": 6,
       "slug": "integral-forge",
       "title": "Integral Forge — محرقة التكامل والمعادلات",
-      "category": "Integrals & ODEs (Topics 79-90)",
+      "category": "التحليل والدوال (الدروس 79–90)",
       "version": "1.1.0",
       "linesOfCode": 4722,
       "status": "GOLD_STANDARD_VERIFIED"
     },
     {
       "id": "vector-odyssey",
+      "subject": "math",
+      "order": 7,
       "slug": "vector-odyssey",
       "title": "Vector Odyssey — أوديسا الفضاء المتجهي",
-      "category": "Space Geometry R3 (Topics 91-102)",
+      "category": "الأعداد العقدية والفضاء (الدروس 91–102)",
       "version": "1.2.0",
       "linesOfCode": 5288,
       "status": "GOLD_STANDARD_VERIFIED"
     },
     {
       "id": "quantum-casino",
+      "subject": "math",
+      "order": 8,
       "slug": "quantum-casino",
       "title": "Quantum Casino — كازينو الاحتمالات الكمومي",
-      "category": "Combinatorics & Probability (Topics 103-114)",
+      "category": "التعداد والاحتمالات (الدروس 103–114)",
       "version": "1.2.0",
       "linesOfCode": 5136,
       "status": "GOLD_STANDARD_VERIFIED"
+    },
+    {
+      "id": "mathcore-survivor",
+      "subject": "math",
+      "order": 9,
+      "slug": "mathcore-survivor",
+      "title": "MathCore Survivor — نجاة الجبر والزوجية",
+      "category": "الأساسيات والتقويم",
+      "version": "2.0.0",
+      "status": "STABLE_PS5_OPTIMIZED"
+    },
+    {
+      "id": "math-battle",
+      "subject": "math",
+      "order": 10,
+      "slug": "math-battle",
+      "title": "Math Battle — نزال المشتقات التفاضلي",
+      "category": "الأساسيات والتقويم",
+      "version": "2.0.0",
+      "status": "STABLE_PS5_OPTIMIZED"
     }
   ],
   "currentSprint": {
     "id": "SPRINT_03",
-    "name": "Organization, Clean Architecture & UX Masterclass (التنظيم والترتيب وتجربة المستخدم)",
+    "name": "Organization, Absolute Syllabus Ordering & UX Masterclass (التنظيم والترتيب المطلق وتجربة المستخدم)",
     "status": "ACTIVE",
     "nextCycleNumber": 18,
-    "nextOmegaMilestone": "Milestone 3.3 (Cycle 018): Migrate Batch A (limit-abyss, asymptote-asylum, sequence-strider, complex-plane-duel) onto shared/arcade-core.js, fix missing radial deadzones in Games 4-5 & wire ArcadeCore.Progress",
-    "nextAlphaMilestone": "Milestone 3.4 (Cycle 019): Migrate Batch B (logarithm-reactor, integral-forge, mathcore-survivor, math-battle) onto shared/arcade-core.js, fix missing radial deadzones in Games 7-8 & localize games/math-battle/ to Arabic RTL"
+    "nextOmegaMilestone": "Milestone 3.3 (Cycle 018): Migrate Batch A (limit-abyss, asymptote-asylum, sequence-strider, complex-plane-duel) onto shared/arcade-core.js (setBidiSafeMath, DualSense Gamepad, Progress telemetry & weakTopics recording)",
+    "nextAlphaMilestone": "Milestone 3.4 (Cycle 019): Migrate Batch B (logarithm-reactor, integral-forge, mathcore-survivor, math-battle) onto shared/arcade-core.js & localize games/math-battle/ to cohesive Arabic RTL (<html lang=\"ar\" dir=\"rtl\">)"
   },
   "perpetualRoadmapPolicy": {
     "enabled": true,
     "stopCondition": "Manual Owner stop only (autoEvolutionPaused: true or crontab disable)",
-    "sprint03Focus": "التنظيم والترتيب وتجربة المستخدم (Repository organization, shared engine deduplication, PS5 Hub curriculum grouping & progress tracking, unified UX/DualSense ergonomics & visual cohesion across all 10 games)",
-    "sprint04PlusPolicy": "After each Sprint completes, automatically trigger Phase ARCHITECT to perform a full codebase/UX audit and draft the next multi-day Roadmap targeting what the project lacks or needs most next (e.g., 2BAC PC Physics & Chemistry modules, National Exam Boss-Rush Mode, Offline PWA, Mastery Analytics)."
+    "sprint03Focus": "التنظيم والترتيب المطلق وتجربة المستخدم (Absolute 1–114 syllabus sorting, ArcadeCore shared engine deduplication, PS5 Hub progress telemetry & Smart Review, dead-code/standalone.html pruning)",
+    "sprint04Focus": "تعزيز الجاهزية للامتحان الوطني المغربي (2BAC PC National Exam Timed Boss-Rush Mode, Weak-Topics Adaptive Drill using ArcadeCore.Progress, Step-by-Step rigorous correction hints, and Offline PWA manifest + Service Worker)",
+    "sprint05PlusPolicy": "Expand platform from Math-only into complete 2BAC PC Science Arcade adding Physics & Chemistry (الفيزياء والكيمياء: الموجات، النووي، الكهرباء RC/RL/RLC، الميكانيك، الكيمياء الحركية والحمض-القاعدة والأعمدة والأسترة) under GOLD_STANDARD.md with multi-subject Hub tabs, then run bi-weekly Phase ARCHITECT macro audits indefinitely."
   },
   "sprintHistory": [
     {

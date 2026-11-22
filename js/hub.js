@@ -458,10 +458,22 @@ class ArcadeConsoleHub {
   }
 
   async loadGames() {
+    const subjectOrder = { math: 1, physics: 2, chemistry: 3, pc: 4 };
     try {
       const response = await fetch('games.json?t=' + Date.now());
       if (!response.ok) throw new Error('Failed to load games.json');
-      this.games = await response.json();
+      const rawGames = await response.json();
+      this.games = (Array.isArray(rawGames) ? rawGames : []).slice().sort((a, b) => {
+        const sa = subjectOrder[a.subject || 'math'] || 99;
+        const sb = subjectOrder[b.subject || 'math'] || 99;
+        if (sa !== sb) return sa - sb;
+        const oa = typeof a.order === 'number' ? a.order : 9999;
+        const ob = typeof b.order === 'number' ? b.order : 9999;
+        if (oa !== ob) return oa - ob;
+        const ta = typeof a.topicStart === 'number' ? a.topicStart : 9999;
+        const tb = typeof b.topicStart === 'number' ? b.topicStart : 9999;
+        return ta - tb;
+      });
     } catch (err) {
       console.error('Error loading game catalog:', err);
       this.games = [];
@@ -924,7 +936,9 @@ class ArcadeConsoleHub {
       'التحليل والدوال',
       'الأعداد العقدية والفضاء',
       'التعداد والاحتمالات',
-      'الأساسيات والتقويم'
+      'الأساسيات والتقويم',
+      'الفيزياء 2BAC PC',
+      'الكيمياء 2BAC PC'
     ];
     const present = Array.from(new Set(this.games.map((g) => g.category).filter(Boolean)));
     present.sort((a, b) => {
@@ -1024,7 +1038,8 @@ class ArcadeConsoleHub {
         const isSelected = idx === this.selectedIndex;
         const accent = game.accentColor || '#00e5ff';
         const pillText = game.badge || game.category;
-        const rangeLabel = game.topicRange || `المستوى ${game.difficultyLevel || 3}`;
+        const rangeText = game.topicRange || `المستوى ${game.difficultyLevel || 3}`;
+        const rangeLabel = game.unitLabel ? `${game.unitLabel} • ${rangeText}` : rangeText;
         return `
           <button
             class="ps5-tile ${isSelected ? 'selected' : ''}"

@@ -163,18 +163,24 @@ export class GamepadEngine {
       dpadRight: btn(15) || hatRight,
     };
 
-    // Rescaled deadzone so movement ramps smoothly from 0 after deadzone
-    const applyDeadzone = (v) => {
-      const abs = Math.abs(v);
-      if (abs < this.deadzone) return 0;
-      const sign = v < 0 ? -1 : 1;
-      return sign * Math.min(1, (abs - this.deadzone) / (1 - this.deadzone));
+    // Radial deadzone so stick diagonal movement & neutral rest feel silky-smooth
+    const applyRadialDeadzone = (x, y) => {
+      const mag = Math.hypot(x || 0, y || 0);
+      if (mag < this.deadzone) return { x: 0, y: 0 };
+      const clamped = Math.min(1, mag);
+      const norm = (clamped - this.deadzone) / Math.max(0.001, 1 - this.deadzone);
+      return {
+        x: (x / mag) * norm,
+        y: (y / mag) * norm
+      };
     };
 
-    this.axes.leftX = applyDeadzone(gp.axes[0] || 0);
-    this.axes.leftY = applyDeadzone(gp.axes[1] || 0);
-    this.axes.rightX = applyDeadzone(gp.axes[2] || 0);
-    this.axes.rightY = applyDeadzone(gp.axes[3] || 0);
+    const ls = applyRadialDeadzone(gp.axes[0] || 0, gp.axes[1] || 0);
+    const rs = applyRadialDeadzone(gp.axes[2] || 0, gp.axes[3] || 0);
+    this.axes.leftX = ls.x;
+    this.axes.leftY = ls.y;
+    this.axes.rightX = rs.x;
+    this.axes.rightY = rs.y;
 
     // Trigger justPressed events
     for (const key of Object.keys(this.buttons)) {

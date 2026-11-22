@@ -36,15 +36,15 @@
 ### [NEXT — Cycle 018 Omega (2026-11-22 17:00 UTC)] Milestone 3.3: `ArcadeCore` Migration Batch A (Games 3–6)
 * **Target**: `games/limit-abyss/`, `games/asymptote-asylum/`, `games/sequence-strider/`, `games/complex-plane-duel/`
 * **Deliverables**:
-  - Integrate `shared/arcade-core.js` across all 4 titles.
-  - Replace local `setBidiSafeMath` / `window.setSeqBidiSafeMath` copies with `ArcadeCore.setBidiSafeMath`.
-  - Fix missing analog stick deadzone calibration in `sequence-strider/js/controls.js` and `complex-plane-duel/js/controls.js` via `ArcadeCore.Gamepad` while standardizing `limit-abyss` & `asymptote-asylum`.
-  - Wire `ArcadeCore.Progress` recording (per-seal unlock, answer accuracy, Boss defeat, best score) into all 4 games and verify all 6 modules + >=2,500 LOC + locked 60FPS.
+  - Integrate `<script src="../../shared/arcade-core.js"></script>` across all 4 titles.
+  - Replace local `setBidiSafeMath` / `window.setSeqBidiSafeMath` copies with `ArcadeCore.setBidiSafeMath` and unify DualSense helpers (`applyRadialDeadzone`, `decodeDpadHat`, `sampleDirectionalNav`, `triggerHaptic`) onto `ArcadeCore.Gamepad` (keeping all existing gameplay physics & controls intact).
+  - Wire `ArcadeCore.Progress` recording (`recordSealProgress`, `recordAnswer` with `topic` for weak-topic tracking, `recordRun` with Boss defeat & rank) into all 4 games.
+  - Verify all 6 modules, Fisher-Yates shuffling, >=2,800 LOC, locked 60FPS, and all 9 stages of `verify.sh`.
 
 ### [UPCOMING — Cycle 019 Alpha (2026-11-23 05:00 UTC)] Milestone 3.4: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Upgrade
 * **Target**: `games/logarithm-reactor/`, `games/integral-forge/`, `games/mathcore-survivor/`, `games/math-battle/`
 * **Deliverables**:
-  - Integrate `shared/arcade-core.js` into `logarithm-reactor` and `integral-forge` (fixing missing radial deadzones in both `controls.js`, unifying `setBidiSafeMath`, and persisting `ArcadeCore.Progress` run stats).
+  - Integrate `shared/arcade-core.js` into `logarithm-reactor` and `integral-forge` (deduplicating `setBidiSafeMath` & DualSense boilerplate and wiring `ArcadeCore.Progress`).
   - Connect `mathcore-survivor` (migrating/bridging its existing `localStorage` high-score seamlessly) and `math-battle` to `ArcadeCore.Progress`.
   - Localize `games/math-battle/` (`<html lang="ar" dir="rtl">`, HUD/modals/buttons/Arabic calculus prompts) to match the unified platform UX standard and confirm full DualSense modal + gameplay consistency across Games 1–2.
 
@@ -53,19 +53,19 @@
 * **Deliverables**:
   - Surface live `ArcadeCore.Progress` telemetry inside the PS5 Hub without violating 60FPS GPU rules (`zero backdrop-filter`):
     - Render mastery rings, `✓ 4/4 أختام` badges, `🏆 الزعيم مهزوم` trophies, rank (`S/A/B`), and question accuracy `%` directly on Game Rail Tiles and Showcase cards.
-    - Add a Topbar **2BAC PC Mastery Summary** (`X/10` Bosses Cleared, global accuracy `%`, total mastered questions) + one-click **Smart Review Filter (`المراجعة الذكية`)** recommending unplayed or low-accuracy chapters.
+    - Add a Topbar **2BAC PC Mastery Summary** (`X/10` Bosses Cleared, global accuracy `%`, total mastered questions) + one-click **Smart Review Filter (`المراجعة الذكية`)** recommending unplayed or low-accuracy units.
     - Add an accessible **Progress Backup / Reset Modal** (export/import JSON telemetry or safe double-confirm reset via DualSense & mouse/keyboard).
 
 ### [UPCOMING — Cycle 021 Alpha (2026-11-24 05:00 UTC)] Milestone 3.6: Legacy Pruning, Dead-Code Consolidation & Mobile/DualSense UX Polish
 * **Target**: Repository root, `shared/`, `games/mathcore-survivor/`, `games/math-battle/`, and responsive/touch CSS across all 10 games
 * **Deliverables**:
   - Remove duplicate/unlinked `games/mathcore-survivor/standalone.html` and `games/math-battle/standalone.html`; consolidate inner README notes cleanly into root `README.md` and `games/README.md`.
-  - Audit `shared/` to ensure zero dead unused files (either migrate/wrap useful `CanvasKit`/`Calculus` helpers or remove unused ESM remnants once `js/hub.js` & `shared/arcade-core.js` form a crystal-clear, documented shared layer).
+  - Audit `shared/` to remove unused `shared/canvas-kit.js` & `shared/math-engine.js` (0 references) and migrate `js/hub.js` onto `ArcadeCore.Gamepad` cleanly if appropriate.
   - Execute a responsive & ergonomics sweep across all 10 games (`390×844` mobile touch buttons, `safe-area-inset-*`, `1280×720` & `1920×1080` desktop HUD non-overlap, Escape/Options pause parity, and instant `?from=game` return).
 
-### [UPCOMING — Cycle 022 Omega (2026-11-24 17:00 UTC)] Milestone 3.7: Ironclad 8-Stage `verify.sh` Upgrade & `SPRINT_03` Closure
+### [UPCOMING — Cycle 022 Omega (2026-11-24 17:00 UTC)] Milestone 3.7: Final `SPRINT_03` Audit, Legacy Clutter Gate & `SPRINT_04` Arming
 * **Target**: `evolution/scripts/verify.sh`, `evolution/GOLD_STANDARD.md`, `STATE.json`, `SPRINT.md`
 * **Deliverables**:
-  - Harden `evolution/scripts/verify.sh` with **Stage 8 (Platform Integrity & UX Regression Gate)**: verify `shared/arcade-core.js` syntax and integration, fail on any `location.href = '../../index.html'` missing `?from=game`, fail on leftover `standalone.html` clutter, verify domain categories (`<= 5`), and check zero CSS `backdrop-filter` regressions.
-  - Run full Node + Playwright/DOM sanity verification across the Hub and all 10 games.
-  - Close `SPRINT_03` (`currentSprint.status = "COMPLETED_NEEDS_ROADMAP"`, `nextCycleNumber: 23`) to arm **Phase `ARCHITECT`** for `SPRINT_04`.
+  - Add anti-legacy checks to `evolution/scripts/verify.sh` (fail on leftover `standalone.html` or dead unimported `shared/*.js` modules, enforce `ArcadeCore` script inclusion across all games).
+  - Run full 9-stage gate + Headless Chromium sweep across all 11 pages.
+  - Close `SPRINT_03` (`currentSprint.status = "COMPLETED_NEEDS_ROADMAP"`, `nextCycleNumber: 23`) to arm **Phase `ARCHITECT`** for `SPRINT_04` (National Exam Boss-Rush & PWA) followed by `SPRINT_05+` (Physics & Chemistry 2BAC PC).

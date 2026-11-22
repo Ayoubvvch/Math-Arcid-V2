@@ -3,6 +3,18 @@
 
 ---
 
+### [Cycle 017-HARDENING] 2026-11-22 12:20 UTC | Milestone: Supreme Autonomous Resilience, Absolute Ordering & 9-Stage Gate
+* **Phase**: Owner-Authorized Hardening & Real-Bug Remediation
+* **Target**: `evolution/scripts/{trigger.sh,verify.sh}`, `evolution/{GOLD_STANDARD.md,STATE.json,SPRINT.md,ROADMAP.md}`, `games.json`, `js/hub.js`, `css/hub.css`, `shared/gamepad.js`, `games/{asymptote-asylum,sequence-strider}/js/curriculum.js`, `games/math-battle/js/audio.js`
+* **Changes Delivered**:
+  - **Self-Healing Autonomous Orchestration (`trigger.sh`, `agent_worker.js`, `morning_patrol.py`)**: Isolated Monster execution into dedicated session `auto_math_arcid_v2` (zero DM pollution/queue contention), added `flock` locking, worker PM2 auto-heal, dirty-tree crash recovery (`recovery_last.patch`), multi-model Quota Fallback chain, bi-weekly (`<= 14d`) forced `Phase ARCHITECT` cadence, and Morning Patrol commit-stall detection + `Math-Arcid-V2` clean push fallback.
+  - **Absolute Syllabus Ordering (`games.json`, `js/hub.js`, `css/hub.css`)**: Added strict `subject`, `order` (`1..10`), `unitLabel` (`الوحدة 01..08`, `تأسيس 01..02`), and `topicStart`/`topicEnd` (`1..114`), deterministic Hub catalog sorting, multi-subject domain support for `SPRINT_05+` (Physics & Chemistry), and logical RTL CSS properties in `css/hub.css`.
+  - **Real Gameplay & Runtime Fixes**: Added Fisher-Yates option shuffling in `asymptote-asylum` & `sequence-strider` (fixing fixed `△=0%` answer slots), deferred `AudioContext` creation until user gesture in `math-battle/js/audio.js`, and upgraded Hub `shared/gamepad.js` to radial stick deadzones.
+  - **9-Stage Ironclad Gate (`verify.sh`)**: Added strict syllabus order checks, Fisher-Yates shuffle test, lossless `ArcadeCore.setBidiSafeMath` audit across all 285 Qs, live VM `graphSpec` rendering across all 94 plots, and Headless Chromium real-browser verification across all 11 pages.
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 017-ALPHA] 2026-11-22 05:04 UTC | Milestone: PS5 Hub Arabic RTL Overhaul & 2BAC PC Syllabus Reorganization (Milestone 3.2)
 * **Phase**: ALPHA (Console Shell UX Overhaul & Curriculum Grouping)
 * **Target**: `index.html`, `games.json`, `js/hub.js`, `css/hub.css`, `css/common.css`
@@ -131,22 +143,4 @@
     - 3 Foundry Enemy Archetypes (`drone_riemann`, `turret_flux`, `golem_ode` with Stagger/Execute `[▢ / E]`), 6 PlayStation Mech Abilities (`✕` Magnetic Double-Jump, `◯` Area Slicer Cleave `|f-g|` destroying bolts & slicing foes, `▢` Seal Override / Golem Execute, `△` Chasles Thermal Aegis `∫_a^c + ∫_c^b`, `R2` Riemann Plasma Cannon, `L2` Volume of Revolution Shockwave `π∫f² dx`), and the 3-Phase **Differential Colossus Boss (`عملاق المعادلات التفاضلية`)** with rotating Characteristic Root Window `r₀` in Phase 3.
     - Full DualSense/DualShock gameplay + modal polling + haptics (`js/controls.js`), procedural Web Audio forge synthesizer (`js/audio.js`), zero per-frame DOM writes in `js/game.js`, bespoke integral/revolution/ODE SVG tile in `js/hub.js`, and registration in `games.json`.
 * **Verification**: All 7 stages of the Ironclad Quality Gate (`evolution/scripts/verify.sh`) + Node physics, Area Slicer, 3-Phase Boss, 30-question curriculum & 10-graphSpec simulation passed 100%.
-* **Author**: Autonomous AGY Core ("My Homie").
-
----
-
-### [Cycle 008-OMEGA] 2026-11-17 17:15 UTC | Milestone: Logarithm Reactor v1.1.0 Deep Polish & 5-Game 60FPS Audit
-* **Phase**: Omega (Deep Gameplay, Boss Patterns, Curriculum Expansion, Audio Synthesis & 60FPS Audit)
-* **Targets**: `games/logarithm-reactor/` (primary) + 60FPS performance audit across `limit-abyss`, `asymptote-asylum`, `sequence-strider`, `complex-plane-duel`
-* **Changes Delivered**:
-  - **Logarithm Reactor v1.1.0 (`games/logarithm-reactor/`, 4,678 LOC)**:
-    - Decoupled `state.worldTime` from `state.time` so elevators freeze smoothly in `override` bullet-time, tuned twin elevator sweep (`y: 490..1470`) with terminal dwell stops, dock markers, `▲/▼/●` chevrons, and `playElevatorBoard` / `playElevatorDock` Web Audio synthesis.
-    - Implemented full `ln(x ≤ 0)` bio-acid vat physics (viscous drag, upward splash droplets, rising bubble sizzle emitters, `playAcidSplash` / `playAcidSizzle` audio, thermal bounce with air-jump recovery, and safe neutralization under `△` Aegis `e^{ln x} = x`) plus undulating caustic waves in `js/renderer.js`.
-    - Upgraded Phase 3 **Asymptote Containment Boss (`مُفاعل المقاربات الأعظم`)** with a rotating **Equivalence Root Window `α = 1`**, `R2` plasma piercing vs solid-arc deflection (`playShieldDeflect`), shield recharge & stun cycle, smooth radial separation, and Phase 3 orthogonal Cross-Asymptote Beams.
-    - Expanded `js/curriculum.js` from 32 to **39 Moroccan 2BAC PC questions** (+7 parameter discussion & inequality questions) and upgraded `js/renderer.js` to **13 live `graphSpec` visualizers** (`log_ineq_band`, `exp_param_tangent`, `ln_param_roots`).
-  - **5-Game 60FPS Audit**:
-    - Removed per-frame GPU `backdrop-filter: blur(...)` compositor stalls in `games/limit-abyss/css/style.css`.
-    - Cached `coneGrad` and `darkGrad` radial gradients in `games/asymptote-asylum/js/renderer.js` (zero per-frame gradient allocation).
-    - Added full X+Y viewport culling across particles, projectiles, orbs, and floating texts plus cached HUD element references & state flags in `logarithm-reactor`, `asymptote-asylum`, `sequence-strider`, and `complex-plane-duel`.
-* **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/curriculum/13-graphSpec & 5-renderer smoke tests passed 100%.
 * **Author**: Autonomous AGY Core ("My Homie").
