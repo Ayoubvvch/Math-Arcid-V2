@@ -529,16 +529,121 @@
       };
     },
 
+    computeGameMetrics(gameId) {
+      const e = Progress.getGameProgress(gameId);
+      let bestScore = Math.max(0, Number(e.bestScore || 0));
+      if (gameId === 'mathcore-survivor' && bestScore === 0) {
+        try {
+          const legacy = parseInt(root?.localStorage?.getItem('mathcore_high_score') || '0', 10) || 0;
+          if (legacy > bestScore) bestScore = legacy;
+        } catch (_) {}
+      }
+
+      const sealsCleared = Math.max(0, Math.min(4, Number(e.sealsCleared || 0)));
+      const bossDefeated = Boolean(e.bossDefeated);
+      const qAns = Math.max(0, Number(e.questionsAnswered || 0));
+      const qCorr = Math.max(0, Number(e.questionsCorrect || 0));
+      const accuracyPct = qAns > 0
+        ? Math.min(100, Math.round((qCorr / qAns) * 100))
+        : (typeof e.lastAccuracy === 'number' ? Math.max(0, Math.min(100, Math.round(e.lastAccuracy))) : 0);
+      const masteredTopics = Array.isArray(e.masteredTopics) ? e.masteredTopics : [];
+      const weakTopics = Array.isArray(e.weakTopics) ? e.weakTopics : [];
+      const played = Boolean(
+        (e.runsCompleted || 0) > 0 || qAns > 0 || sealsCleared > 0 || bossDefeated || bestScore > 0
+      );
+
+      // Weighted 0..100 mastery progress: 50% seals (4/4), 25% boss defeat, 25% accuracy (when played)
+      const sealScore = (sealsCleared / 4) * 50;
+      const bossScore = bossDefeated ? 25 : 0;
+      const accScore = played ? ((qAns > 0 || typeof e.lastAccuracy === 'number') ? (accuracyPct / 100) * 25 : (bestScore > 0 ? 15 : 0)) : 0;
+      const masteryPct = Math.max(0, Math.min(100, Math.round(sealScore + bossScore + accScore)));
+
+      return {
+        bestScore,
+        bestRank: e.bestRank || null,
+        sealsCleared,
+        bossDefeated,
+        questionsAnswered: qAns,
+        questionsCorrect: qCorr,
+        accuracyPct,
+        runsCompleted: Number(e.runsCompleted || 0),
+        masteredTopics,
+        weakTopics,
+        played,
+        masteryPct,
+        lastPlayedISO: e.lastPlayedISO || null
+      };
+    },
+
+    getSmartReviewQueue(gamesList) {
+      const list = Array.isArray(gamesList) ? gamesList : [];
+      const items = [];
+
+      for (let i = 0; i < list.length; i += 1) {
+        const g = list[i];
+        if (!g || !g.id) continue;
+        const m = Progress.computeGameMetrics(g.id);
+        let priority = 0;
+        let tag = 'متقن';
+        let reason = 'وحدة مكتملة بنجاح';
+
+        if (m.weakTopics.length > 0 || (m.questionsAnswered >= 2 && m.accuracyPct < 75)) {
+          priority = 3;
+          tag = 'أولوية قصوى';
+          reason = m.weakTopics.length > 0
+            ? `${m.weakTopics.length} محاور ضعيفة • دقة ${m.accuracyPct}%`
+            : `دقة ${m.accuracyPct}% تحتاج تعزيزاً`;
+        } else if (m.played && !m.bossDefeated) {
+          priority = 2;
+          tag = 'استكمال';
+          reason = `تقدّم جزئي (${m.sealsCleared}/4 أختام) دون هزيمة الزعيم`;
+        } else if (!m.played) {
+          priority = 1;
+          tag = 'لم تبدأ';
+          reason = g.topicRange ? `وحدة لم تُفتح بعد (${g.topicRange})` : 'وحدة تأسيس جاهزة للانطلاق';
+        } else if (m.bestRank === 'B' || m.bestRank === 'C') {
+          priority = 1;
+          tag = 'تحسين الرتبة';
+          reason = `ترقية الرتبة الحالية (${m.bestRank}) نحو A / S`;
+        }
+
+        if (priority > 0) {
+          items.push({ game: g, metrics: m, priority, tag, reason });
+        }
+      }
+
+      items.sort((a, b) => {
+        if (b.priority !== a.priority) return b.priority - a.priority;
+        if (a.priority === 3 && a.metrics.accuracyPct !== b.metrics.accuracyPct) {
+          return a.metrics.accuracyPct - b.metrics.accuracyPct;
+        }
+        const oa = typeof a.game.order === 'number' ? a.game.order : 9999;
+        const ob = typeof b.game.order === 'number' ? b.game.order : 9999;
+        return oa - ob;
+      });
+
+      return items;
+    },
+
     exportJSON() {
       return JSON.stringify(readStore(), null, 2);
     },
 
     importJSON(raw) {
       const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-      if (!parsed || typeof parsed !== 'object' || typeof parsed.games !== 'object') {
+      if (!parsed || typeof parsed !== 'object' || !parsed.games || typeof parsed.games !== 'object' || Array.isArray(parsed.games)) {
         throw new Error('Invalid ArcadeCore progress backup format.');
       }
-      return writeStore(parsed);
+      const normalized = createEmptyStore();
+      const keys = Object.keys(parsed.games);
+      for (let i = 0; i < keys.length; i += 1) {
+        const gid = keys[i];
+        const src = parsed.games[gid];
+        if (src && typeof src === 'object' && !Array.isArray(src)) {
+          normalized.games[gid] = Object.assign(createEmptyGameEntry(), src);
+        }
+      }
+      return writeStore(normalized);
     },
 
     resetGame(gameId) {
@@ -636,7 +741,7 @@
   };
 
   return {
-    version: '1.0.0',
+    version: '1.1.0',
     setBidiSafeMath,
     Gamepad,
     Progress,

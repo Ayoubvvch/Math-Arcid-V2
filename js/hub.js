@@ -333,7 +333,12 @@ class ArcadeConsoleHub {
     this.filteredGames = [];
     this.activeCategory = 'All';
     this.searchQuery = '';
+    this.smartReviewOnly = false;
     this.selectedIndex = 0;
+
+    // Reset double-confirm safety state
+    this.resetConfirmArmed = false;
+    this.resetConfirmTimer = null;
 
     // Navigation state: 'rail' | 'actions' | 'modal'
     this.navZone = 'rail';
@@ -373,10 +378,24 @@ class ArcadeConsoleHub {
 
     this.btnPlaySelected = document.getElementById('btn-play-selected');
     this.btnInfoSelected = document.getElementById('btn-info-selected');
+    this.btnProgressModal = document.getElementById('btn-progress-modal');
+    this.topbarMasteryText = document.getElementById('topbar-mastery-text');
+    this.btnSmartReview = document.getElementById('btn-smart-review');
+    this.smartReviewCount = document.getElementById('smart-review-count');
+
+    this.showcaseMasteryArc = document.getElementById('showcase-mastery-arc');
+    this.showcaseMasteryPct = document.getElementById('showcase-mastery-pct');
+    this.showcaseTelemetryRank = document.getElementById('showcase-telemetry-rank');
+    this.showcaseTelemetrySeals = document.getElementById('showcase-telemetry-seals');
+    this.showcaseTelemetryBoss = document.getElementById('showcase-telemetry-boss');
+    this.showcaseTelemetryAcc = document.getElementById('showcase-telemetry-acc');
+    this.showcaseWeakPill = document.getElementById('showcase-weak-pill');
 
     this.searchModal = document.getElementById('search-modal');
     this.gameModal = document.getElementById('game-modal');
     this.guideModal = document.getElementById('guide-modal');
+    this.progressModal = document.getElementById('progress-modal');
+    this.progressImportFile = document.getElementById('progress-import-file');
     this.searchInput = document.getElementById('search-input');
 
     this.controllerPill = document.getElementById('controller-pill');
@@ -396,6 +415,7 @@ class ArcadeConsoleHub {
     this.initGamepad();
     await this.loadGames();
     this.renderCategories();
+    this.renderTelemetrySummary();
     this.applyFilters();
     this.startLoop();
   }
@@ -501,6 +521,15 @@ class ArcadeConsoleHub {
       this.openGuideModal();
     });
 
+    this.btnProgressModal?.addEventListener('click', () => {
+      sound.playClick();
+      this.openProgressModal();
+    });
+
+    this.btnSmartReview?.addEventListener('click', () => {
+      this.toggleSmartReview();
+    });
+
     this.soundToggleBtn?.addEventListener('click', () => {
       this.toggleAudio();
     });
@@ -547,11 +576,33 @@ class ArcadeConsoleHub {
     document.getElementById('btn-close-game-modal')?.addEventListener('click', () => this.closeModals());
     document.getElementById('btn-close-guide-modal')?.addEventListener('click', () => this.closeModals());
     document.getElementById('btn-guide-done')?.addEventListener('click', () => this.closeModals());
+    document.getElementById('btn-close-progress-modal')?.addEventListener('click', () => this.closeModals());
+    document.getElementById('btn-progress-done')?.addEventListener('click', () => this.closeModals());
 
-    [this.searchModal, this.gameModal, this.guideModal].forEach((overlay) => {
+    document.getElementById('btn-export-progress')?.addEventListener('click', () => this.exportProgressBackup());
+    document.getElementById('btn-import-progress')?.addEventListener('click', () => {
+      sound.playClick();
+      this.progressImportFile?.click();
+    });
+    this.progressImportFile?.addEventListener('change', (e) => {
+      const file = e.target?.files?.[0];
+      if (file) this.importProgressBackup(file);
+      if (e.target) e.target.value = '';
+    });
+    document.getElementById('btn-reset-progress')?.addEventListener('click', () => this.handleResetProgressClick());
+
+    [this.searchModal, this.gameModal, this.guideModal, this.progressModal].forEach((overlay) => {
       overlay?.addEventListener('click', (e) => {
         if (e.target === overlay) this.closeModals();
       });
+    });
+
+    // Refresh live telemetry when returning cleanly from a game via bfcache
+    window.addEventListener('pageshow', () => {
+      if (this.games.length > 0) {
+        this.renderTelemetrySummary();
+        this.applyFilters();
+      }
     });
 
     // Full Keyboard PS5-style Controls
@@ -606,6 +657,23 @@ class ArcadeConsoleHub {
 
       if (e.key === 'g' || e.key === 'G') {
         this.openGuideModal();
+        return;
+      }
+
+      if (e.key === 'p' || e.key === 'P') {
+        if (this.getActiveModal() === this.progressModal) {
+          this.closeModals();
+        } else {
+          sound.playClick();
+          this.openProgressModal();
+        }
+        return;
+      }
+
+      if (e.key === 'r' || e.key === 'R') {
+        if (!this.getActiveModal()) {
+          this.toggleSmartReview();
+        }
         return;
       }
 
@@ -749,6 +817,23 @@ class ArcadeConsoleHub {
       }
     }
 
+    const l2Edge = gamepad.buttons.l2 > 0.5 && !(gamepad.prevButtons.l2 > 0.5);
+    if (l2Edge && !this.getActiveModal()) {
+      this.toggleSmartReview();
+      gamepad.triggerHaptic(35, 0.25, 0.25);
+    }
+
+    const r2Edge = gamepad.buttons.r2 > 0.5 && !(gamepad.prevButtons.r2 > 0.5);
+    if (r2Edge) {
+      if (this.getActiveModal() === this.progressModal) {
+        this.closeModals();
+      } else {
+        sound.playClick();
+        this.openProgressModal();
+      }
+      gamepad.triggerHaptic(35, 0.25, 0.25);
+    }
+
     // 2. Directional Input with Initial Delay + Smooth Repeat
     const lx = gamepad.axes.leftX;
     const ly = gamepad.axes.leftY;
@@ -781,6 +866,7 @@ class ArcadeConsoleHub {
     if (this.searchModal?.classList.contains('active')) return this.searchModal;
     if (this.gameModal?.classList.contains('active')) return this.gameModal;
     if (this.guideModal?.classList.contains('active')) return this.guideModal;
+    if (this.progressModal?.classList.contains('active')) return this.progressModal;
     return null;
   }
 
@@ -912,11 +998,13 @@ class ArcadeConsoleHub {
       return;
     }
 
-    if (this.searchQuery || this.activeCategory !== 'All') {
+    if (this.searchQuery || this.activeCategory !== 'All' || this.smartReviewOnly) {
       sound.playBack();
       this.activeCategory = 'All';
       this.searchQuery = '';
+      this.smartReviewOnly = false;
       if (this.searchInput) this.searchInput.value = '';
+      this.renderTelemetrySummary();
       this.renderCategories();
       this.applyFilters();
     }
@@ -969,8 +1057,62 @@ class ArcadeConsoleHub {
     });
   }
 
+  getGameMetrics(gameId) {
+    if (window.ArcadeCore?.Progress?.computeGameMetrics) {
+      return window.ArcadeCore.Progress.computeGameMetrics(gameId);
+    }
+    return {
+      bestScore: 0,
+      bestRank: null,
+      sealsCleared: 0,
+      bossDefeated: false,
+      questionsAnswered: 0,
+      questionsCorrect: 0,
+      accuracyPct: 0,
+      runsCompleted: 0,
+      masteredTopics: [],
+      weakTopics: [],
+      played: false,
+      masteryPct: 0
+    };
+  }
+
+  renderTelemetrySummary() {
+    const total = this.games.length || 10;
+    const summary = window.ArcadeCore?.Progress?.getSummary
+      ? window.ArcadeCore.Progress.getSummary(total)
+      : { bossesDefeated: 0, totalSeals: 0, questionsAnswered: 0, accuracyPct: 0 };
+
+    if (this.topbarMasteryText) {
+      this.topbarMasteryText.textContent = `${summary.bossesDefeated}/${total} • ${summary.accuracyPct}%`;
+    }
+
+    const queue = window.ArcadeCore?.Progress?.getSmartReviewQueue
+      ? window.ArcadeCore.Progress.getSmartReviewQueue(this.games)
+      : [];
+    this._reviewReasonMap = new Map(queue.map((q) => [q.game.id, q]));
+
+    if (this.smartReviewCount) {
+      this.smartReviewCount.textContent = String(queue.length);
+    }
+    if (this.btnSmartReview) {
+      this.btnSmartReview.classList.toggle('active', this.smartReviewOnly);
+      this.btnSmartReview.setAttribute('aria-pressed', this.smartReviewOnly ? 'true' : 'false');
+    }
+  }
+
+  toggleSmartReview() {
+    sound.playNavTick();
+    this.smartReviewOnly = !this.smartReviewOnly;
+    this.selectedIndex = 0;
+    this.renderTelemetrySummary();
+    this.applyFilters();
+  }
+
   applyFilters() {
-    this.filteredGames = this.games.filter((game) => {
+    this.renderTelemetrySummary();
+
+    const baseFiltered = this.games.filter((game) => {
       const matchCat = this.activeCategory === 'All' || game.category === this.activeCategory;
       if (!matchCat) return false;
       if (!this.searchQuery) return true;
@@ -990,6 +1132,13 @@ class ArcadeConsoleHub {
       return haystack.includes(this.searchQuery);
     });
 
+    if (this.smartReviewOnly && window.ArcadeCore?.Progress?.getSmartReviewQueue) {
+      const prioritized = window.ArcadeCore.Progress.getSmartReviewQueue(baseFiltered);
+      this.filteredGames = prioritized.map((item) => item.game);
+    } else {
+      this.filteredGames = baseFiltered;
+    }
+
     if (this.selectedIndex >= this.filteredGames.length) {
       this.selectedIndex = 0;
     }
@@ -1002,7 +1151,9 @@ class ArcadeConsoleHub {
   renderRail() {
     if (!this.rail) return;
 
-    const filterLabel = this.searchQuery
+    const filterLabel = this.smartReviewOnly
+      ? '🎯 المراجعة الذكية: أولويات الضعف والوحدات غير المكتملة'
+      : this.searchQuery
       ? `تصفية البحث: "${this.searchQuery}"`
       : this.activeCategory === 'All'
       ? 'المقرر الكامل 2BAC PC (1–114) • جاهز للتشغيل'
@@ -1014,18 +1165,25 @@ class ArcadeConsoleHub {
     }
 
     if (this.filteredGames.length === 0) {
+      const emptyTitle = this.smartReviewOnly
+        ? 'أحسنت! جميع الوحدات الظاهرة متقنة بدرجة عالية'
+        : 'لا توجد ألعاب مطابقة للبحث';
+      const emptySub = this.smartReviewOnly
+        ? 'لا توجد نقاط ضعف مسجلة حالياً في هذا القسم.'
+        : 'امسح كلمة البحث أو اختر مجالاً آخر من المقرر.';
       this.rail.innerHTML = `
         <div class="rail-empty-card">
           <div>
-            <div style="font-weight:800; color:#fff; margin-bottom:0.2rem;">لا توجد ألعاب مطابقة للبحث</div>
-            <div style="font-size:0.84rem; color:var(--text-muted);">امسح كلمة البحث أو اختر مجالاً آخر من المقرر.</div>
+            <div style="font-weight:800; color:#fff; margin-bottom:0.2rem;">${emptyTitle}</div>
+            <div style="font-size:0.84rem; color:var(--text-muted);">${emptySub}</div>
           </div>
-          <button id="btn-reset-filters-inline" class="cta-secondary" type="button">إعادة ضبط التصفية</button>
+          <button id="btn-reset-filters-inline" class="cta-secondary" type="button">عرض كل الوحدات</button>
         </div>
       `;
       document.getElementById('btn-reset-filters-inline')?.addEventListener('click', () => {
         this.activeCategory = 'All';
         this.searchQuery = '';
+        this.smartReviewOnly = false;
         if (this.searchInput) this.searchInput.value = '';
         this.renderCategories();
         this.applyFilters();
@@ -1033,6 +1191,7 @@ class ArcadeConsoleHub {
       return;
     }
 
+    const tileRingCirc = 62.83;
     this.rail.innerHTML = this.filteredGames
       .map((game, idx) => {
         const isSelected = idx === this.selectedIndex;
@@ -1040,6 +1199,30 @@ class ArcadeConsoleHub {
         const pillText = game.badge || game.category;
         const rangeText = game.topicRange || `المستوى ${game.difficultyLevel || 3}`;
         const rangeLabel = game.unitLabel ? `${game.unitLabel} • ${rangeText}` : rangeText;
+        const m = this.getGameMetrics(game.id);
+        const rev = this._reviewReasonMap?.get(game.id);
+        const offset = (tileRingCirc * (1 - m.masteryPct / 100)).toFixed(2);
+        const rankClass = m.bestRank ? `rank-${m.bestRank.toLowerCase()}` : 'rank-none';
+        const ringLabel = m.bestRank ? m.bestRank : (m.played ? `${m.masteryPct}%` : '0%');
+
+        let progClass = '';
+        let progText = '0/4 أختام';
+        if (m.bossDefeated) {
+          progClass = 'is-mastered';
+          progText = m.questionsAnswered > 0
+            ? `🏆 ✓ ${m.sealsCleared}/4 • ${m.accuracyPct}%`
+            : `🏆 ✓ ${m.sealsCleared}/4`;
+        } else if (m.played) {
+          progClass = rev && rev.priority >= 3 ? 'is-priority' : '';
+          const prefix = rev && rev.priority >= 3 ? '🎯 ' : '✓ ';
+          progText = m.questionsAnswered > 0
+            ? `${prefix}${m.sealsCleared}/4 • ${m.accuracyPct}%`
+            : `${prefix}${m.sealsCleared}/4 أختام`;
+        } else if (this.smartReviewOnly && rev) {
+          progClass = 'is-priority';
+          progText = `🎯 ${rev.tag}`;
+        }
+
         return `
           <button
             class="ps5-tile ${isSelected ? 'selected' : ''}"
@@ -1052,6 +1235,14 @@ class ArcadeConsoleHub {
             <div class="tile-art-frame">
               ${getGameArtworkSVG(game)}
               <span class="tile-badge-pill" dir="ltr">${pillText}</span>
+              <div class="tile-ring-badge" title="الإتقان ${m.masteryPct}%">
+                <svg class="tile-ring-svg" viewBox="0 0 28 28" aria-hidden="true">
+                  <circle class="ring-track" cx="14" cy="14" r="10"></circle>
+                  <circle class="ring-fill" cx="14" cy="14" r="10" stroke-dasharray="${tileRingCirc}" stroke-dashoffset="${offset}"></circle>
+                </svg>
+                <span class="tile-ring-label ${rankClass}" dir="ltr">${ringLabel}</span>
+              </div>
+              <span class="tile-progress-pill ${progClass}">${progText}</span>
             </div>
             <div class="tile-meta">
               <span class="tile-title">${game.title}</span>
@@ -1145,6 +1336,46 @@ class ArcadeConsoleHub {
     if (this.showcaseTitle) this.showcaseTitle.textContent = game.title;
     this.setSafeText(this.showcaseDesc, game.description);
     if (this.blueprintArtBadge) this.blueprintArtBadge.textContent = game.icon || '∫';
+
+    // Update live Showcase Mastery Telemetry Strip
+    const m = this.getGameMetrics(game.id);
+    const rev = this._reviewReasonMap?.get(game.id);
+    const showCirc = 87.96;
+    if (this.showcaseMasteryArc) {
+      this.showcaseMasteryArc.style.strokeDashoffset = (showCirc * (1 - m.masteryPct / 100)).toFixed(2);
+      this.showcaseMasteryArc.style.stroke = game.accentColor || '#00e5ff';
+    }
+    if (this.showcaseMasteryPct) {
+      this.showcaseMasteryPct.textContent = `${m.masteryPct}%`;
+    }
+    if (this.showcaseTelemetryRank) {
+      const rankCls = m.bestRank ? `rank-${m.bestRank.toLowerCase()}` : 'rank-none';
+      this.showcaseTelemetryRank.className = `telemetry-chip ${rankCls}`;
+      this.showcaseTelemetryRank.textContent = m.bestRank ? `الرتبة ${m.bestRank}` : (m.played ? 'قيد التقدّم' : 'جديد');
+    }
+    if (this.showcaseTelemetrySeals) {
+      this.showcaseTelemetrySeals.textContent = `✓ ${m.sealsCleared}/4 أختام`;
+      this.showcaseTelemetrySeals.classList.toggle('is-cleared', m.sealsCleared >= 4);
+    }
+    if (this.showcaseTelemetryBoss) {
+      this.showcaseTelemetryBoss.textContent = m.bossDefeated ? '🏆 الزعيم مهزوم' : '⚔ الزعيم صامد';
+      this.showcaseTelemetryBoss.classList.toggle('is-cleared', m.bossDefeated);
+    }
+    if (this.showcaseTelemetryAcc) {
+      const accStr = m.questionsAnswered > 0 ? `${m.accuracyPct}%` : '—';
+      this.showcaseTelemetryAcc.textContent = `الدقة: ${accStr} • أعلى نتيجة: ${m.bestScore}`;
+    }
+    if (this.showcaseWeakPill) {
+      if (m.weakTopics.length > 0) {
+        this.showcaseWeakPill.classList.remove('hidden');
+        this.setSafeText(this.showcaseWeakPill, `⚠ مراجعة: ${m.weakTopics.slice(0, 3).join('، ')}`);
+      } else if (rev && rev.priority >= 2) {
+        this.showcaseWeakPill.classList.remove('hidden');
+        this.setSafeText(this.showcaseWeakPill, `🎯 ${rev.reason}`);
+      } else {
+        this.showcaseWeakPill.classList.add('hidden');
+      }
+    }
 
     if (this.showcaseConcepts) {
       this.showcaseConcepts.textContent = '';
@@ -1267,8 +1498,175 @@ class ArcadeConsoleHub {
     this.updateZoneUI();
   }
 
+  openProgressModal() {
+    this.closeModals(true);
+    this.disarmResetConfirm();
+    this.renderProgressModal();
+    this.progressModal?.classList.add('active');
+    this.progressModal?.setAttribute('aria-hidden', 'false');
+    this.navZone = 'modal';
+    this.modalFocusIndex = 0;
+    this.updateZoneUI();
+  }
+
+  renderProgressModal() {
+    const total = this.games.length || 10;
+    const summary = window.ArcadeCore?.Progress?.getSummary
+      ? window.ArcadeCore.Progress.getSummary(total)
+      : { bossesDefeated: 0, totalSeals: 0, questionsAnswered: 0, accuracyPct: 0 };
+
+    const elBosses = document.getElementById('prog-sum-bosses');
+    const elSeals = document.getElementById('prog-sum-seals');
+    const elAcc = document.getElementById('prog-sum-acc');
+    const elQs = document.getElementById('prog-sum-questions');
+    if (elBosses) elBosses.textContent = `${summary.bossesDefeated} / ${total}`;
+    if (elSeals) elSeals.textContent = `${summary.totalSeals} / ${total * 4}`;
+    if (elAcc) elAcc.textContent = `${summary.accuracyPct}%`;
+    if (elQs) elQs.textContent = String(summary.questionsAnswered || 0);
+
+    const listEl = document.getElementById('prog-review-list');
+    if (!listEl) return;
+    listEl.textContent = '';
+
+    const queue = window.ArcadeCore?.Progress?.getSmartReviewQueue
+      ? window.ArcadeCore.Progress.getSmartReviewQueue(this.games).slice(0, 5)
+      : [];
+
+    if (queue.length === 0) {
+      const doneDiv = document.createElement('div');
+      doneDiv.className = 'review-item';
+      doneDiv.textContent = '🏆 إتقان مثالي! كل الوحدات مكتملة دون نقاط ضعف مسجلة.';
+      listEl.appendChild(doneDiv);
+      return;
+    }
+
+    for (const item of queue) {
+      const row = document.createElement('div');
+      row.className = 'review-item';
+
+      const meta = document.createElement('div');
+      meta.className = 'review-item-meta';
+
+      const title = document.createElement('span');
+      title.className = 'review-item-title';
+      title.textContent = item.game.title;
+
+      const reason = document.createElement('span');
+      reason.className = 'review-item-reason';
+      this.setSafeText(reason, `${item.tag}: ${item.reason}`);
+
+      meta.appendChild(title);
+      meta.appendChild(reason);
+
+      const jumpBtn = document.createElement('button');
+      jumpBtn.type = 'button';
+      jumpBtn.className = 'review-jump-btn';
+      jumpBtn.textContent = 'اختيار الوحدة';
+      jumpBtn.addEventListener('click', () => {
+        sound.playClick();
+        this.activeCategory = 'All';
+        this.searchQuery = '';
+        this.smartReviewOnly = false;
+        if (this.searchInput) this.searchInput.value = '';
+        this.renderCategories();
+        this.applyFilters();
+        const targetIdx = this.filteredGames.findIndex((g) => g.id === item.game.id);
+        this.closeModals();
+        if (targetIdx >= 0) this.selectGame(targetIdx);
+      });
+
+      row.appendChild(meta);
+      row.appendChild(jumpBtn);
+      listEl.appendChild(row);
+    }
+  }
+
+  setProgressFeedback(msg, isError = false) {
+    const el = document.getElementById('progress-feedback-msg');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.color = isError ? '#fb7185' : '#34d399';
+  }
+
+  exportProgressBackup() {
+    if (!window.ArcadeCore?.Progress) return;
+    sound.playClick();
+    const json = window.ArcadeCore.Progress.exportJSON();
+    try {
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const stamp = new Date().toISOString().slice(0, 10);
+      a.href = url;
+      a.download = `math-arcid-v2-progress-${stamp}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 500);
+      this.setProgressFeedback('تم تنزيل نسخة التقدم الاحتياطية (JSON) بنجاح.');
+    } catch (_) {
+      this.setProgressFeedback('تعذر التصدير في هذا المتصفح.', true);
+    }
+  }
+
+  async importProgressBackup(file) {
+    if (!file || !window.ArcadeCore?.Progress) return;
+    try {
+      const raw = await file.text();
+      window.ArcadeCore.Progress.importJSON(raw);
+      sound.playNavTick();
+      this.renderTelemetrySummary();
+      this.applyFilters();
+      this.renderProgressModal();
+      this.setProgressFeedback('تم استيراد سجل التقدم وتحديث جميع الوحدات بنجاح!');
+    } catch (_) {
+      this.setProgressFeedback('ملف غير صالح: تأكد أنه نسخة JSON صادرة عن المنصة.', true);
+    }
+  }
+
+  disarmResetConfirm() {
+    this.resetConfirmArmed = false;
+    if (this.resetConfirmTimer) {
+      clearTimeout(this.resetConfirmTimer);
+      this.resetConfirmTimer = null;
+    }
+    const btn = document.getElementById('btn-reset-progress');
+    if (btn) {
+      btn.classList.remove('confirming');
+      btn.textContent = '🗑 مسح جميع البيانات';
+    }
+  }
+
+  handleResetProgressClick() {
+    const btn = document.getElementById('btn-reset-progress');
+    if (!this.resetConfirmArmed) {
+      sound.playNavTick();
+      this.resetConfirmArmed = true;
+      if (btn) {
+        btn.classList.add('confirming');
+        btn.textContent = '⚠️ اضغط مجدداً لتأكيد المسح النهائي';
+      }
+      this.setProgressFeedback('تنبيه: اضغط نفس الزر مرة ثانية خلال 4 ثوانٍ لتأكيد التصفير.', true);
+      this.resetConfirmTimer = setTimeout(() => this.disarmResetConfirm(), 4000);
+      return;
+    }
+
+    this.disarmResetConfirm();
+    window.ArcadeCore?.Progress?.resetAll?.();
+    try {
+      localStorage.removeItem('mathcore_high_score');
+    } catch (_) {}
+    sound.playBack();
+    this.renderTelemetrySummary();
+    this.applyFilters();
+    this.renderProgressModal();
+    this.setProgressFeedback('تم تصفير جميع بيانات الإتقان والتقدم بنجاح.');
+  }
+
   closeModals(silent = false) {
-    [this.searchModal, this.gameModal, this.guideModal].forEach((m) => {
+    this.disarmResetConfirm();
+    this.setProgressFeedback('');
+    [this.searchModal, this.gameModal, this.guideModal, this.progressModal].forEach((m) => {
       m?.classList.remove('active');
       m?.setAttribute('aria-hidden', 'true');
     });

@@ -375,6 +375,25 @@
   color: #ffffff;
 }
 
+.mastery-summary-pill {
+  background: rgba(250, 204, 21, 0.08);
+  border-color: rgba(250, 204, 21, 0.36);
+  color: #fde047;
+  font-family: var(--font-mono);
+  font-weight: 800;
+}
+
+.mastery-summary-pill:hover {
+  background: rgba(250, 204, 21, 0.16);
+  border-color: rgba(250, 204, 21, 0.65);
+  color: #ffffff;
+}
+
+.mastery-trophy-ic {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
 .controller-pill {
   display: inline-flex;
   align-items: center;
@@ -437,7 +456,55 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.75rem;
   padding: 0 0.25rem;
+}
+
+.rail-status-group {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.smart-review-pill {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.22rem 0.62rem;
+  border-radius: var(--radius-full);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  color: #fcd34d;
+  font-family: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+}
+
+.smart-review-pill:hover {
+  background: rgba(245, 158, 11, 0.2);
+  border-color: #fbbf24;
+  color: #ffffff;
+}
+
+.smart-review-pill.active {
+  background: rgba(245, 158, 11, 0.28);
+  border-color: #fde047;
+  color: #ffffff;
+}
+
+.smart-review-count {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 800;
+  padding: 0.05rem 0.36rem;
+  border-radius: 999px;
+  background: rgba(5, 7, 14, 0.65);
+  color: #fde68a;
 }
 
 .rail-status-text {
@@ -552,6 +619,83 @@
   color: #e2e8f0;
 }
 
+.tile-ring-badge {
+  position: absolute;
+  top: 7px;
+  inset-inline-end: 7px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(5, 7, 14, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tile-ring-svg {
+  width: 28px;
+  height: 28px;
+  transform: rotate(-90deg);
+}
+
+.ring-track {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.14);
+  stroke-width: 2.5;
+}
+
+.ring-fill {
+  fill: none;
+  stroke: var(--tile-accent, var(--accent-cyan));
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.24s ease;
+}
+
+.tile-ring-label {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 900;
+  color: #cbd5e1;
+  line-height: 1;
+}
+
+.rank-s { color: #fde047 !important; border-color: rgba(250, 204, 21, 0.48) !important; }
+.rank-a { color: #38bdf8 !important; border-color: rgba(56, 189, 248, 0.45) !important; }
+.rank-b { color: #c084fc !important; border-color: rgba(192, 132, 252, 0.45) !important; }
+.rank-c { color: #fb923c !important; border-color: rgba(251, 146, 60, 0.45) !important; }
+.rank-none { color: #94a3b8; }
+
+.tile-progress-pill {
+  position: absolute;
+  bottom: 8px;
+  inset-inline-start: 8px;
+  max-width: calc(100% - 76px);
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 800;
+  padding: 0.15rem 0.44rem;
+  border-radius: 6px;
+  background: rgba(5, 7, 14, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile-progress-pill.is-mastered {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.48);
+}
+
+.tile-progress-pill.is-priority {
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.48);
+}
+
 .tile-meta {
   width: 100%;
   padding: 0.52rem 0.2rem 0;
@@ -654,6 +798,72 @@
   font-weight: 700;
   color: #34d399;
   margin-inline-start: auto;
+}
+
+.showcase-telemetry {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.42rem;
+  padding: 0.34rem 0.56rem;
+  border-radius: 12px;
+  background: rgba(4, 7, 15, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.telemetry-ring-wrap {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.telemetry-ring-svg {
+  width: 34px;
+  height: 34px;
+  transform: rotate(-90deg);
+}
+
+.telemetry-ring-wrap .ring-fill {
+  stroke: var(--accent-cyan);
+}
+
+.telemetry-ring-pct {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 0.56rem;
+  font-weight: 800;
+  color: #f8fafc;
+}
+
+.telemetry-chip {
+  font-family: var(--font-mono);
+  font-size: 0.69rem;
+  font-weight: 700;
+  padding: 0.18rem 0.48rem;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+}
+
+.telemetry-chip.is-cleared {
+  color: #34d399;
+  border-color: rgba(52, 211, 153, 0.42);
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.telemetry-weak {
+  color: #fcd34d;
+  border-color: rgba(245, 158, 11, 0.45);
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.hidden {
+  display: none !important;
 }
 
 .showcase-title {
@@ -1201,17 +1411,140 @@
   gap: 1rem;
 }
 
+/* Progress Telemetry & Backup Modal */
+.progress-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+}
+
+.progress-kpi-card {
+  background: rgba(6, 9, 17, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.65rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.kpi-label {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.kpi-value {
+  font-family: var(--font-mono);
+  font-size: 1.08rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.review-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.62rem 0.78rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.review-item-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.review-item-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.review-item-reason {
+  font-size: 0.76rem;
+  color: #fcd34d;
+}
+
+.review-jump-btn {
+  appearance: none;
+  flex-shrink: 0;
+  padding: 0.42rem 0.85rem;
+  border-radius: var(--radius-full);
+  background: rgba(0, 229, 255, 0.14);
+  border: 1px solid rgba(0, 229, 255, 0.45);
+  color: var(--accent-cyan);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.review-jump-btn:hover,
+.review-jump-btn.gp-focused {
+  background: var(--accent-cyan);
+  color: #05070e;
+  border-color: #ffffff;
+}
+
+.progress-backup-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.cta-danger-outline {
+  border-color: rgba(244, 63, 94, 0.45);
+  color: #fda4af;
+}
+
+.cta-danger-outline:hover,
+.cta-danger-outline.gp-focused {
+  background: rgba(244, 63, 94, 0.22);
+  border-color: #fb7185;
+  color: #ffffff;
+}
+
+.cta-danger-outline.confirming {
+  background: rgba(225, 29, 72, 0.85);
+  border-color: #ffffff;
+  color: #ffffff;
+}
+
+.progress-feedback-msg {
+  margin-top: 0.55rem;
+  min-height: 1.15rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #34d399;
+}
+
 /* ---------- Responsive Laptop & Mobile Breakpoints ---------- */
-@media (max-height: 760px) and (min-width: 900px) {
+@media (max-height: 780px) and (min-width: 900px) {
   .console-shell {
-    padding-top: 0.6rem;
-    padding-bottom: 0.55rem;
+    padding-top: 0.55rem;
+    padding-bottom: 0.5rem;
   }
   .ps5-tile {
-    width: 164px;
+    width: 162px;
   }
   .games-rail {
-    padding: 0.5rem 0.4rem 0.65rem;
+    padding: 0.45rem 0.4rem 0.6rem;
+  }
+  .showcase-left {
+    gap: 0.5rem;
+  }
+  .showcase-telemetry {
+    padding: 0.26rem 0.48rem;
   }
   .showcase-desc {
     -webkit-line-clamp: 2;
@@ -1245,6 +1578,9 @@
   .ps5-showcase {
     grid-template-columns: 1fr;
     gap: 1.15rem;
+  }
+  .progress-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .topbar-right .pill-label {
     display: none;

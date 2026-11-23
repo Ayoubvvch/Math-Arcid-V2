@@ -72,6 +72,11 @@
       </div>
 
       <div class="topbar-right">
+        <button id="btn-progress-modal" class="top-pill mastery-summary-pill" title="لوحة الإتقان والمراجعة الذكية والنسخ الاحتياطي [P]" type="button">
+          <span class="mastery-trophy-ic">🏆</span>
+          <span id="topbar-mastery-text" dir="ltr">0/10 • 0%</span>
+        </button>
+
         <button id="btn-search-trigger" class="top-pill" title="بحث سريع [△ أو /]" type="button">
           <span class="gp-dot gp-tri">△</span>
           <span class="pill-label">بحث</span>
@@ -107,7 +112,13 @@
       <!-- شريط الألعاب الأفقي المرتب حسب تسلسل المقرر (1 → 114) -->
       <section class="ps5-rail-section" aria-label="الألعاب المثبتة">
         <div class="rail-header-row">
-          <div id="rail-filter-status" class="rail-status-text">المقرر الكامل 2BAC PC (1–114) • جاهز للتشغيل</div>
+          <div class="rail-status-group">
+            <div id="rail-filter-status" class="rail-status-text">المقرر الكامل 2BAC PC (1–114) • جاهز للتشغيل</div>
+            <button id="btn-smart-review" class="smart-review-pill" title="تصفية الوحدات الأضعف أو غير المفتوحة [L2 أو R]" type="button">
+              <span>🎯 المراجعة الذكية</span>
+              <span id="smart-review-count" class="smart-review-count" dir="ltr">0</span>
+            </button>
+          </div>
           <div id="stats-counter" class="rail-counter">جارٍ التحميل...</div>
         </div>
 
@@ -124,6 +135,21 @@
             <span id="showcase-difficulty" class="badge-diff">الدروس</span>
             <span id="showcase-version" class="badge-version" dir="ltr">v1.0</span>
             <span id="showcase-status" class="badge-ready">● جاهز للعب</span>
+          </div>
+
+          <div id="showcase-telemetry" class="showcase-telemetry" aria-label="إحصائيات الإتقان للوحدة المختارة">
+            <div class="telemetry-ring-wrap">
+              <svg class="telemetry-ring-svg" viewBox="0 0 36 36" aria-hidden="true">
+                <circle class="ring-track" cx="18" cy="18" r="14"></circle>
+                <circle id="showcase-mastery-arc" class="ring-fill" cx="18" cy="18" r="14" stroke-dasharray="87.96" stroke-dashoffset="87.96"></circle>
+              </svg>
+              <span id="showcase-mastery-pct" class="telemetry-ring-pct" dir="ltr">0%</span>
+            </div>
+            <span id="showcase-telemetry-rank" class="telemetry-chip rank-none">جديد</span>
+            <span id="showcase-telemetry-seals" class="telemetry-chip">✓ 0/4 أختام</span>
+            <span id="showcase-telemetry-boss" class="telemetry-chip">⚔ الزعيم صامد</span>
+            <span id="showcase-telemetry-acc" class="telemetry-chip">الدقة: — • أفضل نتيجة: 0</span>
+            <span id="showcase-weak-pill" class="telemetry-chip telemetry-weak hidden"></span>
           </div>
 
           <h1 id="showcase-title" class="showcase-title">Math-Arcid V2</h1>
@@ -169,6 +195,8 @@
         <span class="legend-item"><span class="gp-dot gp-sq">▢</span> التفاصيل</span>
         <span class="legend-item"><span class="gp-dot gp-tri">△</span> بحث المقرر</span>
         <span class="legend-item"><kbd dir="ltr">L1/R1</kbd> المجال</span>
+        <span class="legend-item"><kbd dir="ltr">L2/R</kbd> مراجعة</span>
+        <span class="legend-item"><kbd dir="ltr">P</kbd> الإتقان</span>
         <span class="legend-item"><span class="gp-dot gp-cir">◯</span> رجوع</span>
       </div>
       <div class="footer-credit">
@@ -268,6 +296,59 @@
 
         <div class="modal-actions-row">
           <button id="btn-guide-done" class="cta-play" type="button">
+            <span class="gp-dot gp-cir">◯</span>
+            <span>العودة للمنصة</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- نافذة لوحة الإتقان والمراجعة الذكية والنسخ الاحتياطي (تُفتح عبر P أو شارة الإتقان) -->
+  <div id="progress-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="progress-modal-title">
+    <div class="modal-box modal-guide-box">
+      <div class="modal-header">
+        <h2 id="progress-modal-title" class="modal-title">لوحة الإتقان والمراجعة الذكية (2BAC PC)</h2>
+        <button id="btn-close-progress-modal" class="modal-close" type="button" aria-label="إغلاق لوحة الإتقان">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="progress-kpi-grid">
+          <div class="progress-kpi-card">
+            <span class="kpi-label">الزعماء المهزومون</span>
+            <strong id="prog-sum-bosses" class="kpi-value" dir="ltr">0 / 10</strong>
+          </div>
+          <div class="progress-kpi-card">
+            <span class="kpi-label">الأختام المحرّرة</span>
+            <strong id="prog-sum-seals" class="kpi-value" dir="ltr">0 / 40</strong>
+          </div>
+          <div class="progress-kpi-card">
+            <span class="kpi-label">الدقة الشاملة</span>
+            <strong id="prog-sum-acc" class="kpi-value" dir="ltr">0%</strong>
+          </div>
+          <div class="progress-kpi-card">
+            <span class="kpi-label">الأسئلة المجابة</span>
+            <strong id="prog-sum-questions" class="kpi-value" dir="ltr">0</strong>
+          </div>
+        </div>
+
+        <div class="modal-section">
+          <h3 class="modal-section-title">🎯 أولويات المراجعة الذكية الموصى بها</h3>
+          <div id="prog-review-list" class="review-list"></div>
+        </div>
+
+        <div class="modal-section">
+          <h3 class="modal-section-title">النسخ الاحتياطي وإدارة سجل التقدم</h3>
+          <div class="progress-backup-row">
+            <button id="btn-export-progress" class="cta-secondary" type="button">⬇ تصدير نسخة JSON</button>
+            <button id="btn-import-progress" class="cta-secondary" type="button">⬆ استيراد نسخة JSON</button>
+            <input id="progress-import-file" type="file" accept=".json,application/json" hidden />
+            <button id="btn-reset-progress" class="cta-secondary cta-danger-outline" type="button">🗑 مسح جميع البيانات</button>
+          </div>
+          <div id="progress-feedback-msg" class="progress-feedback-msg" aria-live="polite"></div>
+        </div>
+
+        <div class="modal-actions-row">
+          <button id="btn-progress-done" class="cta-play" type="button">
             <span class="gp-dot gp-cir">◯</span>
             <span>العودة للمنصة</span>
           </button>

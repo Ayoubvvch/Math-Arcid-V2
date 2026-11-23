@@ -48,15 +48,13 @@
   - Connected `mathcore-survivor` (`4,352` core LOC) onto `shared/arcade-core.js` with bidirectional legacy `localStorage['mathcore_high_score']` bridging, per-solve `recordAnswer` + wave/boss telemetry, and unified `ArcadeCore.Gamepad` polling while preserving custom PlayStation badge & Modder Drawer ergonomics.
   - Overhauled `games/math-battle/` (`3,678` core LOC) into full Arabic RTL (`<html lang="ar" dir="rtl">`, Cairo font, logical CSS offsets, `.math-ltr` formula isolation, LTR canvas orientation guard with Arabic popups/countdown/HUD/overlays), connected `ArcadeCore.Progress` across `d/dx` strikes and Boss victories (`x3`, `x4`, `sin`, `exp`), and unified DualSense polling onto `ArcadeCore.Gamepad`.
 
-### [NEXT — Cycle 020 Omega (2026-11-23 17:00 UTC)] Milestone 3.5: PS5 Hub Mastery Telemetry Dashboard & Smart Review UX
-* **Target**: `js/hub.js`, `css/hub.css`, `index.html`, `shared/arcade-core.js`
-* **Deliverables**:
-  - Surface live `ArcadeCore.Progress` telemetry inside the PS5 Hub without violating 60FPS GPU rules (`zero backdrop-filter`):
-    - Render mastery rings, `✓ 4/4 أختام` badges, `🏆 الزعيم مهزوم` trophies, rank (`S/A/B`), and question accuracy `%` directly on Game Rail Tiles and Showcase cards.
-    - Add a Topbar **2BAC PC Mastery Summary** (`X/10` Bosses Cleared, global accuracy `%`, total mastered questions) + one-click **Smart Review Filter (`المراجعة الذكية`)** recommending unplayed or low-accuracy units.
-    - Add an accessible **Progress Backup / Reset Modal** (export/import JSON telemetry or safe double-confirm reset via DualSense & mouse/keyboard).
+### [COMPLETED — Cycle 020 Omega (2026-11-23 17:08 UTC)] Milestone 3.5: PS5 Hub Mastery Telemetry Dashboard & Smart Review UX
+* **Target**: `shared/arcade-core.js` (`v1.1.0`), `index.html`, `js/hub.js`, `css/hub.css`
+* **Delivered**:
+  - Extended `shared/arcade-core.js` (`ArcadeCore.Progress`) with `computeGameMetrics(gameId)` (weighted 0–100% seal/boss/accuracy mastery & legacy `mathcore_high_score` fallback), `getSmartReviewQueue(games)` (4-tier priority queue: weak topics/low accuracy → partial seals → unplayed curriculum units → low rank), and hardened `importJSON` schema sanitization.
+  - Upgraded PS5 Hub ([index.html](file:///home/ubuntu/Math-Arcid-V2/index.html), [js/hub.js](file:///home/ubuntu/Math-Arcid-V2/js/hub.js), [css/hub.css](file:///home/ubuntu/Math-Arcid-V2/css/hub.css)) with zero-blur GPU-safe telemetry: SVG circular Mastery Rings + rank badges (`S/A/B/C`) and seal/trophy chips on every Rail Tile, Showcase telemetry strip (`%` ring, rank, `✓ X/4 أختام`, boss status, accuracy, best score, weak topics), Topbar Mastery Summary Pill (`X/10 • X%`), one-click **Smart Review Filter (`🎯 المراجعة الذكية` via button / `R` / `L2`)**, `pageshow` bfcache refresh, and DualSense-navigable `#progress-modal` (`P` / `R2` trigger, 4 KPIs, top-5 jump-to-unit recommendations, JSON Export/Import, and double-confirm Reset).
 
-### [UPCOMING — Cycle 021 Alpha (2026-11-24 05:00 UTC)] Milestone 3.6: Legacy Pruning, Dead-Code Consolidation & Mobile/DualSense UX Polish
+### [NEXT — Cycle 021 Alpha (2026-11-24 05:00 UTC)] Milestone 3.6: Legacy Pruning, Dead-Code Consolidation & Mobile/DualSense UX Polish
 * **Target**: Repository root, `shared/`, `games/mathcore-survivor/`, `games/math-battle/`, and responsive/touch CSS across all 10 games
 * **Deliverables**:
   - Remove duplicate/unlinked `games/mathcore-survivor/standalone.html` and `games/math-battle/standalone.html`; consolidate inner README notes cleanly into root `README.md` and `games/README.md`.

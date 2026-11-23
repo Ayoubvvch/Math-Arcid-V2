@@ -3,6 +3,17 @@
 
 ---
 
+### [Cycle 020-OMEGA] 2026-11-23 17:08 UTC | Milestone: PS5 Hub Mastery Telemetry Dashboard & Smart Review UX (Milestone 3.5)
+* **Phase**: OMEGA (Hub Progress Telemetry, Smart Review Recommender & Backup/Reset UX)
+* **Target**: `shared/arcade-core.js` (`v1.1.0`), `index.html`, `js/hub.js`, `css/hub.css`
+* **Changes Delivered**:
+  - **Shared Analytics & Recommender (`shared/arcade-core.js` v1.1.0)**: Added `Progress.computeGameMetrics(gameId)` (weighted 0–100% mastery from seals, boss clears & accuracy, plus legacy `mathcore_high_score` fallback), `Progress.getSmartReviewQueue(games)` (4-tier priority ranking across weak topics/low accuracy, incomplete seals, unplayed units & rank upgrades), and strict object schema sanitization inside `importJSON`.
+  - **PS5 Hub Telemetry & Smart Review HUD ([index.html](file:///home/ubuntu/Math-Arcid-V2/index.html), [js/hub.js](file:///home/ubuntu/Math-Arcid-V2/js/hub.js), [css/hub.css](file:///home/ubuntu/Math-Arcid-V2/css/hub.css))**: Added Topbar Mastery Summary Pill (`X/10 • X%`), zero-blur SVG Mastery Rings + Rank/Seal/Boss chips directly on every Rail Tile (`<span class="tile-title">` preserved) and Showcase hero bar (including weak-topic tags via `setBidiSafeMath`), one-click **Smart Review Filter (`🎯 المراجعة الذكية`, button / `R` / `L2`)**, `pageshow` bfcache sync, and DualSense-navigable `#progress-modal` (`P` / `R2` trigger, 4 KPI cards, top-5 jump-to-unit cards, JSON Export/Import, and double-confirm Reset clearing both `ArcadeCore` and legacy high scores).
+* **Verification**: Passed Node VM/ESM Hub DOM & `ArcadeCore` telemetry/Smart-Review/double-confirm reset tests and all 9 stages of `evolution/scripts/verify.sh` (94 `graphSpec` plots + 11 Chromium pages with 0 console errors).
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 019-ALPHA] 2026-11-23 05:12 UTC | Milestone: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Overhaul (Milestone 3.4)
 * **Phase**: ALPHA (Shared Core Consolidation Batch B, High-Score Bridging & Genesis Arabic RTL Overhaul)
 * **Target**: `games/logarithm-reactor/` (v1.2.0), `games/integral-forge/` (v1.2.0), `games/mathcore-survivor/` (v2.1.0), `games/math-battle/` (v2.1.0), `games.json`
@@ -123,19 +134,4 @@
     - **Combat & Audio Polish (`js/world.js`, `js/audio.js`)**: Turned trench laser pylons into projectile cover, added rotating tangent mini-shields to post-gate `cruiser_sphere` enemies, decoupled Boss AI from `dist > 1` with `H`-gap piercing feedback, capped dropped orbs at 14, and added `setCombatIntensity`, `playOrbPickup`, and `playComboChime`.
     - **DualSense & UI/UX Fixes (`js/controls.js`, `js/game.js`, `index.html`, `games.json`)**: Fixed `.opt-correct`/`.opt-wrong`, `.highlight-ready`, `.gp-pill.disconnected`, bound HUD `#filterChip`, added `axes[9]` D-Pad hat fallback, aligned `Shift/K`, `F/R`, `R1` Hint, `L2` Bypass (`-40%`), and prevented Help modal from wiping active progress.
 * **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/38-question/14-graphSpec/DOM-keydown simulation passed 100%.
-* **Author**: Autonomous AGY Core ("My Homie").
-
----
-
-### [Cycle 011-ALPHA] 2026-11-19 05:09 UTC | Milestone: Vector Odyssey (أوديسا الفضاء المتجهي) Gold-Standard Launch
-* **Phase**: Alpha (New 6-Module Game Construction >= 3,200 LOC)
-* **Target**: `games/vector-odyssey/` (Topics 91–102: الهندسة الفضائية، الجداء السلمي والمتجهي، المستقيم والمستوى والفلكة $\mathbb{R}^3$)
-* **Changes Delivered**:
-  - Engineered **أوديسا الفضاء المتجهي — Vector Odyssey v1.0.0** (**5,001 Lines of Code** across 6 modules + Deep Space Indigo CSS):
-    - Full-Screen 100vw × 100dvh 60FPS **2.5D Starfighter Trench & Sphere Raid** (`2600 × 1700` sector) with 360° 6DOF starfighter `VECTRA-ℝ³`, parallax 3D wireframe polyhedra (`landmarks3D`), trench laser deflector pylons, orbiting guard mines around seals, bottom-left Space Mini-Radar, and 4 Orbital Sectors (`α, β, γ, δ`).
-    - Complete **Topics 91–102 Curriculum Engine** (`js/curriculum.js`): **30 Moroccan 2BAC PC National Exam questions** covering every topic from `91` to `102`, `setBidiSafeMath` isolation, topic filter isolation (`all`, `sectionA`, `sectionB`), and Fisher-Yates shuffled options (`pickOdysseyChallenge`).
-    - **10 Interactive 3D HTML5 Canvas `graphSpec` Plotters** (`plane_normal_3d`, `dist_point_plane_3d`, `line_plane_intersect_3d`, `cross_product_3d`, `dist_point_line_3d`, `sphere_center_3d`, `sphere_diameter_3d`, `sphere_plane_tan_3d`, `sphere_plane_circle_3d`, `sphere_line_3d`) with `drawSequenceGraph` compatibility alias.
-    - 3 Space Enemy Archetypes (`interceptor_vec`, `turret_plane`, `cruiser_sphere` with Stagger/Execute `[□ / E]`), 6 PlayStation Abilities (`✕` Afterburner Vector Boost, `◯` Cross-Product Barrel Roll `u∧v`, `▢` Orbital Seal Override / Stagger Execute, `△ / L1` Tri-Axis Cross-Product Aegis, `R2 / J` Scalar Railgun, `R1 / L2` Sphere Resonance Overdrive `||ΩM|| = R`), and the 3-Phase **HyperSphere Core Boss (`النواة الفلكية العظمى`)** with orthogonal Normal-Plane laser sweeps in Phase 2/3 and rotating tangent-contact shield window `H` (`d(Ω,P)=R`) in Phase 3.
-    - Full DualSense/DualShock gameplay + modal polling + dual-rumble haptics (`js/controls.js`), procedural Web Audio synthesizer (`js/audio.js`), zero per-frame DOM writes & zero `backdrop-filter`/`shadowBlur`, bespoke `(S)∩(P)` & $\vec{u}\wedge\vec{v}$ SVG tile in `js/hub.js`, and registration in `games.json`.
-* **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/30-question/10-graphSpec/renderer simulation passed 100%.
 * **Author**: Autonomous AGY Core ("My Homie").
