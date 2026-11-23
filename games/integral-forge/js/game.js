@@ -57,40 +57,11 @@
 
   function setBidiSafeMath(el, text) {
     if (!el) return;
-    el.textContent = '';
-    const str = String(text || '');
-    const mathRe = /(?:[+\-](?=[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβγδπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\∫Φμ])|[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβγδπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\∫Φμ])(?:[ +\-*/=<>≤≥≠∈∉⊂⊃∪∩∀∃→↔⇒⇔·×÷±≈'′∘^_:,.\\∫Φμ]*[A-Za-z0-9\u00C0-\u024F\]\[(){}|√ⁿʳˣᵖ⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻₀₁₂₃₄₅₆₇₈₉₊₋ₙₚΩΔαβγδπℚℝℕ∞∀∃∈∉⊂⊃∪∩→↔⇒⇔≤≥≠·×÷±≈'′∘^_\\∫Φμ])*/g;
-
-    let last = 0;
-    let m;
-    while ((m = mathRe.exec(str)) !== null) {
-      let sIdx = m.index;
-      let eIdx = m.index + m[0].length;
-      while (eIdx > sIdx) {
-        const sub = str.slice(sIdx, eIdx);
-        const op = (sub.match(/\(/g) || []).length;
-        const cl = (sub.match(/\)/g) || []).length;
-        if ((sub.endsWith('(') && op > cl) || (sub.endsWith(')') && cl > op) || /\s$/.test(sub)) eIdx--;
-        else break;
-      }
-      while (sIdx < eIdx) {
-        const sub = str.slice(sIdx, eIdx);
-        const op = (sub.match(/\(/g) || []).length;
-        const cl = (sub.match(/\)/g) || []).length;
-        if ((sub.startsWith('(') && op > cl) || (sub.startsWith(')') && cl > op) || /^\s/.test(sub)) sIdx++;
-        else break;
-      }
-      const tok = str.slice(sIdx, eIdx);
-      if (!tok || /^[()\[\]\s]+$/.test(tok)) continue;
-      if (sIdx > last) el.appendChild(document.createTextNode(str.slice(last, sIdx)));
-      const bdi = document.createElement('bdi');
-      bdi.dir = 'ltr';
-      bdi.className = 'math-ltr';
-      bdi.textContent = tok;
-      el.appendChild(bdi);
-      last = eIdx;
+    if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
+      window.ArcadeCore.setBidiSafeMath(el, text);
+      return;
     }
-    if (last < str.length) el.appendChild(document.createTextNode(str.slice(last)));
+    el.textContent = String(text ?? '');
   }
   window.setBidiSafeMath = setBidiSafeMath;
   window.setSeqBidiSafeMath = setBidiSafeMath;
@@ -181,7 +152,9 @@
     if (!btn || btn.disabled) return;
 
     state.stats.questionsAnswered++;
-    if (idx === r.question.correctIndex) {
+    const isCorrect = idx === r.question.correctIndex;
+    window.ArcadeCore?.Progress?.recordAnswer('integral-forge', r.question.topic, isCorrect);
+    if (isCorrect) {
       r.locked = true;
       state.stats.questionsCorrect++;
       btn.classList.add('opt-correct');
@@ -235,6 +208,7 @@
         g.broken = true;
         state.stats.brokenGates++;
         state.stats.score += wasBypass ? 350 : 700;
+        window.ArcadeCore?.Progress?.recordSealProgress('integral-forge', state.stats.brokenGates);
         window.ForgeAudio?.playGateBreak?.();
         window.spawnForgeParticles(state, g.x, g.y, 28, g.color, 260);
         window.addForgeFloatText(state, g.x, g.y - 34, `تم صهر ختم الفرن (${state.stats.brokenGates}/4)!`, '#fde047', 1.8);
@@ -275,24 +249,37 @@
   };
 
   window.finishForgeGame = function(s, victory) {
+    if (s.mode === 'end') return;
     s.mode = 'end';
     document.getElementById('overrideModal')?.classList.add('hidden');
     document.getElementById('pauseModal')?.classList.add('hidden');
+
+    const acc = s.stats.questionsAnswered > 0
+      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
+      : 100;
+    const progressRes = window.ArcadeCore?.Progress?.recordRun('integral-forge', {
+      score: s.stats.score,
+      sealsCleared: s.stats.brokenGates,
+      victory: Boolean(victory),
+      runQuestionsAnswered: s.stats.questionsAnswered,
+      runQuestionsCorrect: s.stats.questionsCorrect,
+      bypasses: s.stats.bypasses,
+      answersAlreadyRecorded: true
+    });
+    const rankSuffix = progressRes
+      ? ` • الرتبة: ${progressRes.rank}${progressRes.isNewBest && s.stats.score > 0 ? ' • 🏆 رقم قياسي جديد!' : ''}`
+      : '';
 
     const title = document.getElementById('endTitle');
     const sub = document.getElementById('endSubtitle');
 
     if (victory) {
       title.innerHTML = 'إتقان المحرقة — <span>تم سحق عملاق المعادلات التفاضلية!</span>';
-      sub.textContent = 'أتقنت محاور التكامل والمعادلات التفاضلية (79–90): الدوال الأصلية، المكاملة بالأجزاء، المساحات والحجوم، وحل المعادلات التفاضلية من الرتبة 1 و 2!';
+      sub.textContent = 'أتقنت محاور التكامل والمعادلات التفاضلية (79–90): الدوال الأصلية، المكاملة بالأجزاء، المساحات والحجوم، وحل المعادلات التفاضلية من الرتبة 1 و 2!' + rankSuffix;
     } else {
       title.innerHTML = 'انصهار درع الآلي <span>في محرقة التكامل</span>';
-      sub.textContent = 'تضرّر هيكل TITAN-∫ قبل إخماد الأختام الأربعة. استعمل مقص المساحة [◯] ودرع شال [△] وحاول مجدداً!';
+      sub.textContent = 'تضرّر هيكل TITAN-∫ قبل إخماد الأختام الأربعة. استعمل مقص المساحة [◯] ودرع شال [△] وحاول مجدداً!' + rankSuffix;
     }
-
-    const acc = s.stats.questionsAnswered > 0
-      ? Math.round((s.stats.questionsCorrect / s.stats.questionsAnswered) * 100)
-      : 100;
 
     document.getElementById('endGates').textContent = `${s.stats.brokenGates} / 4`;
     document.getElementById('endScore').textContent = String(s.stats.score);
@@ -345,6 +332,7 @@
   });
   document.getElementById('btnToggleSoundPause')?.addEventListener('click', () => document.getElementById('btnAudioToggle')?.click());
   document.getElementById('btnHelpToggle')?.addEventListener('click', () => {
+    if (state.mode === 'end') return;
     state.mode = 'intro';
     document.getElementById('pauseModal')?.classList.add('hidden');
     document.getElementById('introModal')?.classList.remove('hidden');

@@ -3,6 +3,18 @@
 
 ---
 
+### [Cycle 019-ALPHA] 2026-11-23 05:12 UTC | Milestone: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Overhaul (Milestone 3.4)
+* **Phase**: ALPHA (Shared Core Consolidation Batch B, High-Score Bridging & Genesis Arabic RTL Overhaul)
+* **Target**: `games/logarithm-reactor/` (v1.2.0), `games/integral-forge/` (v1.2.0), `games/mathcore-survivor/` (v2.1.0), `games/math-battle/` (v2.1.0), `games.json`
+* **Changes Delivered**:
+  - **Batch B Gold-Standard Games (`logarithm-reactor` v1.2.0 `4,619` LOC, `integral-forge` v1.2.0 `4,663` LOC)**: Loaded `../../shared/arcade-core.js`, deduplicated custom `setBidiSafeMath` and DualSense polling/deadzones/hat/haptics/focus onto `ArcadeCore.setBidiSafeMath` & `ArcadeCore.Gamepad` (with `snapshotButtons` across every modal return), and wired `ArcadeCore.Progress` (`recordAnswer`, `recordSealProgress`, double-finish-guarded `recordRun` with rank display).
+  - **`mathcore-survivor` v2.1.0 (`4,352` core LOC)**: Loaded `shared/arcade-core.js`, bridged `localStorage['mathcore_high_score']` bidirectionally with `ArcadeCore.Progress.bestScore`, wired `recordAnswer` / wave-seal / guarded `recordRun` telemetry, and migrated DualSense active-pad/deadzone/hat/haptic/focus helpers onto `ArcadeCore.Gamepad` while keeping `#gamepadBadge` and Modder Drawer D-Pad repeat intact.
+  - **`math-battle` v2.1.0 (`3,678` core LOC — Full Arabic RTL & Telemetry)**: Converted `games/math-battle/` to `<html lang="ar" dir="rtl">` (`Cairo` font, logical RTL CSS offsets, `.touch-controls` LTR ergonomic preservation, `.math-ltr` isolation, Canvas LTR grid guard + localized Arabic popups/countdown/HUD/bosses/overlays), integrated `ArcadeCore.Gamepad` into `ControlsManager`, and connected `ArcadeCore.Progress` (`recordAnswer`, session boss clears, guarded `recordRun` rank output).
+* **Verification**: Passed Node VM runtime simulations (`logarithm-reactor`, `integral-forge`, `mathcore-survivor`, `math-battle` ESM/DOM) and all 9 stages of `evolution/scripts/verify.sh` (94 `graphSpec` plots + 11 Chromium pages with 0 console errors).
+* **Author**: Autonomous AGY Core ("My Homie").
+
+---
+
 ### [Cycle 018-OMEGA] 2026-11-22 17:08 UTC | Milestone: `ArcadeCore` Migration Batch A & Bidi/Gamepad Core Hardening (Milestone 3.3)
 * **Phase**: OMEGA (Shared Core Deduplication, Progress Telemetry & Gameplay/UX Audit)
 * **Target**: `shared/arcade-core.js`, `games/limit-abyss/` (v1.2.0), `games/asymptote-asylum/` (v1.2.0), `games/sequence-strider/` (v1.2.0), `games/complex-plane-duel/` (v2.2.0), `games.json`
@@ -126,17 +138,4 @@
     - 3 Space Enemy Archetypes (`interceptor_vec`, `turret_plane`, `cruiser_sphere` with Stagger/Execute `[□ / E]`), 6 PlayStation Abilities (`✕` Afterburner Vector Boost, `◯` Cross-Product Barrel Roll `u∧v`, `▢` Orbital Seal Override / Stagger Execute, `△ / L1` Tri-Axis Cross-Product Aegis, `R2 / J` Scalar Railgun, `R1 / L2` Sphere Resonance Overdrive `||ΩM|| = R`), and the 3-Phase **HyperSphere Core Boss (`النواة الفلكية العظمى`)** with orthogonal Normal-Plane laser sweeps in Phase 2/3 and rotating tangent-contact shield window `H` (`d(Ω,P)=R`) in Phase 3.
     - Full DualSense/DualShock gameplay + modal polling + dual-rumble haptics (`js/controls.js`), procedural Web Audio synthesizer (`js/audio.js`), zero per-frame DOM writes & zero `backdrop-filter`/`shadowBlur`, bespoke `(S)∩(P)` & $\vec{u}\wedge\vec{v}$ SVG tile in `js/hub.js`, and registration in `games.json`.
 * **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/30-question/10-graphSpec/renderer simulation passed 100%.
-* **Author**: Autonomous AGY Core ("My Homie").
-
----
-
-### [Cycle 010-OMEGA] 2026-11-18 17:05 UTC | Milestone: Integral Forge v1.1.0 Deep Polish & Curriculum Expansion
-* **Phase**: Omega (Boss Patterns, GraphSpec Visuals, Curriculum Expansion, Audio & DualSense Polish)
-* **Target**: `games/integral-forge/` (Topics 79–90)
-* **Changes Delivered**:
-  - **Integral Forge v1.1.0 (`games/integral-forge/`, 4,722 LOC)**:
-    - Added `playCraneDock()` and `playBossPhaseShift()` procedural audio cues in `js/audio.js`; wired enemy-bolt vaporization in molten slag pools, harmonic $y'' + \omega^2 y$ motion on `golem_ode`, alternating Phase 2/3 Boss spiral barrages, `L2` Volume Shockwave projectile clearing (`420px`), and DualSense confirmation haptics on Override success.
-    - Refined `ipp_area_ln` (IPP bounding rectangle $e - (e-1) = 1$) and `volume_revolution_ox` (3D-sliced cylindrical cross-section discs $dV = \pi f(x)^2 dx$) in `js/renderer.js`, and standardized pure-math LTR canvas labels in `integral_phi_deriv`.
-    - Expanded `js/curriculum.js` from 30 to **37 Moroccan 2BAC PC National Exam questions** (+7 parameter-integral, sequence-integral squeeze, $u.v = \|\vec{i}\|^3$ unit-trap, RC ODE, and 2nd-order discriminant parameter questions) and upgraded `js/renderer.js` to **13 live `graphSpec` visualizers** (`ipp_x_exp_area`, `volume_cone_disc`, `ode_damped_pos_disc`).
-* **Verification**: All 7 stages of `evolution/scripts/verify.sh` + Node physics/Boss/37-question/13-graphSpec verification passed 100%.
 * **Author**: Autonomous AGY Core ("My Homie").

@@ -15,6 +15,7 @@ export class GameRenderer {
     const ctx = this.ctx;
 
     ctx.save();
+    ctx.direction = 'ltr';
     if (screenShake > 0) {
       ctx.translate((Math.random() - 0.5) * screenShake, (Math.random() - 0.5) * screenShake);
     }
@@ -363,14 +364,16 @@ export class GameRenderer {
       ctx.fillStyle = '#f8fafc';
       ctx.fillText('1', cx, cy);
     } else {
-      ctx.font = '900 54px -apple-system, sans-serif';
+      ctx.direction = 'rtl';
+      ctx.font = '900 50px "Cairo", -apple-system, sans-serif';
       ctx.fillStyle = '#00f0ff';
-      ctx.fillText('DIFFERENTIATE!', cx, cy);
+      ctx.fillText('ابدأ التفاضل!', cx, cy);
     }
 
-    ctx.font = '700 12px "JetBrains Mono", monospace';
+    ctx.direction = 'rtl';
+    ctx.font = '700 13px "Cairo", "JetBrains Mono", sans-serif';
     ctx.fillStyle = '#94a3b8';
-    ctx.fillText('PRESS [✕] OR SPACE TO SKIP', cx, cy + 72);
+    ctx.fillText('اضغط [✕] أو المسافة للتخطي', cx, cy + 72);
     ctx.restore();
   }
 }

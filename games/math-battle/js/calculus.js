@@ -118,7 +118,7 @@ export class CalculusEngine {
     if (type === '1') {
       return {
         newBalls: [],
-        popup: { text: 'd/dx(1) = 0 [ZERO!]', color: '#10b981' },
+        popup: { text: 'd/dx(1) = 0 [صفر!]', color: '#10b981' },
         isAnnihilated: true
       };
     }
@@ -129,13 +129,13 @@ export class CalculusEngine {
         'sin': { next: 'cos', label: 'cos(x)', color: '#06b6d4', halo: 'rgba(6, 182, 212, 0.24)', popup: 'd/dx(sin) = cos' },
         'cos': { next: '-sin', label: '-sin(x)', color: '#e11d48', halo: 'rgba(225, 29, 72, 0.24)', popup: 'd/dx(cos) = -sin' },
         '-sin': { next: '-cos', label: '-cos(x)', color: '#8b5cf6', halo: 'rgba(139, 92, 246, 0.24)', popup: 'd/dx(-sin) = -cos' },
-        '-cos': { next: '0', label: '0 [ZERO]', color: '#10b981', halo: 'rgba(16, 185, 129, 0.24)', popup: 'd/dx(-cos) = sin → 0' }
+        '-cos': { next: '0', label: '0 [صفر]', color: '#10b981', halo: 'rgba(16, 185, 129, 0.24)', popup: 'd/dx(-cos) = sin → 0' }
       };
       const trans = trigMap[type];
       if (trans.next === '0') {
         return {
           newBalls: [],
-          popup: { text: '0 [ANNIHILATED!]', color: '#10b981' },
+          popup: { text: '0 [إبادة كاملة!]', color: '#10b981' },
           isAnnihilated: true
         };
       }
@@ -178,7 +178,7 @@ export class CalculusEngine {
       }];
       return {
         newBalls,
-        popup: { text: 'd/dx(eˣ) = eˣ [INVARIANT!]', color: '#ffd700' },
+        popup: { text: 'd/dx(eˣ) = eˣ [دالة صامدة!]', color: '#ffd700' },
         isAnnihilated: false
       };
     }

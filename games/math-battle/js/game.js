@@ -53,6 +53,10 @@ export class MathBattleGame {
 
     this.overlayButtons = [];
     this.overlayFocusIndex = 0;
+    this._runRecorded = false;
+    this._damageHitsTaken = 0;
+    this._defeatedBosses = new Set();
+    this._lastProgressRes = null;
     this.lastTime = performance.now();
 
     this.initViewportSizer();
@@ -102,7 +106,7 @@ export class MathBattleGame {
     const btnAudio = document.getElementById('btnAudio');
     btnAudio?.addEventListener('click', () => {
       const enabled = audio.toggle();
-      btnAudio.textContent = enabled ? '🔊 AUDIO: ON' : '🔇 AUDIO: MUTED';
+      btnAudio.textContent = enabled ? '🔊 الصوت: مفعل' : '🔇 الصوت: مكتوم';
     });
 
     document.querySelectorAll('.btn-speed').forEach(btn => {
@@ -137,7 +141,7 @@ export class MathBattleGame {
     document.getElementById('pilotPlayer')?.classList.toggle('active', isPlayer);
     document.getElementById('pilotAuto')?.classList.toggle('active', !isPlayer);
     const labelEl = document.getElementById('pilotLabelText');
-    if (labelEl) labelEl.textContent = isPlayer ? 'PILOT (YOU)' : 'AUTO PILOT AI';
+    if (labelEl) labelEl.textContent = isPlayer ? 'الطيار (أنت)' : 'طيار آلي ذكي';
   }
 
   setSimSpeed(spd) {
@@ -164,7 +168,7 @@ export class MathBattleGame {
     const btnStart = document.getElementById('btnStart');
     if (!btnStart) return;
     const isPaused = this.gameState === 'PAUSED';
-    btnStart.textContent = isPaused ? '▶ RESUME' : '⏸ PAUSE';
+    btnStart.textContent = isPaused ? '▶ استئناف' : '⏸ إيقاف مؤقت';
     btnStart.className = isPaused ? 'btn btn-primary' : 'btn';
   }
 
@@ -206,6 +210,9 @@ export class MathBattleGame {
     this.screenShake = 0;
     this.slowMoTimer = 0;
     this.slowMoCooldown = 0;
+    this._runRecorded = false;
+    this._damageHitsTaken = 0;
+    this._lastProgressRes = null;
     this.hideOverlay();
     this.updatePauseButtonUI();
 
@@ -337,7 +344,7 @@ export class MathBattleGame {
 
     this.pools.spawnShockwave(toScreenX(this.player.x), toScreenY(this.player.y), 320, '#ff0055');
     this.pools.spawnShockwave(toScreenX(this.player.x), toScreenY(this.player.y), 240, '#00f0ff');
-    this.pools.spawnPopup('💥 LEIBNIZ SUPERNOVA!', toScreenX(this.player.x), toScreenY(this.player.y) - 36, '#ffd700');
+    this.pools.spawnPopup('💥 انفجار لايبنتز الفائق!', toScreenX(this.player.x), toScreenY(this.player.y) - 36, '#ffd700');
 
     const targets = [...this.balls];
     targets.forEach(b => {
@@ -353,7 +360,7 @@ export class MathBattleGame {
     this.slowMoTimer = PLAYER_CONFIG.slowMoDuration;
     this.slowMoCooldown = PLAYER_CONFIG.slowMoCooldown;
     audio.play('dash', 0, 0.55);
-    this.pools.spawnPopup('⏱ EULER DILATION', toScreenX(this.player.x), toScreenY(this.player.y) - 30, '#00ff88');
+    this.pools.spawnPopup('⏱ تبطيء أويلر الزمني', toScreenX(this.player.x), toScreenY(this.player.y) - 30, '#00ff88');
   }
 
   strikeAndDifferentiate(ball, ignoreGrace = false) {
@@ -363,10 +370,11 @@ export class MathBattleGame {
     this.player.differentiations++;
     this.remainingHits = Math.max(0, this.remainingHits - 1);
     this.player.hitCooldown = 0.12;
+    window.ArcadeCore?.Progress?.recordAnswer('math-battle', this.currentMatch, true);
 
     if (this.player.hp < this.player.maxHp) {
       this.player.hp = Math.min(this.player.maxHp, this.player.hp + 3);
-      this.pools.spawnPopup('+3 HP', toScreenX(this.player.x), toScreenY(this.player.y) - 20, '#10b981');
+      this.pools.spawnPopup('+3 درع', toScreenX(this.player.x), toScreenY(this.player.y) - 20, '#10b981');
       audio.play('heal', this.player.x / 5.0);
     }
 
@@ -405,6 +413,7 @@ export class MathBattleGame {
     if (this.remainingHits <= 0 || this.balls.length === 0) {
       this.remainingHits = 0;
       this.gameState = 'VICTORY';
+      this._finishBattleRun(true);
       audio.play('victory');
       audio.triggerRumble(0.6, 1.0, 420);
       for (let k = 0; k < 55; k++) {
@@ -420,6 +429,38 @@ export class MathBattleGame {
     }
   }
 
+  _finishBattleRun(victory) {
+    if (this._runRecorded) return;
+    this._runRecorded = true;
+    if (victory) {
+      this._defeatedBosses.add(this.currentMatch);
+    }
+    const prevSeals = Number(window.ArcadeCore?.Progress?.getGameProgress?.('math-battle')?.sealsCleared || 0);
+    const sealsCleared = Math.min(4, Math.max(prevSeals, this._defeatedBosses.size));
+    const score = victory
+      ? Math.round(this.player.differentiations * 120 + this.player.combos * 45 + Math.max(0, this.player.hp) * 5)
+      : Math.round(this.player.differentiations * 85 + this.player.combos * 25);
+    const totalAns = this.player.differentiations + this._damageHitsTaken;
+    this._lastProgressRes = window.ArcadeCore?.Progress?.recordRun('math-battle', {
+      score,
+      sealsCleared,
+      victory: Boolean(victory),
+      runQuestionsAnswered: totalAns,
+      runQuestionsCorrect: this.player.differentiations,
+      bypasses: 0,
+      answersAlreadyRecorded: true
+    }) || null;
+  }
+
+  _triggerBattleDefeat() {
+    if (this.gameState === 'GAMEOVER') return;
+    this.gameState = 'GAMEOVER';
+    this._finishBattleRun(false);
+    audio.play('gameover');
+    audio.triggerRumble(0.8, 1.0, 450);
+    this.showOverlay('GAMEOVER');
+  }
+
   showOverlay(mode) {
     const overlay = document.getElementById('battleOverlay');
     const titleEl = document.getElementById('ovTitle');
@@ -430,24 +471,34 @@ export class MathBattleGame {
 
     if (!overlay || !titleEl || !subEl || !primaryEl || !secEl || !hubEl) return;
 
+    const setBidi = (el, txt) => {
+      if (window.ArcadeCore?.setBidiSafeMath) window.ArcadeCore.setBidiSafeMath(el, txt);
+      else el.textContent = txt;
+    };
+
+    const res = this._lastProgressRes;
+    const rankSuffix = res
+      ? ` • الرتبة: ${res.rank}${res.isNewBest && res.entry?.bestScore > 0 ? ' • 🏆 رقم قياسي جديد!' : ''}`
+      : '';
+
     if (mode === 'PAUSED') {
-      titleEl.textContent = 'BATTLE PAUSED';
+      titleEl.textContent = 'إيقاف مؤقت للمعركة';
       titleEl.style.color = '#00f0ff';
-      subEl.textContent = `${MATCH_CONFIGS[this.currentMatch]?.title || ''} • ${this.remainingHits} derivations remaining`;
-      primaryEl.innerHTML = '<span class="gp-tag gp-x">✕</span> RESUME';
-      secEl.innerHTML = '<span class="gp-tag gp-sq">▢</span> RESTART MATCH';
+      setBidi(subEl, `${MATCH_CONFIGS[this.currentMatch]?.title || ''} • تبقّى ${this.remainingHits} ضربة اشتقاق`);
+      primaryEl.innerHTML = '<span class="gp-tag gp-x">✕</span> استئناف المعركة';
+      secEl.innerHTML = '<span class="gp-tag gp-sq">▢</span> إعادة النزال';
     } else if (mode === 'VICTORY') {
-      titleEl.textContent = 'DERIVATIVE VICTORY!';
+      titleEl.textContent = 'انتصار التفاضل!';
       titleEl.style.color = '#10b981';
-      subEl.textContent = `Function annihilated to 0 in ${this.player.differentiations} d/dx strikes!`;
-      primaryEl.innerHTML = '<span class="gp-tag gp-x">✕</span> PLAY AGAIN';
-      secEl.innerHTML = '<span class="gp-tag gp-sq">▢</span> NEXT BOSS [R1]';
+      setBidi(subEl, `تم تلاشي الدالة إلى 0 بعد ${this.player.differentiations} ضربة d/dx!` + rankSuffix);
+      primaryEl.innerHTML = '<span class="gp-tag gp-x">✕</span> العب مجدداً';
+      secEl.innerHTML = '<span class="gp-tag gp-sq">▢</span> المنافس التالي [R1]';
     } else if (mode === 'GAMEOVER') {
-      titleEl.textContent = 'FUNCTION SINGULARITY';
+      titleEl.textContent = 'نقطة شذوذ حرجة!';
       titleEl.style.color = '#ff007f';
-      subEl.textContent = `HP depleted with ${this.remainingHits} derivations left.`;
-      primaryEl.innerHTML = '<span class="gp-tag gp-x">✕</span> RE-DERIVE NOW';
-      secEl.innerHTML = '<span class="gp-tag gp-sq">▢</span> NEXT BOSS [R1]';
+      setBidi(subEl, `نفد الدرع وبقي ${this.remainingHits} اشتقاق قبل الصفر.` + rankSuffix);
+      primaryEl.innerHTML = '<span class="gp-tag gp-x">✕</span> أعد الاشتقاق الآن';
+      secEl.innerHTML = '<span class="gp-tag gp-sq">▢</span> المنافس التالي [R1]';
     }
 
     this.overlayButtons = [primaryEl, secEl, hubEl];
@@ -756,14 +807,13 @@ export class MathBattleGame {
           p.hp = Math.max(0, p.hp - 12);
           p.invulnerableTimer = 0.55;
           this.screenShake = 12;
-          this.pools.spawnPopup('-12 HP', px, py - 20, '#ff0055', true);
+          this._damageHitsTaken++;
+          window.ArcadeCore?.Progress?.recordAnswer('math-battle', this.currentMatch, false);
+          this.pools.spawnPopup('-12 درع', px, py - 20, '#ff0055', true);
           audio.triggerRumble(0.4, 0.7, 170);
 
           if (p.hp <= 0) {
-            this.gameState = 'GAMEOVER';
-            audio.play('gameover');
-            audio.triggerRumble(0.8, 1.0, 450);
-            this.showOverlay('GAMEOVER');
+            this._triggerBattleDefeat();
             break;
           }
         }
@@ -838,11 +888,11 @@ export class MathBattleGame {
           this.player.hp = Math.max(0, this.player.hp - 15);
           this.player.invulnerableTimer = 0.6;
           this.screenShake = 14;
-          this.pools.spawnPopup('-15 LASER', toScreenX(this.player.x), toScreenY(this.player.y) - 25, '#ff0055', true);
+          this._damageHitsTaken++;
+          window.ArcadeCore?.Progress?.recordAnswer('math-battle', this.currentMatch, false);
+          this.pools.spawnPopup('-15 ليزر', toScreenX(this.player.x), toScreenY(this.player.y) - 25, '#ff0055', true);
           if (this.player.hp <= 0) {
-            this.gameState = 'GAMEOVER';
-            audio.play('gameover');
-            this.showOverlay('GAMEOVER');
+            this._triggerBattleDefeat();
           }
           break;
         }
@@ -882,7 +932,7 @@ export class MathBattleGame {
       const bombVal = document.getElementById('hudBombVal');
       if (bombFill) bombFill.style.width = `${bombPct}%`;
       if (bombVal) {
-        bombVal.textContent = bombPct >= 100 ? 'READY [◯]' : `${bombPct}%`;
+        bombVal.textContent = bombPct >= 100 ? 'جاهز [◯]' : `${bombPct}%`;
         bombVal.style.color = bombPct >= 100 ? '#ffd700' : '#ff3b7f';
       }
     }
@@ -894,20 +944,20 @@ export class MathBattleGame {
       const slowVal = document.getElementById('hudSlowVal');
       if (slowVal) {
         if (this.slowMoTimer > 0) {
-          slowVal.textContent = `ACTIVE ${this.slowMoTimer.toFixed(1)}s`;
+          slowVal.textContent = `نشط ${this.slowMoTimer.toFixed(1)}ث`;
           slowVal.style.color = '#00ff88';
         } else if (this.slowMoCooldown > 0) {
-          slowVal.textContent = `CD ${this.slowMoCooldown.toFixed(1)}s`;
+          slowVal.textContent = `انتظار ${this.slowMoCooldown.toFixed(1)}ث`;
           slowVal.style.color = '#64748b';
         } else {
-          slowVal.textContent = 'READY [△]';
+          slowVal.textContent = 'جاهز [△]';
           slowVal.style.color = '#00ff88';
         }
       }
     }
 
     // Combos & Strikes
-    const comboStr = p.combos > 1 ? `x${p.combos} COMBO` : `${p.differentiations} d/dx`;
+    const comboStr = p.combos > 1 ? `سلسلة x${p.combos}` : `${p.differentiations} اشتقاق`;
     if (this._lastComboStr !== comboStr) {
       this._lastComboStr = comboStr;
       const comboEl = document.getElementById('hudComboVal');
@@ -924,7 +974,10 @@ export class MathBattleGame {
         bossBadge.style.borderColor = config.color;
         bossBadge.style.color = config.color;
       }
-      if (bossTitle) bossTitle.textContent = config.title;
+      if (bossTitle) {
+        if (window.ArcadeCore?.setBidiSafeMath) window.ArcadeCore.setBidiSafeMath(bossTitle, config.title);
+        else bossTitle.textContent = config.title;
+      }
     }
 
     const remPct = Math.max(0, (this.remainingHits / Math.max(1, this.totalInitialHits)) * 100);
@@ -936,7 +989,7 @@ export class MathBattleGame {
       const mDeriv = document.getElementById('mobileDerivVal');
       if (derivFill) derivFill.style.width = `${remPct}%`;
       if (derivVal) derivVal.textContent = `${this.remainingHits} / ${this.totalInitialHits}`;
-      if (mDeriv) mDeriv.textContent = `LEFT ${this.remainingHits}/${this.totalInitialHits}`;
+      if (mDeriv) mDeriv.textContent = `المتبقي ${this.remainingHits}/${this.totalInitialHits}`;
     }
 
     if (this._lastOrbsCount !== this.balls.length) {
@@ -950,13 +1003,13 @@ export class MathBattleGame {
       const hazardEl = document.getElementById('hudHazardState');
       if (hazardEl) {
         if (this.summonState === 'WARNING') {
-          hazardEl.textContent = '⚠ LASER WARNING';
+          hazardEl.textContent = '⚠ تحذير ليزر';
           hazardEl.style.color = '#f59e0b';
         } else if (this.summonState === 'LASER') {
-          hazardEl.textContent = '⚡ LASER ACTIVE';
+          hazardEl.textContent = '⚡ ليزر نشط';
           hazardEl.style.color = '#ff0055';
         } else {
-          hazardEl.textContent = 'CLEAR';
+          hazardEl.textContent = 'آمن';
           hazardEl.style.color = '#10b981';
         }
       }
@@ -976,9 +1029,9 @@ export class MathBattleGame {
           .map((node) => {
             const cnt = counts[node.id] || 0;
             const active = cnt > 0;
-            return `<span class="ladder-node ${active ? 'active' : ''}" style="--node-col:${node.color}">${node.label}${cnt > 1 ? ` (${cnt})` : ''}</span>`;
+            return `<span class="ladder-node ${active ? 'active' : ''}" style="--node-col:${node.color}"><bdi dir="ltr" class="math-ltr">${node.label}</bdi>${cnt > 1 ? ` (${cnt})` : ''}</span>`;
           })
-          .join('<span class="ladder-arrow">›</span>');
+          .join('<span class="ladder-arrow">‹</span>');
       }
     }
 
@@ -987,7 +1040,7 @@ export class MathBattleGame {
     if (this._lastCeilHp !== ceilHp) {
       this._lastCeilHp = ceilHp;
       const mHp = document.getElementById('mobileHpVal');
-      if (mHp) mHp.textContent = `HP ${ceilHp}`;
+      if (mHp) mHp.textContent = `الدرع ${ceilHp}`;
     }
   }
 

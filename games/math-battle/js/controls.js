@@ -45,8 +45,23 @@ export class ControlsManager {
       r2: false
     };
 
+    const gpCore = window.ArcadeCore?.Gamepad;
     this.gamepadConnected = false;
     this.gamepadIndex = -1;
+    this.gpState = gpCore ? gpCore.createState() : {
+      connected: false,
+      index: null,
+      idLabel: '',
+      prevButtons: [],
+      axisLeftHeld: false,
+      axisRightHeld: false,
+      axisUpHeld: false,
+      axisDownHeld: false,
+      pauseFocusIdx: 0,
+      endFocusIdx: 0,
+      lastShownConnected: null,
+      lastShownLabel: ''
+    };
     this.prevButtons = {};
     this.keys = {};
 
@@ -68,6 +83,10 @@ export class ControlsManager {
     window.addEventListener('gamepadconnected', (e) => {
       this.gamepadConnected = true;
       this.gamepadIndex = e.gamepad.index;
+      if (this.gpState) {
+        this.gpState.index = e.gamepad.index;
+        this.gpState.connected = true;
+      }
       this.updateGamepadBadge(true, e.gamepad.id);
       audio.init();
       audio.triggerRumble(0.2, 0.35, 160);
@@ -77,6 +96,11 @@ export class ControlsManager {
       if (this.gamepadIndex === e.gamepad.index) {
         this.gamepadConnected = false;
         this.gamepadIndex = -1;
+        if (this.gpState) {
+          this.gpState.index = null;
+          this.gpState.connected = false;
+          this.gpState.prevButtons = [];
+        }
         this.updateGamepadBadge(false);
       }
     });
@@ -222,6 +246,12 @@ export class ControlsManager {
   }
 
   _findActiveGamepad() {
+    const gpCore = window.ArcadeCore?.Gamepad;
+    if (gpCore && this.gpState) {
+      const gp = gpCore.resolveActiveGamepad(this.gpState);
+      this.gamepadIndex = gp ? this.gpState.index : -1;
+      return gp;
+    }
     if (!navigator.getGamepads) return null;
     const gamepads = navigator.getGamepads();
     if (!gamepads) return null;
@@ -246,20 +276,20 @@ export class ControlsManager {
 
     if (connected) {
       const lower = name.toLowerCase();
-      if (lower.includes('dualsense') || lower.includes('0ce6')) {
-        padStatus.textContent = 'PS5 DUALSENSE READY';
+      if (lower.includes('dualsense') || lower.includes('0ce6') || lower.includes('054c')) {
+        padStatus.textContent = 'PS5 DualSense جاهزة 100%';
       } else if (lower.includes('dualshock') || lower.includes('playstation') || lower.includes('wireless controller')) {
-        padStatus.textContent = 'PS CONTROLLER READY';
+        padStatus.textContent = 'يد PlayStation جاهزة 100%';
       } else if (lower.includes('xbox')) {
-        padStatus.textContent = 'XBOX CONTROLLER READY';
+        padStatus.textContent = 'يد Xbox جاهزة 100%';
       } else {
-        padStatus.textContent = 'GAMEPAD CONNECTED';
+        padStatus.textContent = 'يد التحكم متصلة 100%';
       }
       padStatus.style.color = '#00ff88';
       padDot.style.background = '#00ff88';
       padDot.style.boxShadow = '0 0 8px #00ff88';
     } else {
-      padStatus.textContent = 'CONTROLLER: CONNECT OR USE KEYS';
+      padStatus.textContent = 'يد التحكم: صِل اليد أو استعمل الكيبورد';
       padStatus.style.color = '#94a3b8';
       padDot.style.background = '#64748b';
       padDot.style.boxShadow = 'none';
@@ -272,6 +302,7 @@ export class ControlsManager {
     let newAimAng = null;
     this.isBraking = false;
 
+    const gpCore = window.ArcadeCore?.Gamepad;
     const gp = this._findActiveGamepad();
 
     if (gp) {
@@ -287,30 +318,23 @@ export class ControlsManager {
         return (v < 0 ? -1 : 1) * Math.min(1, (a - deadzone) / (1 - deadzone));
       };
 
-      const stickLx = scaleAxis(gp.axes[0] || 0);
-      const stickLy = scaleAxis(gp.axes[1] || 0);
-      if (stickLx !== 0 || stickLy !== 0) {
-        mx += stickLx;
-        my -= stickLy;
+      const ls = gpCore
+        ? gpCore.applyRadialDeadzone(gp.axes[0] || 0, gp.axes[1] || 0, deadzone)
+        : { x: scaleAxis(gp.axes[0] || 0), y: scaleAxis(gp.axes[1] || 0) };
+      if (ls.x !== 0 || ls.y !== 0) {
+        mx += ls.x;
+        my -= ls.y;
       }
 
-      // Hat-switch fallback
-      let hatUp = false, hatDown = false, hatLeft = false, hatRight = false;
-      if (gp.axes && gp.axes.length > 9 && gp.axes[9] !== undefined) {
-        const h = gp.axes[9];
-        if (h >= -1.05 && h <= 1.05) {
-          hatUp = h < -0.60 || h > 0.85;
-          hatRight = h > -0.82 && h < -0.04;
-          hatDown = h > -0.25 && h < 0.55;
-          hatLeft = h > 0.30;
-        }
-      }
+      const hat = gpCore
+        ? gpCore.decodeDpadHat(gp)
+        : { up: false, down: false, left: false, right: false };
 
-      const isPressed = (btnIndex) => Boolean(gp.buttons[btnIndex]?.pressed);
-      const dUp = isPressed(PLAYSTATION_BUTTONS.DPAD_UP) || hatUp;
-      const dDown = isPressed(PLAYSTATION_BUTTONS.DPAD_DOWN) || hatDown;
-      const dLeft = isPressed(PLAYSTATION_BUTTONS.DPAD_LEFT) || hatLeft;
-      const dRight = isPressed(PLAYSTATION_BUTTONS.DPAD_RIGHT) || hatRight;
+      const isPressed = (btnIndex) => Boolean(gp.buttons[btnIndex]?.pressed || (gp.buttons[btnIndex]?.value || 0) > 0.55);
+      const dUp = isPressed(PLAYSTATION_BUTTONS.DPAD_UP) || hat.up;
+      const dDown = isPressed(PLAYSTATION_BUTTONS.DPAD_DOWN) || hat.down;
+      const dLeft = isPressed(PLAYSTATION_BUTTONS.DPAD_LEFT) || hat.left;
+      const dRight = isPressed(PLAYSTATION_BUTTONS.DPAD_RIGHT) || hat.right;
 
       if (dUp) my += 1;
       if (dDown) my -= 1;
@@ -318,16 +342,21 @@ export class ControlsManager {
       if (dRight) mx += 1;
 
       // Right Analog Stick (Aiming)
-      const stickRx = scaleAxis(gp.axes[2] || 0);
-      const stickRy = scaleAxis(gp.axes[3] || 0);
-      if (Math.hypot(stickRx, stickRy) > 0.08) {
-        newAimAng = Math.atan2(-stickRy, stickRx);
+      const rs = gpCore
+        ? gpCore.applyRadialDeadzone(gp.axes[2] || 0, gp.axes[3] || 0, deadzone)
+        : { x: scaleAxis(gp.axes[2] || 0), y: scaleAxis(gp.axes[3] || 0) };
+      if (Math.hypot(rs.x, rs.y) > 0.08) {
+        newAimAng = Math.atan2(-rs.y, rs.x);
         this.aimSource = 'stick';
       }
 
       const isJustPressed = (btnIndex, currentBool) => {
-        const pressed = currentBool !== undefined ? currentBool : isPressed(btnIndex);
-        return pressed && !Boolean(this.prevButtons[btnIndex]);
+        if (currentBool !== undefined) {
+          return currentBool && !Boolean(this.prevButtons[btnIndex]);
+        }
+        return gpCore
+          ? gpCore.justPressed(gp, this.gpState, btnIndex, 0.55)
+          : (isPressed(btnIndex) && !Boolean(this.prevButtons[btnIndex]));
       };
 
       // Face & Trigger Actions
@@ -372,6 +401,7 @@ export class ControlsManager {
       this.heldButtons.l2 = isPressed(PLAYSTATION_BUTTONS.L2);
       this.heldButtons.r2 = isPressed(PLAYSTATION_BUTTONS.R2);
 
+      gpCore?.snapshotButtons(gp, this.gpState, 0.55);
       for (let b = 0; b < gp.buttons.length; b++) {
         this.prevButtons[b] = Boolean(gp.buttons[b]?.pressed);
       }
@@ -382,6 +412,11 @@ export class ControlsManager {
     } else if (this.gamepadConnected) {
       this.gamepadConnected = false;
       this.gamepadIndex = -1;
+      if (this.gpState) {
+        this.gpState.connected = false;
+        this.gpState.index = null;
+        this.gpState.prevButtons = [];
+      }
       this.updateGamepadBadge(false);
     }
 

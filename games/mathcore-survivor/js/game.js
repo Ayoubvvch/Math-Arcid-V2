@@ -18,12 +18,29 @@ window.resizeCanvas = function(canvas) {
 
 window.triggerGameOver = function() {
     const gs = window.GameState;
+    if (gs.gameOver) return;
     gs.gameOver = true;
     gs.paused = true;
     window.SoundEngine?.hurt?.();
     if (window.triggerGamepadHaptic) {
         window.triggerGamepadHaptic(220, 0.9, 0.9);
     }
+
+    const solvedCount = Number(gs.mathSolved || 0);
+    const sealsCleared = Math.min(4, Math.max(0, (gs.wave || 1) - 1));
+    const progressRes = window.ArcadeCore?.Progress?.recordRun('mathcore-survivor', {
+        score: gs.score,
+        sealsCleared,
+        victory: (gs.wave || 1) >= 5,
+        runQuestionsAnswered: solvedCount > 0 ? solvedCount : gs.kills,
+        runQuestionsCorrect: solvedCount > 0 ? solvedCount : gs.kills,
+        bypasses: 0,
+        answersAlreadyRecorded: solvedCount > 0
+    });
+    const syncedBest = Math.max(gs.highScore || 0, Number(progressRes?.entry?.bestScore || 0));
+    if (syncedBest > gs.highScore) gs.highScore = syncedBest;
+    if (syncedBest > 0) localStorage.setItem('mathcore_high_score', String(syncedBest));
+    if (progressRes?.isNewBest && gs.score > 0) gs.isNewRecord = true;
 
     const goScore = document.getElementById('goScore');
     const goHigh = document.getElementById('goHighScore');
@@ -33,7 +50,10 @@ window.triggerGameOver = function() {
 
     if (goScore) goScore.textContent = String(gs.score);
     if (goHigh) goHigh.textContent = String(gs.highScore);
-    if (goWave) goWave.textContent = `WAVE ${gs.wave}`;
+    if (goWave) {
+        const rankStr = progressRes?.rank ? ` • الرتبة ${progressRes.rank}` : '';
+        goWave.textContent = `WAVE ${gs.wave}${rankStr}`;
+    }
     if (goKills) goKills.textContent = String(gs.kills);
     if (newRecBadge) newRecBadge.classList.toggle('hidden', !gs.isNewRecord);
 
@@ -365,6 +385,27 @@ window.addEventListener('DOMContentLoaded', () => {
 
     window.renderBuildBarUI();
     window.initSandboxModderUI();
+
+    // Seamlessly bridge legacy mathcore_high_score into ArcadeCore.Progress
+    try {
+        const legacyBest = parseInt(localStorage.getItem('mathcore_high_score') || '0', 10) || 0;
+        if (legacyBest > 0 && window.ArcadeCore?.Progress) {
+            const cur = window.ArcadeCore.Progress.getGameProgress('mathcore-survivor');
+            if (legacyBest > (cur?.bestScore || 0)) {
+                const store = JSON.parse(window.ArcadeCore.Progress.exportJSON());
+                if (store && store.games) {
+                    store.games['mathcore-survivor'] = Object.assign(
+                        cur || {},
+                        store.games['mathcore-survivor'] || {},
+                        { bestScore: legacyBest }
+                    );
+                    window.ArcadeCore.Progress.importJSON(store);
+                }
+            }
+        }
+        window.GameState.highScore = window.getMathCoreSyncedHighScore();
+    } catch (_) {}
+
     window.updateCoreXHUD();
     window.updateWaveHUD();
     window.updateScoreHUD();

@@ -22,8 +22,8 @@ export const ARENA = {
 export const MATCH_CONFIGS = {
   x3: {
     id: 'x3',
-    title: 'x³ CUBIC BOSS',
-    badge: 'CUBIC BOSS',
+    title: 'x³ الزعيمة التكعيبية',
+    badge: 'تكعيبية',
     color: '#ff5500',
     initialType: 'x3',
     initialHits: 16, // 1 + 3 + 6 + 6 = 16
@@ -33,13 +33,13 @@ export const MATCH_CONFIGS = {
       { id: 'x2', label: '3x²', color: '#00f0ff', radius: 26 },
       { id: 'x', label: '2x', color: '#f97316', radius: 22 },
       { id: '1', label: '1', color: '#ffd700', radius: 18 },
-      { id: '0', label: '0 [ZERO]', color: '#10b981', radius: 0 }
+      { id: '0', label: '0 [صفر]', color: '#10b981', radius: 0 }
     ]
   },
   x4: {
     id: 'x4',
-    title: 'x⁴ QUARTIC SWARM',
-    badge: 'QUARTIC SWARM',
+    title: 'x⁴ السرب الرباعي',
+    badge: 'سرب رباعي',
     color: '#c026d3',
     initialType: 'x4',
     initialHits: 65, // 1 + 4 + 12 + 24 + 24 = 65
@@ -50,13 +50,13 @@ export const MATCH_CONFIGS = {
       { id: 'x2', label: '3x²', color: '#00f0ff', radius: 23 },
       { id: 'x', label: '2x', color: '#f97316', radius: 19 },
       { id: '1', label: '1', color: '#ffd700', radius: 15 },
-      { id: '0', label: '0 [ZERO]', color: '#10b981', radius: 0 }
+      { id: '0', label: '0 [صفر]', color: '#10b981', radius: 0 }
     ]
   },
   sin: {
     id: 'sin',
-    title: 'sin(x) TRIG WAVE',
-    badge: 'TRIG WAVE',
+    title: 'sin(x) الموجة المثلثية',
+    badge: 'مثلثية',
     color: '#10b981',
     initialType: 'sin',
     initialHits: 16, // 4 harmonic orbs x 4 steps = 16
@@ -66,13 +66,13 @@ export const MATCH_CONFIGS = {
       { id: 'cos', label: 'cos(x)', color: '#06b6d4', radius: 30 },
       { id: '-sin', label: '-sin(x)', color: '#e11d48', radius: 30 },
       { id: '-cos', label: '-cos(x)', color: '#8b5cf6', radius: 30 },
-      { id: '0', label: '0 [ZERO]', color: '#10b981', radius: 0 }
+      { id: '0', label: '0 [صفر]', color: '#10b981', radius: 0 }
     ]
   },
   exp: {
     id: 'exp',
-    title: 'eˣ IMMORTAL',
-    badge: 'IMMORTAL',
+    title: 'eˣ الأسيّة الخالدة',
+    badge: 'خالدة',
     color: '#ffd700',
     initialType: 'exp',
     initialHits: 15,
@@ -80,7 +80,7 @@ export const MATCH_CONFIGS = {
     chain: [
       { id: 'exp', label: 'eˣ', color: '#ffd700', radius: 35 },
       { id: 'd/dx', label: 'd/dx(eˣ) = eˣ', color: '#ff5500', radius: 35 },
-      { id: 'overload', label: 'OVERLOAD (0)', color: '#10b981', radius: 0 }
+      { id: 'overload', label: 'إشباع (0)', color: '#10b981', radius: 0 }
     ]
   }
 };

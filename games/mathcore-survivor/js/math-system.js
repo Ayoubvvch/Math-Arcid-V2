@@ -202,6 +202,11 @@ window.destroyEnemy = function(index, solvedByMath = false) {
 
     // Score & Kills
     window.GameState.kills++;
+    if (solvedByMath) {
+        window.GameState.mathSolved = (window.GameState.mathSolved || 0) + 1;
+        const modeKey = window.SandboxConfig?.mathMode || 'algebra';
+        window.ArcadeCore?.Progress?.recordAnswer('mathcore-survivor', modeKey, true);
+    }
     const comboMult = Math.max(1, window.GameState.combo);
     const earnedPoints = (e.isBoss ? 500 : 100) * comboMult;
     window.GameState.score += earnedPoints;
@@ -231,6 +236,7 @@ window.destroyEnemy = function(index, solvedByMath = false) {
 window.advanceWave = function() {
     window.GameState.wave++;
     const spawnedWave = window.GameState.wave;
+    window.ArcadeCore?.Progress?.recordSealProgress('mathcore-survivor', Math.min(4, Math.max(0, spawnedWave - 1)));
     window.GameState.waveProgress = 0;
     window.GameState.waveGoal = 6 + window.GameState.wave * 2;
 

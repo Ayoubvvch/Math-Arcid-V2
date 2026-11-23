@@ -3,6 +3,8 @@
  * Full DualSense / DualShock Native Mapping (✕, ◯, ▢, △, L1/R1, L2/R2, D-Pad, Options, Share)
  */
 
+const gpCore = () => window.ArcadeCore && window.ArcadeCore.Gamepad;
+
 window.InputState = {
     keys: {},
     mouseX: window.innerWidth / 2,
@@ -10,8 +12,20 @@ window.InputState = {
     mouseDownLeft: false,
     usingMouseForBuild: false,
     gamepadConnected: false,
-    gamepadSlot: -1,
-    prevButtons: {},
+    gp: gpCore() ? gpCore().createState() : {
+        connected: false,
+        index: null,
+        idLabel: '',
+        prevButtons: [],
+        axisLeftHeld: false,
+        axisRightHeld: false,
+        axisUpHeld: false,
+        axisDownHeld: false,
+        pauseFocusIdx: 0,
+        endFocusIdx: 0,
+        lastShownConnected: null,
+        lastShownLabel: ''
+    },
     prevHatDirs: { up: false, down: false, left: false, right: false },
     uiNavNextTime: 0,
     playDpadNextTime: 0,
@@ -83,9 +97,7 @@ window.applyPauseMenuFocus = function() {
     if (!items.length) return;
     const len = items.length;
     window.InputState.pauseFocusIdx = ((window.InputState.pauseFocusIdx % len) + len) % len;
-    items.forEach((el, idx) => {
-        el.classList.toggle('gp-focused', idx === window.InputState.pauseFocusIdx);
-    });
+    gpCore()?.applyFocusRing(items, window.InputState.pauseFocusIdx);
 };
 
 window.applyGameOverFocus = function() {
@@ -93,9 +105,7 @@ window.applyGameOverFocus = function() {
     if (!items.length) return;
     const len = items.length;
     window.InputState.goFocusIdx = ((window.InputState.goFocusIdx % len) + len) % len;
-    items.forEach((el, idx) => {
-        el.classList.toggle('gp-focused', idx === window.InputState.goFocusIdx);
-    });
+    gpCore()?.applyFocusRing(items, window.InputState.goFocusIdx);
 };
 
 function getModderFocusableItems() {
@@ -165,20 +175,7 @@ function activateModderItem() {
 }
 
 function getActiveGamepad() {
-    if (!navigator.getGamepads) return null;
-    const pads = navigator.getGamepads();
-    if (window.InputState.gamepadSlot >= 0) {
-        const cached = pads[window.InputState.gamepadSlot];
-        if (cached && cached.connected) return cached;
-    }
-    for (let i = 0; i < pads.length; i++) {
-        if (pads[i] && pads[i].connected) {
-            window.InputState.gamepadSlot = i;
-            return pads[i];
-        }
-    }
-    window.InputState.gamepadSlot = -1;
-    return null;
+    return gpCore() ? gpCore().resolveActiveGamepad(window.InputState.gp) : null;
 }
 
 function detectControllerLabel(id = '') {
@@ -192,18 +189,8 @@ function detectControllerLabel(id = '') {
     return 'Gamepad متصل (تحكم كامل 100%)';
 }
 
-window.triggerGamepadHaptic = async function(duration = 80, weak = 0.5, strong = 0.5) {
-    const gp = getActiveGamepad();
-    if (gp && gp.vibrationActuator && typeof gp.vibrationActuator.playEffect === 'function') {
-        try {
-            await gp.vibrationActuator.playEffect('dual-rumble', {
-                startDelay: 0,
-                duration: duration,
-                weakMagnitude: weak,
-                strongMagnitude: strong
-            });
-        } catch (e) {}
-    }
+window.triggerGamepadHaptic = function(duration = 80, weak = 0.5, strong = 0.5) {
+    gpCore()?.triggerHaptic(window.InputState.gp, duration, weak, strong);
 };
 
 window.addEventListener('keydown', e => {
@@ -389,14 +376,15 @@ window.addEventListener('wheel', e => {
 });
 
 window.addEventListener('gamepadconnected', e => {
-    window.InputState.gamepadSlot = e.gamepad.index;
+    if (window.InputState.gp) window.InputState.gp.index = e.gamepad.index;
     window.updatePlayStationBadge(true, e.gamepad.id);
     window.triggerGamepadHaptic(110, 0.5, 0.5);
 });
 
 window.addEventListener('gamepaddisconnected', e => {
-    if (window.InputState.gamepadSlot === e.gamepad.index) {
-        window.InputState.gamepadSlot = -1;
+    if (window.InputState.gp && window.InputState.gp.index === e.gamepad.index) {
+        window.InputState.gp.index = null;
+        window.InputState.gp.prevButtons = [];
     }
     const remaining = getActiveGamepad();
     window.updatePlayStationBadge(!!remaining, remaining?.id || '');
@@ -421,17 +409,18 @@ window.updatePlayStationBadge = function(connected, idStr = '') {
 };
 
 function readHatDirections(gp) {
-    const hat = gp.axes && gp.axes.length > 9 ? gp.axes[9] : 0;
-    const hatValid = gp.axes && gp.axes.length > 9 && hat >= -1.05 && hat <= 1.05;
-    const dUp = !!(gp.buttons[12]?.pressed) || (hatValid && (hat < -0.60 || hat > 0.85));
-    const dRight = !!(gp.buttons[15]?.pressed) || (hatValid && hat > -0.82 && hat < -0.04);
-    const dDown = !!(gp.buttons[13]?.pressed) || (hatValid && hat > -0.25 && hat < 0.55);
-    const dLeft = !!(gp.buttons[14]?.pressed) || (hatValid && hat > 0.30);
-    return { up: dUp, down: dDown, left: dLeft, right: dRight };
+    const hat = gpCore() ? gpCore().decodeDpadHat(gp) : { up: false, down: false, left: false, right: false };
+    return {
+        up: !!(gp.buttons[12]?.pressed) || hat.up,
+        down: !!(gp.buttons[13]?.pressed) || hat.down,
+        left: !!(gp.buttons[14]?.pressed) || hat.left,
+        right: !!(gp.buttons[15]?.pressed) || hat.right
+    };
 }
 
 window.pollGamepad = function() {
     const gp = getActiveGamepad();
+    const gpState = window.InputState.gp;
     if (!gp) {
         if (window.InputState.gamepadConnected) {
             window.updatePlayStationBadge(false);
@@ -451,10 +440,8 @@ window.pollGamepad = function() {
     const now = performance.now();
 
     const btnEdge = (idx) => {
-        const isDown = !!(gp.buttons[idx] && (gp.buttons[idx].pressed || gp.buttons[idx].value > 0.5));
-        const wasDown = !!window.InputState.prevButtons[idx];
-        window.InputState.prevButtons[idx] = isDown;
-        if (isDown && !wasDown) {
+        const isFresh = gpCore() ? gpCore().justPressed(gp, gpState, idx, 0.5) : false;
+        if (isFresh) {
             window.SoundEngine?.init?.();
             return true;
         }
@@ -478,11 +465,10 @@ window.pollGamepad = function() {
     const rawRx = gp.axes[2] || 0;
     const rawRy = gp.axes[3] || 0;
 
-    // Rescaled smooth deadzone for axes
-    const dz = 0.16;
-    const rescale = v => Math.abs(v) > dz ? (v - Math.sign(v) * dz) / (1 - dz) : 0;
-    const lx = rescale(rawLx);
-    const ly = rescale(rawLy);
+    // Radial deadzone via ArcadeCore.Gamepad
+    const ls = gpCore() ? gpCore().applyRadialDeadzone(rawLx, rawLy, 0.16) : { x: rawLx, y: rawLy };
+    const lx = ls.x;
+    const ly = ls.y;
 
     // Directional edge + repeat helper for UI & Play D-Pad
     const navUpRaw = hatDirs.up || (mode !== 'play' && rawLy < -0.55);
@@ -528,6 +514,7 @@ window.pollGamepad = function() {
         } else if (circleEdge) {
             document.getElementById('btnGameOverHub')?.click();
         }
+        gpCore()?.snapshotButtons(gp, gpState, 0.5);
         return { moveX: 0, moveY: 0, firing: false };
     }
 
@@ -535,6 +522,7 @@ window.pollGamepad = function() {
         if (crossEdge || circleEdge || startEdge || selectEdge) {
             window.dismissHelpModal();
         }
+        gpCore()?.snapshotButtons(gp, gpState, 0.5);
         return { moveX: 0, moveY: 0, firing: false };
     }
 
@@ -561,6 +549,7 @@ window.pollGamepad = function() {
             document.getElementById('helpModal')?.classList.remove('hidden');
             window.syncPauseStateFromModals();
         }
+        gpCore()?.snapshotButtons(gp, gpState, 0.5);
         return { moveX: 0, moveY: 0, firing: false };
     }
 
@@ -588,16 +577,19 @@ window.pollGamepad = function() {
         if (circleEdge || selectEdge || startEdge) {
             window.toggleModderDrawer(false);
         }
+        gpCore()?.snapshotButtons(gp, gpState, 0.5);
         return { moveX: 0, moveY: 0, firing: false };
     }
 
     // Active Play Mode
     if (startEdge) {
         window.openPauseModal();
+        gpCore()?.snapshotButtons(gp, gpState, 0.5);
         return { moveX: 0, moveY: 0, firing: false };
     }
     if (selectEdge) {
         window.toggleModderDrawer(true);
+        gpCore()?.snapshotButtons(gp, gpState, 0.5);
         return { moveX: 0, moveY: 0, firing: false };
     }
 
@@ -642,6 +634,7 @@ window.pollGamepad = function() {
     if (hatLeftEdge) window.cycleBuildingSelection(-1);
     if (hatRightEdge) window.cycleBuildingSelection(1);
 
+    gpCore()?.snapshotButtons(gp, gpState, 0.5);
     return {
         moveX: Math.abs(lx) > 0 ? lx : window.InputState.touchMoveX,
         moveY: Math.abs(ly) > 0 ? ly : window.InputState.touchMoveY,

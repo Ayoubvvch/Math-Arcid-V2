@@ -2,6 +2,12 @@
  * MathCore: Sandbox Survivor - World State, Objectives, & PlayStation Entities
  */
 
+window.getMathCoreSyncedHighScore = function() {
+    const legacy = parseInt(localStorage.getItem('mathcore_high_score') || '0', 10) || 0;
+    const progBest = Number(window.ArcadeCore?.Progress?.getGameProgress?.('mathcore-survivor')?.bestScore || 0);
+    return Math.max(legacy, progBest);
+};
+
 window.GameState = {
     paused: true, // Starts paused while #helpModal is visible
     gameOver: false,
@@ -11,10 +17,11 @@ window.GameState = {
     waveProgress: 0,
     waveGoal: 6,
     score: 0,
-    highScore: parseInt(localStorage.getItem('mathcore_high_score') || '0', 10),
+    highScore: window.getMathCoreSyncedHighScore(),
     combo: 0,
     lastKillTime: 0,
     kills: 0,
+    mathSolved: 0,
     matter: 120,
     selectedBuildIndex: 0,
     screenShake: 0,
@@ -115,6 +122,8 @@ window.resetMathCoreGame = function(autoResume = true) {
     gs.combo = 0;
     gs.lastKillTime = 0;
     gs.kills = 0;
+    gs.mathSolved = 0;
+    gs.highScore = Math.max(gs.highScore || 0, window.getMathCoreSyncedHighScore());
     gs.matter = 120;
     gs.screenShake = 0;
     gs.closestEnemy = null;

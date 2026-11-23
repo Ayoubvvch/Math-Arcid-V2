@@ -2,6 +2,8 @@
  * Integral Forge (محرقة التكامل والمعادلات) - 100% DualSense / DualShock, Keyboard, Mouse & Touch Input System
  */
 
+const gpCore = () => window.ArcadeCore && window.ArcadeCore.Gamepad;
+
 window.ForgeInput = {
   keys: {},
   mouseX: window.innerWidth / 2,
@@ -9,12 +11,22 @@ window.ForgeInput = {
   mouseLeftDown: false,
   mouseAimActive: false,
 
-  gamepadSlot: -1,
-  gamepadConnected: false,
-  prevButtons: {},
-  prevHat: { up: false, down: false, left: false, right: false },
+  gp: gpCore() ? gpCore().createState() : {
+    connected: false,
+    index: null,
+    idLabel: '',
+    prevButtons: [],
+    axisLeftHeld: false,
+    axisRightHeld: false,
+    axisUpHeld: false,
+    axisDownHeld: false,
+    pauseFocusIdx: 0,
+    endFocusIdx: 0,
+    lastShownConnected: null,
+    lastShownLabel: ''
+  },
+  prevPlayHatUp: false,
   prevTouchJump: false,
-  navCooldownAt: 0,
   inputLockUntil: 0,
 
   pauseFocusIdx: 0,
@@ -35,88 +47,34 @@ function applyForgeFocusList(selector, key) {
   if (!items.length) return;
   const len = items.length;
   window.ForgeInput[key] = ((window.ForgeInput[key] % len) + len) % len;
-  items.forEach((el, idx) => el.classList.toggle('gp-focused', idx === window.ForgeInput[key]));
+  gpCore()?.applyFocusRing(items, window.ForgeInput[key]);
 }
 window.applyForgePauseFocus = () => applyForgeFocusList('.pause-menu-btn', 'pauseFocusIdx');
 window.applyForgeEndFocus = () => applyForgeFocusList('.end-menu-btn', 'endFocusIdx');
 
 function findActiveForgeGamepad() {
-  if (!navigator.getGamepads) return null;
-  const pads = navigator.getGamepads();
-  if (window.ForgeInput.gamepadSlot >= 0) {
-    const p = pads[window.ForgeInput.gamepadSlot];
-    if (p && p.connected) return p;
-  }
-  for (let i = 0; i < pads.length; i++) {
-    if (pads[i] && pads[i].connected) {
-      window.ForgeInput.gamepadSlot = i;
-      return pads[i];
-    }
-  }
-  window.ForgeInput.gamepadSlot = -1;
-  return null;
+  return gpCore() ? gpCore().resolveActiveGamepad(window.ForgeInput.gp) : null;
 }
 
 function readForgeHatDirs(gp) {
-  const dirs = { up: false, down: false, left: false, right: false };
-  if (gp.axes && gp.axes.length > 9) {
-    const h = gp.axes[9];
-    if (typeof h === 'number' && Math.abs(h) <= 1.05 && h < 1.1) {
-      if (h < -0.75) { dirs.up = true; }
-      else if (h < -0.35) { dirs.up = true; dirs.right = true; }
-      else if (h < -0.05) { dirs.right = true; }
-      else if (h < 0.25) { dirs.right = true; dirs.down = true; }
-      else if (h < 0.52) { dirs.down = true; }
-      else if (h < 0.78) { dirs.down = true; dirs.left = true; }
-      else if (h <= 0.92) { dirs.left = true; }
-      else { dirs.left = true; dirs.up = true; }
-    }
-  }
-  return dirs;
+  return gpCore() ? gpCore().decodeDpadHat(gp) : { up: false, down: false, left: false, right: false };
 }
 
 function radialStickForge(axX, axY, dz = 0.16) {
-  const m = Math.hypot(axX, axY);
-  if (m < dz) return { x: 0, y: 0 };
-  const c = Math.min(1, m);
-  const s = (c - dz) / (1 - dz);
-  return { x: (axX / m) * s, y: (axY / m) * s };
+  return gpCore() ? gpCore().applyRadialDeadzone(axX, axY, dz) : { x: axX, y: axY };
 }
 
-window.triggerForgeHaptic = async function(duration = 75, weak = 0.45, strong = 0.65) {
-  const gp = findActiveForgeGamepad();
-  if (gp && gp.vibrationActuator && typeof gp.vibrationActuator.playEffect === 'function') {
-    try {
-      await gp.vibrationActuator.playEffect('dual-rumble', {
-        startDelay: 0, duration, weakMagnitude: weak, strongMagnitude: strong
-      });
-    } catch (e) {}
-  }
+window.triggerForgeHaptic = function(duration = 75, weak = 0.45, strong = 0.65) {
+  gpCore()?.triggerHaptic(window.ForgeInput.gp, duration, weak, strong);
 };
 
-let cachedForgeGpPill = null;
-let cachedForgeGpStatusText = null;
-
-function updateForgeGamepadBanner(gp) {
-  if (!cachedForgeGpPill) cachedForgeGpPill = document.getElementById('gamepadPill');
-  if (!cachedForgeGpStatusText) cachedForgeGpStatusText = document.getElementById('gamepadStatusText');
-  const pill = cachedForgeGpPill;
-  const txt = cachedForgeGpStatusText;
-  if (!pill || !txt) return;
-  if (gp) {
-    if (!window.ForgeInput.gamepadConnected) {
-      window.ForgeInput.gamepadConnected = true;
-      pill.classList.remove('disconnected');
-      const id = String(gp.id || '').toLowerCase();
-      txt.textContent = (id.includes('dualsense') || id.includes('054c') || id.includes('dualshock') || id.includes('playstation'))
-        ? 'PS5 DualSense متصل 100%'
-        : 'يد التحكم متصلة 100%';
-    }
-  } else if (window.ForgeInput.gamepadConnected) {
-    window.ForgeInput.gamepadConnected = false;
-    pill.classList.add('disconnected');
-    txt.textContent = 'لوحة المفاتيح جاهزة';
-  }
+function updateForgeGamepadBanner() {
+  gpCore()?.updateBanner(
+    window.ForgeInput.gp,
+    document.getElementById('gamepadPill'),
+    document.getElementById('gamepadStatusText'),
+    'لوحة المفاتيح جاهزة'
+  );
 }
 
 window.initForgeControls = function(getState) {
@@ -319,7 +277,8 @@ window.getForgeMoveVec = function() {
 
 window.pollForgeInputs = function(state) {
   const gp = findActiveForgeGamepad();
-  updateForgeGamepadBanner(gp);
+  const gpState = window.ForgeInput.gp;
+  updateForgeGamepadBanner();
 
   let moveVec = window.getForgeMoveVec();
   if (Math.hypot(window.ForgeInput.touchVecX, window.ForgeInput.touchVecY) > 0.14) {
@@ -374,25 +333,20 @@ window.pollForgeInputs = function(state) {
     const b = gp.buttons[i];
     return !!(b && (b.pressed || b.value > 0.55));
   };
-  const edge = (i) => {
-    const cur = btnDown(i);
-    const prev = !!window.ForgeInput.prevButtons[i];
-    window.ForgeInput.prevButtons[i] = cur;
-    return !locked && cur && !prev;
-  };
+  const edge = (i) => !locked && (gpCore() ? gpCore().justPressed(gp, gpState, i, 0.55) : false);
 
   const hat = readForgeHatDirs(gp);
-  const dUpRaw = btnDown(12) || hat.up || (ls.y < -0.58);
-  const dDownRaw = btnDown(13) || hat.down || (ls.y > 0.58);
-  const dLeftRaw = btnDown(14) || hat.left || (ls.x < -0.58);
-  const dRightRaw = btnDown(15) || hat.right || (ls.x > 0.58);
-  if (dDownRaw) holdingDown = true;
+  const dDownHold = btnDown(13) || hat.down;
+  const dLeftHold = btnDown(14) || hat.left;
+  const dRightHold = btnDown(15) || hat.right;
+  if (dDownHold || ls.y > 0.58) holdingDown = true;
 
-  const edgeUp = !locked && ((btnDown(12) && !window.ForgeInput.prevButtons[12]) || (hat.up && !window.ForgeInput.prevHat.up));
-  const edgeDown = !locked && ((btnDown(13) && !window.ForgeInput.prevButtons[13]) || (hat.down && !window.ForgeInput.prevHat.down));
-  const edgeLeft = !locked && ((btnDown(14) && !window.ForgeInput.prevButtons[14]) || (hat.left && !window.ForgeInput.prevHat.left));
-  const edgeRight = !locked && ((btnDown(15) && !window.ForgeInput.prevButtons[15]) || (hat.right && !window.ForgeInput.prevHat.right));
-  window.ForgeInput.prevHat = hat;
+  const edgeDpadUp = !locked && (edge(12) || (hat.up && !window.ForgeInput.prevPlayHatUp));
+  window.ForgeInput.prevPlayHatUp = hat.up;
+
+  const { dLeft, dRight, dUp, dDown } = gpCore()
+    ? gpCore().sampleDirectionalNav(gp, gpState, 0.55)
+    : { dLeft: false, dRight: false, dUp: false, dDown: false };
 
   const eCross = edge(0);
   const eCircle = edge(1);
@@ -403,20 +357,16 @@ window.pollForgeInputs = function(state) {
   const eL2 = edge(6);
   const eR2 = edge(7);
   const eOptions = edge(9);
-  edge(12); edge(13); edge(14); edge(15);
-
-  const canRepeat = !locked && now >= window.ForgeInput.navCooldownAt;
 
   if (state.mode === 'intro') {
-    if (edgeLeft || eL1 || (dLeftRaw && canRepeat)) {
+    if (!locked && (dLeft || eL1)) {
       window.cycleForgeFilter(-1);
-      window.ForgeInput.navCooldownAt = now + 200;
-    } else if (edgeRight || eR1 || (dRightRaw && canRepeat)) {
+    } else if (!locked && (dRight || eR1)) {
       window.cycleForgeFilter(1);
-      window.ForgeInput.navCooldownAt = now + 200;
     } else if (eCross || eOptions) {
       window.startForgeFromIntro();
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null, holdingDown: false };
   }
 
@@ -428,6 +378,7 @@ window.pollForgeInputs = function(state) {
     else if (eR1) window.toggleForgeHint();
     else if (eL2) window.triggerForgeOverdriveBypass();
     else if (eOptions) window.openForgePause();
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null, holdingDown: false };
   }
 
@@ -435,50 +386,50 @@ window.pollForgeInputs = function(state) {
     const items = Array.from(document.querySelectorAll('.pause-menu-btn'));
     if (eCircle || eOptions) {
       window.closeForgePause();
-    } else if (edgeUp || (dUpRaw && canRepeat)) {
+    } else if (!locked && dUp) {
       window.ForgeInput.pauseFocusIdx--;
       window.applyForgePauseFocus();
       window.ForgeAudio?.playUiTick?.();
-      window.ForgeInput.navCooldownAt = now + 185;
-    } else if (edgeDown || (dDownRaw && canRepeat)) {
+    } else if (!locked && dDown) {
       window.ForgeInput.pauseFocusIdx++;
       window.applyForgePauseFocus();
       window.ForgeAudio?.playUiTick?.();
-      window.ForgeInput.navCooldownAt = now + 185;
     } else if (eCross) {
       items[window.ForgeInput.pauseFocusIdx]?.click();
     } else if (eL1 || eR1) {
       window.cycleForgeFilter(eR1 ? 1 : -1);
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null, holdingDown: false };
   }
 
   if (state.mode === 'end') {
     const items = Array.from(document.querySelectorAll('.end-menu-btn'));
-    if (edgeUp || edgeDown || ((dUpRaw || dDownRaw) && canRepeat)) {
-      window.ForgeInput.endFocusIdx++;
+    if (!locked && (dUp || dDown)) {
+      window.ForgeInput.endFocusIdx += dUp ? -1 : 1;
       window.applyForgeEndFocus();
       window.ForgeAudio?.playUiTick?.();
-      window.ForgeInput.navCooldownAt = now + 200;
     } else if (eCross) {
       items[window.ForgeInput.endFocusIdx]?.click();
     } else if (eCircle) {
       document.getElementById('btnHubEnd')?.click();
     }
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec: { x: 0, y: 0 }, aimVec: null, holdingDown: false };
   }
 
   // Play mode DualSense mapping
   if (Math.abs(moveVec.x) < 0.1) {
-    if (dLeftRaw) moveVec.x = -1;
-    else if (dRightRaw) moveVec.x = 1;
+    if (dLeftHold) moveVec.x = -1;
+    else if (dRightHold) moveVec.x = 1;
   }
 
   if (eOptions) {
     window.openForgePause();
+    gpCore()?.snapshotButtons(gp, gpState);
     return { moveVec, aimVec, holdingDown };
   }
-  if (eCross) window.performForgeJump(state, holdingDown);
+  if (eCross || edgeDpadUp) window.performForgeJump(state, holdingDown);
   if (eCircle) window.performForgeSlice(state, moveVec.x);
   if (eSquare) window.triggerNearestForgeGate(state);
   if (eTri) window.performForgeAegis(state);
@@ -488,5 +439,6 @@ window.pollForgeInputs = function(state) {
     window.performForgeCannon(state);
   }
 
+  gpCore()?.snapshotButtons(gp, gpState);
   return { moveVec, aimVec, holdingDown };
 };

@@ -41,14 +41,14 @@
   - Wired `ArcadeCore.Progress` (`recordAnswer` with `topic` for `weakTopics`/`masteredTopics`, `recordSealProgress`, and double-call-guarded `recordRun` with rank badge feedback) into all 4 games.
   - **Omega Core & UX Fixes**: Hardened `shared/arcade-core.js` with `∛∜`, `τ`, `ᵃᵉʰᵐᵗᵘ`, `↦⇐⟹⟺` math glyphs, balanced-parenthesis trimming in `setBidiSafeMath`, 8-way W3C D-Pad hat decoding, and clean gamepad disconnect reset; fixed `limit-abyss` HUD mousedown torpedo bleed, square stick deadzone -> radial deadzone, and pause/override modal overlap.
 
-### [NEXT — Cycle 019 Alpha (2026-11-23 05:00 UTC)] Milestone 3.4: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Upgrade
-* **Target**: `games/logarithm-reactor/`, `games/integral-forge/`, `games/mathcore-survivor/`, `games/math-battle/`
-* **Deliverables**:
-  - Integrate `shared/arcade-core.js` into `logarithm-reactor` and `integral-forge` (deduplicating `setBidiSafeMath` & DualSense boilerplate and wiring `ArcadeCore.Progress`).
-  - Connect `mathcore-survivor` (migrating/bridging its existing `localStorage` high-score seamlessly) and `math-battle` to `ArcadeCore.Progress`.
-  - Localize `games/math-battle/` (`<html lang="ar" dir="rtl">`, HUD/modals/buttons/Arabic calculus prompts) to match the unified platform UX standard and confirm full DualSense modal + gameplay consistency across Games 1–2.
+### [COMPLETED — Cycle 019 Alpha (2026-11-23 05:12 UTC)] Milestone 3.4: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Upgrade
+* **Target**: `games/logarithm-reactor/` (v1.2.0), `games/integral-forge/` (v1.2.0), `games/mathcore-survivor/` (v2.1.0), `games/math-battle/` (v2.1.0), `games.json`
+* **Delivered**:
+  - Wired `<script src="../../shared/arcade-core.js"></script>` across `logarithm-reactor` (`4,619` LOC) and `integral-forge` (`4,663` LOC), deduplicating `setBidiSafeMath` and DualSense polling/deadzones/hat/haptics/focus onto `ArcadeCore.setBidiSafeMath` & `ArcadeCore.Gamepad` (`justPressed`, `sampleDirectionalNav`, `snapshotButtons`), and wired `ArcadeCore.Progress` (`recordAnswer`, `recordSealProgress`, double-call-guarded `recordRun` with rank display).
+  - Connected `mathcore-survivor` (`4,352` core LOC) onto `shared/arcade-core.js` with bidirectional legacy `localStorage['mathcore_high_score']` bridging, per-solve `recordAnswer` + wave/boss telemetry, and unified `ArcadeCore.Gamepad` polling while preserving custom PlayStation badge & Modder Drawer ergonomics.
+  - Overhauled `games/math-battle/` (`3,678` core LOC) into full Arabic RTL (`<html lang="ar" dir="rtl">`, Cairo font, logical CSS offsets, `.math-ltr` formula isolation, LTR canvas orientation guard with Arabic popups/countdown/HUD/overlays), connected `ArcadeCore.Progress` across `d/dx` strikes and Boss victories (`x3`, `x4`, `sin`, `exp`), and unified DualSense polling onto `ArcadeCore.Gamepad`.
 
-### [UPCOMING — Cycle 020 Omega (2026-11-23 17:00 UTC)] Milestone 3.5: PS5 Hub Mastery Telemetry Dashboard & Smart Review UX
+### [NEXT — Cycle 020 Omega (2026-11-23 17:00 UTC)] Milestone 3.5: PS5 Hub Mastery Telemetry Dashboard & Smart Review UX
 * **Target**: `js/hub.js`, `css/hub.css`, `index.html`, `shared/arcade-core.js`
 * **Deliverables**:
   - Surface live `ArcadeCore.Progress` telemetry inside the PS5 Hub without violating 60FPS GPU rules (`zero backdrop-filter`):
