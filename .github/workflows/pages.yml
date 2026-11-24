@@ -26,12 +26,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
 
       - name: Upload Artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: '.'
+
+      - name: Wait for artifact propagation
+        run: sleep 5
 
       - name: Deploy to GitHub Pages
         id: deployment
