@@ -43,5 +43,49 @@
     "accentColor": "#b537f2",
     "status": "ready",
     "featured": true
+  },
+  {
+    "id": "sequence-weaver",
+    "subject": "math",
+    "order": 2,
+    "unitLabel": "الدرس 3 • المتتاليات",
+    "topicStart": 41,
+    "topicEnd": 52,
+    "title": "نسّاج التقارب — المتتاليات العنكبوتية",
+    "slug": "sequence-weaver",
+    "category": "التحليل",
+    "topicRange": "المتتاليات العددية (41–52)",
+    "difficulty": "تدريجي • تفاعلي",
+    "difficultyLevel": 3,
+    "version": "1.0.0",
+    "description": "مختبر تفاعلي للمتتاليات العددية (2BAC PC): وجّه المسارات العنكبوتية uₙ₊₁=f(uₙ) على المستقيم y=x، اضبط حواجز الترجع والمحدودية، حوّل المتتاليات المتخاطة بالعدسة المساعدة، واحصر التذبذب بممر الدركيين.",
+    "mathConcepts": [
+      "الترجع والمحدودية: u₀ ∈ I و f(I) ⊂ I",
+      "الرتابة والتقارب الرتيب (MCT) وإشارة f(x)−x",
+      "المتتالية المساعدة للتآلفية والمتخاطة",
+      "نهايات aⁿ والدركيين والنقطة الصامدة f(L)=L"
+    ],
+    "keywords": ["المتتاليات", "الترجع", "المحدودية", "الرتابة", "التقارب", "المتخاطة", "الدركيين", "النقطة الصامدة", "suites", "cobweb"],
+    "controls": [
+      "الماوس / اللمس: سحب u₀ وحواجز M/m وأقطاب α/β مباشرة على المبيان",
+      "الأسهم ◀ ▶ / ▲ ▼: ضبط دقيق للمعاملات والحدود",
+      "Space / Enter / ✕: إطلاق نبضة الترجع والمحاكاة",
+      "L1 / R1 أو [ / ]: التنقل بين الميادين الـ 6",
+      "H: إظهار ملخص منهجية الوطني",
+      "R / ◯: إعادة ضبط الميدان"
+    ],
+    "creativeProfile": {
+      "genre": "cobweb-trajectory-and-bounds-puzzle",
+      "camera": "split-phase-cobweb-and-term-spectrum",
+      "coreMechanic": "سحب البذرة البدئية u₀ وضبط الحواجز والمحاور مباشرة على المبيان لتحقيق الترجع والرتابة والتحويل المساعد وحصر الدركيين",
+      "controlScheme": "pointer-drag-sliders-and-step-pulse",
+      "visualStyle": "celestial-astrolabe-emerald-gold"
+    },
+    "path": "games/sequence-weaver/index.html",
+    "badge": "الدرس 3 • 41–52",
+    "icon": "uₙ",
+    "accentColor": "#10b981",
+    "status": "ready",
+    "featured": true
   }
 ]

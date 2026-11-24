@@ -33,6 +33,29 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'sequence-weaver') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="swGlow" cx="52%" cy="48%" r="56%">
+            <stop offset="0%" stop-color="#10b981" stop-opacity="0.34" />
+            <stop offset="100%" stop-color="#040b0e" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#040b0e" />
+        <circle cx="164" cy="96" r="88" fill="url(#swGlow)" />
+        <line x1="48" y1="162" x2="272" y2="162" stroke="#94a3b8" stroke-opacity="0.28" stroke-width="1.2" />
+        <line x1="66" y1="24" x2="66" y2="178" stroke="#94a3b8" stroke-opacity="0.28" stroke-width="1.2" />
+        <line x1="56" y1="168" x2="256" y2="34" stroke="#f59e0b" stroke-opacity="0.72" stroke-dasharray="5 4" stroke-width="1.8" />
+        <path d="M56 132 Q 145 52, 260 56" fill="none" stroke="#38bdf8" stroke-width="2.5" />
+        <polyline points="88,162 88,108 144,108 144,78 190,78 190,66 208,66" fill="none" stroke="#10b981" stroke-width="2" />
+        <circle cx="88" cy="162" r="5" fill="#10b981" />
+        <polygon points="208,58 216,66 208,74 200,66" fill="#f59e0b" />
+        <text x="242" y="138" text-anchor="middle" fill="#6ee7b7" font-family="JetBrains Mono, monospace" font-weight="800" font-size="13">uₙ → L</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />

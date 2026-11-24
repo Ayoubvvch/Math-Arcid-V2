@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, viewport-fit=cover" />
+  <title>نسّاج التقارب — المتتاليات العددية | Math-Arcid-V2</title>
+  <meta name="description" content="لعبة تفاعلية مبتكرة للدرس 3 (المتتاليات العددية 2BAC PC): وجّه المسارات العنكبوتية uₙ₊₁=f(uₙ)، اضبط حواجز الترجع، حوّل المتخاطة بالعدسة المساعدة، واحصر التذبذب بممر الدركيين." />
+  <link rel="stylesheet" href="../../css/common.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="weaver-body">
+  <div class="weaver-shell">
+    <!-- الشريط العلوي المختصر -->
+    <header class="weaver-topbar">
+      <div class="topbar-group">
+        <a href="../../index.html?from=game" class="back-pill" title="العودة إلى بوابة الألعاب">
+          <span>‹</span>
+          <span>بوابة الألعاب</span>
+        </a>
+        <div class="brand-title-wrap">
+          <span class="brand-emblem" dir="ltr">uₙ</span>
+          <div>
+            <h1 class="brand-title">نسّاج التقارب</h1>
+            <div class="brand-sub">المتتاليات العددية • <bdi dir="ltr" class="math-ltr">2BAC PC (41–52)</bdi></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- شريط الميادين الستة -->
+      <nav id="stageTabs" class="stage-tabs" aria-label="ميادين المتتاليات">
+        <!-- تملأ عبر game.js -->
+      </nav>
+
+      <div class="topbar-group topbar-metrics">
+        <div class="metric-chip">
+          <span class="metric-label">النتيجة</span>
+          <span id="scoreVal" class="metric-val" dir="ltr">0</span>
+        </div>
+        <div class="metric-chip">
+          <span class="metric-label">الإتقان</span>
+          <span id="clearedVal" class="metric-val" dir="ltr">0/6</span>
+        </div>
+        <button id="btnHint" class="icon-pill" type="button" title="ملخص منهجية الوطني [H]">💡 المنهجية</button>
+        <button id="btnAudio" class="icon-pill" type="button" title="تبديل الصوت [M]">🔊</button>
+        <button id="btnReset" class="icon-pill" type="button" title="إعادة ضبط الميدان [R]">🔄</button>
+      </div>
+    </header>
+
+    <!-- خشبة اللعب التفاعلية -->
+    <main class="weaver-main">
+      <!-- لوحة المبيان الفيزيائي العنكبوتي -->
+      <section class="canvas-stage" aria-label="المختبر التفاعلي للمتتاليات">
+        <div class="stage-banner">
+          <div class="stage-badge-row">
+            <span id="stageTag" class="stage-pill">الميدان 1</span>
+            <span id="roundTag" class="round-pill" dir="ltr">1 / 2</span>
+            <span id="formulaTag" class="formula-pill" dir="ltr">uₙ₊₁ = ½uₙ + 2</span>
+          </div>
+          <div id="dragGuide" class="drag-guide">اسحب النقط والحواجز مباشرة على المبيان أو استعمل الأزرار</div>
+        </div>
+
+        <div id="canvasWrap" class="canvas-wrap">
+          <canvas id="weaverCanvas" role="application" aria-label="مبيان التفاعلي للمتتالية العددية"></canvas>
+          <div id="stageFeedback" class="stage-feedback hidden" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- وحدة الضبط والتحقق المنهجي -->
+      <aside class="control-dock" aria-label="لوحة الضبط الرياضي">
+        <div class="dock-card mission-card">
+          <div class="dock-eyebrow">المهمة الرياضية</div>
+          <h2 id="roundTitle" class="round-title">برج الترجع والمكبر</h2>
+          <p id="missionText" class="mission-text">اضبط u₀ داخل المجال الآمن وحجم السقف M ثم أطلق النبضة.</p>
+        </div>
+
+        <!-- مصابيح التحقق الرياضي الحيّة -->
+        <div class="dock-card checks-card">
+          <div class="dock-eyebrow">شروط البرهان الحيّ</div>
+          <ul id="liveChecks" class="live-checks">
+            <!-- تملأ ديناميكياً حسب قانون كل ميدان -->
+          </ul>
+        </div>
+
+        <!-- عناصر التحكم المخصصة لكل ميدان -->
+        <div class="dock-card controls-card">
+          <div class="dock-eyebrow">أدوات المعايرة</div>
+          <div id="dynamicControls" class="dynamic-controls">
+            <!-- سلايدرات وأزرار خاصة بالميدان النشط -->
+          </div>
+        </div>
+
+        <!-- ملخص المنهجية المغربية القابل للفتح -->
+        <div id="proofCard" class="dock-card proof-card hidden">
+          <div class="dock-eyebrow">منهجية الامتحان الوطني (2BAC PC)</div>
+          <p id="proofText" class="proof-text"></p>
+        </div>
+
+        <!-- زر الإطلاق الرئيسي -->
+        <div class="dock-actions">
+          <button id="btnLaunch" class="btn-launch" type="button">
+            <span class="launch-glyph">⚡</span>
+            <span id="btnLaunchLabel">أطلق النبضة وتحقق</span>
+          </button>
+          <button id="btnNextRound" class="btn-next hidden" type="button">
+            <span>التالي</span>
+            <span>←</span>
+          </button>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- نافذة إتمام المقرر بنجاح -->
+  <div id="victoryModal" class="victory-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
+    <div class="victory-box">
+      <div class="victory-crest">🏆</div>
+      <h2 id="victoryTitle" class="victory-title">اكتمل ترويض المتتاليات العددية!</h2>
+      <p id="victoryDesc" class="victory-desc"></p>
+      <div class="victory-stats">
+        <div class="v-stat"><span>النتيجة النهائية</span><strong id="vScore" dir="ltr">0</strong></div>
+        <div class="v-stat"><span>الدقة</span><strong id="vAcc" dir="ltr">100%</strong></div>
+        <div class="v-stat"><span>الرتبة</span><strong id="vRank" dir="ltr">S</strong></div>
+      </div>
+      <div class="victory-btns">
+        <button id="btnReplayAll" class="btn-launch" type="button">إعادة التحدي من البداية</button>
+        <a href="../../index.html?from=game" class="back-pill">العودة لبوابة الألعاب</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/arcade-core.js"></script>
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>
