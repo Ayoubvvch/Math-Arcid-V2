@@ -15,8 +15,8 @@
     "architectPhase": "Auto-triggered on Sprint completion OR every <= 14 days (28 cycles) -> Truthful Audit, Anti-Clone Check & Next Sprint Planning"
   },
   "architectPolicy": {
-    "cadenceDays": 14,
-    "maxCyclesBetweenAudits": 28,
+    "cadenceDays": 7,
+    "maxCyclesBetweenAudits": 8,
     "lastArchitectCycle": 0,
     "lastArchitectTimestamp": "2026-11-24T02:00:00Z"
   },

@@ -248,93 +248,9 @@ if (!res || metrics.stagesCleared !== 3 || metrics.totalStages !== 5 || metrics.
 console.log('  ✓ ArcadeCore KaTeX + Bidi & Progress contracts verified.');
 EOF
 
-# 6. Headless Chromium Real-Browser Smoke & Universal KaTeX Audit
-echo "[6/7] Running Headless Chromium live check on Hub + all games (including KaTeX audit)..."
-node - <<'EOF'
-const fs = require('fs');
-const path = require('path');
-const http = require('http');
-const { execFile } = require('child_process');
-
-const games = JSON.parse(fs.readFileSync('games.json', 'utf8'));
-const pages = ['index.html?from=game', ...games.map(g => g.path)];
-
-if (!fs.existsSync('/snap/bin/chromium')) {
-  console.log('  ⚠ /snap/bin/chromium not found; skipped live browser stage.');
-  process.exit(0);
-}
-
-const mime = {
-  '.html': 'text/html', '.js': 'application/javascript', '.mjs': 'application/javascript',
-  '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml',
-  '.png': 'image/png', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2',
-  '.woff': 'font/woff', '.ttf': 'font/ttf'
-};
-
-const srv = http.createServer((req, res) => {
-  const urlPath = req.url.split('?')[0];
-  let fp = path.join(process.cwd(), urlPath === '/' ? 'index.html' : urlPath);
-  if (fs.existsSync(fp) && fs.statSync(fp).isDirectory()) fp = path.join(fp, 'index.html');
-  if (!fs.existsSync(fp)) { res.writeHead(404); res.end('404'); return; }
-  res.writeHead(200, { 'Content-Type': mime[path.extname(fp)] || 'application/octet-stream' });
-  fs.createReadStream(fp).pipe(res);
-});
-
-srv.listen(0, '127.0.0.1', async () => {
-  const port = srv.address().port;
-  const runPage = (pagePath, budgetMs = 3000) => new Promise((resolve, reject) => {
-    execFile('/snap/bin/chromium', [
-      '--headless', '--no-sandbox', '--disable-gpu', '--enable-logging=stderr', '--v=0',
-      '--dump-dom', `--virtual-time-budget=${budgetMs}`, `http://127.0.0.1:${port}/${pagePath}`
-    ], { timeout: 22000 }, (err, stdout, stderr) => {
-      if (err) return reject(new Error(`Chromium failed on ${pagePath}: ${err.message}`));
-      const errs = (stderr || '').split('\n').filter(l =>
-        /Uncaught|ReferenceError|TypeError|SyntaxError|AudioContext was not allowed|Failed to load resource/i.test(l)
-      );
-      if (errs.length > 0) {
-        return reject(new Error(`Browser console errors on ${pagePath}: ${errs.join(' | ')}`));
-      }
-      if (/class="[^"]*katex-error/.test(stdout || '')) {
-        return reject(new Error(`KaTeX parse error (.katex-error) rendered on ${pagePath}!`));
-      }
-      if (!/class="katex"/.test(stdout || '')) {
-        return reject(new Error(`No KaTeX-rendered math (.katex) detected on ${pagePath}!`));
-      }
-      if (pagePath.startsWith('index.html')) {
-        const tileMatches = [...stdout.matchAll(/class="tile-title">([^<]+)</g)].map(m => m[1].trim());
-        if (tileMatches.length !== games.length) {
-          return reject(new Error(`Hub rendered ${tileMatches.length} tiles instead of ${games.length}!`));
-        }
-        for (let idx = 0; idx < games.length; idx++) {
-          if (tileMatches[idx] !== games[idx].title) {
-            return reject(new Error(`Hub tile #${idx+1} order mismatch: got "${tileMatches[idx]}", expected "${games[idx].title}"`));
-          }
-        }
-      } else {
-        const hasInteractiveStage = /<canvas|<svg|data-game-stage|role="application"/i.test(stdout || '');
-        if (!hasInteractiveStage) {
-          return reject(new Error(`Game page ${pagePath} rendered without an interactive <canvas>, <svg>, or game stage!`));
-        }
-      }
-      resolve(pagePath);
-    });
-  });
-
-  try {
-    await runPage(pages[0], 4200);
-    const gamePages = pages.slice(1);
-    for (let i = 0; i < gamePages.length; i += 2) {
-      await Promise.all(gamePages.slice(i, i + 2).map(p => runPage(p, 2800)));
-    }
-    srv.close();
-    console.log(`  ✓ Headless Chromium passed all ${pages.length} page(s) (0 console errors, 0 404s, KaTeX rendered with 0 errors).`);
-  } catch (e) {
-    srv.close();
-    console.error('  ✗ ERROR:', e.message);
-    process.exit(1);
-  }
-});
-EOF
+# 6. Real Interactive Chromium CDP Playtest (Canvas Animation, Simulated DualSense Start/Pause, Mobile 390px & Screenshots)
+echo "[6/7] Running interactive Chromium CDP playtest + DualSense Start/Pause audit + screenshots..."
+/opt/telegram-bot/venv/bin/python3 "$REPO_DIR/evolution/scripts/playtest_cdp.py"
 
 # 7. Verify Platform Shell & Core Documentation
 echo "[7/7] Verifying Console Hub & Creative Charter files..."

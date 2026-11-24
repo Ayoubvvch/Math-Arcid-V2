@@ -2,5 +2,6 @@ evolution/trigger.log
 evolution/cron.log
 evolution/last_run.json
 evolution/recovery_last.patch
+evolution/screenshots/
 *.log
 .DS_Store

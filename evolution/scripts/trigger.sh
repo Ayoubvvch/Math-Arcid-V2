@@ -56,12 +56,18 @@ fi
 MONSTER_BUSY=$(node -e '
   try {
     const h = JSON.parse(process.argv[1] || "{}");
-    const busy = Array.isArray(h.tasks) && h.tasks.some(t => t.chatKey === "auto_math_arcid_v2");
-    console.log(busy ? "1" : "0");
+    const task = Array.isArray(h.tasks) && h.tasks.find(t => t.chatKey === "auto_math_arcid_v2");
+    if (!task) { console.log("0"); process.exit(0); }
+    if (Number(task.elapsedSec || 0) > 2700) { console.log("STUCK"); process.exit(0); }
+    console.log("1");
   } catch (_) { console.log("0"); }
 ' "$WORKER_HEALTH")
 
-if [ "$MONSTER_BUSY" = "1" ]; then
+if [ "$MONSTER_BUSY" = "STUCK" ]; then
+  echo "[$TIMESTAMP] Previous auto_math_arcid_v2 task stuck >45m; stopping cleanly before starting new cycle." >> "$LOG_FILE"
+  curl -s -m 8 -X POST http://127.0.0.1:5015/stop -H "Content-Type: application/json" -d '{"chatKey":"auto_math_arcid_v2"}' >/dev/null 2>&1 || true
+  sleep 2
+elif [ "$MONSTER_BUSY" = "1" ]; then
   echo "[$TIMESTAMP] Previous auto_math_arcid_v2 cycle still running on worker. Skipping duplicate trigger." >> "$LOG_FILE"
   exit 0
 fi
@@ -168,13 +174,14 @@ MANDATORY TRUTHFUL ARCHITECT PROTOCOL:
    - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md
    - /home/ubuntu/Math-Arcid-V2/evolution/ROADMAP.md
    - /home/ubuntu/Math-Arcid-V2/games.json
-2. Perform a truthful audit across all live games in `/home/ubuntu/Math-Arcid-V2`:
-   - Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` and actually inspect each game's mechanics, fun factor, mobile/desktop playability, RTL math isolation, and `creativeProfile` diversity.
-   - Check if any two games feel too similar in loop, UI, or controls — if so, schedule a creative overhaul.
+2. Perform a **BRUTAL, TRUTHFUL AUDIT** across all live games in `/home/ubuntu/Math-Arcid-V2`:
+   - Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` (which runs real Chromium CDP playtests and saves screenshots to `evolution/screenshots/`).
+   - **Visually inspect EVERY game's `evolution/screenshots/<slug>_desktop.png` and `<slug>_mobile.png`** via `read_file`!
+   - Judge each game ruthlessly: Is it genuinely fun to play with a PS5 DualSense controller, or does any stage feel like a dry worksheet/applet? Does `Start (9)` open PauseMenu smoothly? Schedule immediate overhaul cycles in `SPRINT.md` for any weak game!
 3. Archive the completed Sprint summary into `/home/ubuntu/Math-Arcid-V2/evolution/ARCHIVE_MILESTONES.md`.
-4. Design the NEXT Creative Sprint (`REBOOT_SPRINT_02`, `03`, etc.) covering the next unbuilt lessons in `CURRICULUM.md` (with CREATE + POLISH pairs), or once all 11 Math lessons are deeply playable and distinct, evolve toward richer simulation challenges or 2BAC PC Physics & Chemistry with the exact same Math-as-Gameplay creative ethos!
-5. Update `ROADMAP.md`, `SPRINT.md`, `STATE.json` (`totalCyclesCompleted`, `architectPolicy.lastArchitectCycle`, `currentSprint`), and `EVOLUTION_LOG.md` (<= 10 entries).
-6. Pass `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` 100%, rebase/commit/push to `origin main`, and report to Owner Ayoub in crisp Arabic.
+4. Design the NEXT Creative Sprint (`REBOOT_SPRINT_02`, `03`, etc.) covering the next unbuilt lessons in `CURRICULUM.md` (with CREATE + POLISH pairs), or once all 11 Math lessons are deeply playable and distinct, evolve toward richer arcade modes or 2BAC PC Physics & Chemistry with the exact same Math-as-Gameplay ethos!
+5. Update `ROADMAP.md`, `SPRINT.md`, `STATE.json` (`totalCyclesCompleted`, `architectPolicy.lastArchitectCycle`, `architectPolicy.lastArchitectTimestamp`, `currentSprint`), and `EVOLUTION_LOG.md` (<= 10 entries).
+6. Pass `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` 100%, rebase/commit/push to `origin main`, and report to Owner Ayoub in crisp Arabic (attach `[SEND_FILE: /home/ubuntu/Math-Arcid-V2/evolution/screenshots/hub_desktop.png]`).
 EOF_ARCH_PROMPT
 elif [ "$PHASE" = "CREATE" ]; then
   read -r -d '' PROMPT_TEMPLATE <<'EOF_CREATE_PROMPT' || true
@@ -204,12 +211,13 @@ UNLEASHED CREATIVE MANDATE (ZERO-CLONE PHILOSOPHY):
    - Keep code crisp, light, and bug-free (NO `input[type="range"]` passive sliders, NO `backdrop-filter`, NO `shadowBlur > 0` in draw loops, NO `overrideModal` / 4-door QCM clones).
    - Respect `<html lang="ar" dir="rtl">`, include `../../shared/vendor/katex/katex.min.{css,js}` + `../../shared/arcade-core.js`, format ALL DOM math in LaTeX (`$...$` / `data-tex`) via `ArcadeCore.renderMath` (NEVER naked ASCII/Unicode math!), draw `<canvas>` math via `ArcadeCore.CanvasAxisKit.drawMathRich` (`KaTeX_Math`/`KaTeX_Main`), record progress with `ArcadeCore.Progress.recordRun`, and route exit links to `../../index.html?from=game`.
    - Strictly obey all `Hors-programme` limits in `CURRICULUM.md`!
-4. **REGISTER & VERIFY**:
+4. **REGISTER, PLAYTEST & VISUAL SELF-REVIEW**:
    - Add bespoke SVG tile artwork in `js/hub.js` and register the game in `games.json` with a unique `creativeProfile { genre, camera, coreMechanic, controlScheme, visualStyle }`.
-   - Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` AND verify interactively in Chromium that the game loads cleanly, renders its stage, and plays smoothly!
+   - Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` (runs live Chromium CDP playtest + DualSense Start/Pause check + mobile 390px overflow + captures PNG screenshots).
+   - **MANDATORY VISUAL INSPECTION**: Call `read_file` on `/home/ubuntu/Math-Arcid-V2/evolution/screenshots/<slug>_desktop.png` and `<slug>_mobile.png` to visually verify layout, KaTeX legibility, HUD spacing, and zero overlaps! Fix anything ugly and re-verify before committing.
 5. Update `SPRINT.md` (mark current `[NEXT]` as `[COMPLETED]` and promote next milestone to `[NEXT]`), `STATE.json`, and `EVOLUTION_LOG.md` (<= 10 entries).
 6. Pull/rebase safely (`git pull --rebase origin main || true`), commit, and push to `origin main`.
-7. Send Owner Ayoub a sharp Arabic summary explaining: the creative game concept invented, why it's unique, how the math IS the gameplay, the controls, and the exact `CURRICULUM.md` skills covered.
+7. Send Owner Ayoub a sharp Arabic summary including `[SEND_FILE: /home/ubuntu/Math-Arcid-V2/evolution/screenshots/<slug>_desktop.png]` showing the real game screenshot, the game loop, DualSense controls, and `CURRICULUM.md` skills covered.
 EOF_CREATE_PROMPT
 else
   read -r -d '' PROMPT_TEMPLATE <<'EOF_POLISH_PROMPT' || true
@@ -223,20 +231,21 @@ CRITICAL BOUNDARY RULE:
 
 PLAYTEST & POLISH PROTOCOL:
 1. Read:
-   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md
+   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md (v4.0)
    - /home/ubuntu/Math-Arcid-V2/evolution/CURRICULUM.md
    - /home/ubuntu/Math-Arcid-V2/evolution/STATE.json
    - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md (Execute the `[NEXT]` POLISH milestone!)
    - /home/ubuntu/Math-Arcid-V2/games.json
-2. **TRUE INTERACTIVE AUDIT & RESEARCH**:
-   - Read the target game's actual code end-to-end and run real simulations / Headless Chromium checks (desktop & mobile viewports) to find genuine physics bugs, confusing onboarding, missing `CURRICULUM.md` skills, `Hors-programme` leaks, or flat game feel.
-   - Deepen the fun and pedagogical mastery *through gameplay itself* (better visual feedback, Web Audio synth cues, smooth animations, more clever levels/challenges covering every sub-skill of the lesson, 100% universal KaTeX math rendering in DOM & `drawMathRich` on `<canvas>` with zero `.katex-error` or naked ASCII math, and responsive touch & desktop polish — NEVER adding QCM filler or bloat!).
-3. Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` (all 7 stages must pass 100%).
+2. **TRUE INTERACTIVE AUDIT & VISUAL SELF-REVIEW**:
+   - Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` first to capture fresh screenshots in `evolution/screenshots/` and inspect `<slug>_desktop.png` and `<slug>_mobile.png` via `read_file`!
+   - Read the target game's actual code end-to-end to fix real physics/hitbox/pacing bugs, missing DualSense controls, missing `CURRICULUM.md` sub-skills, `Hors-programme` leaks, or flat game feel.
+   - Deepen the **real-time fun & juice** (screen shake, hit-stop, particle bursts, procedural Web Audio SFX, dynamic difficulty curve, crisp `drawMathRich` canvas typography, full DualSense analog + face button + `PauseMenu` responsiveness — NEVER add passive `<input type="range">` sliders or QCM filler!).
+3. Re-run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` (all 7 gates + CDP playtest must pass 100%) and re-inspect the updated screenshots!
 4. **SPRINT TRANSITION CHECK**:
    - Update `SPRINT.md`, `STATE.json`, and `EVOLUTION_LOG.md` (<= 10 entries).
    - If zero `[NEXT]` / `[UPCOMING]` milestones remain in `SPRINT.md`, set `"status": "COMPLETED_NEEDS_ROADMAP"` in `STATE.json` so Phase ARCHITECT runs automatically next cycle.
 5. Pull/rebase safely (`git pull --rebase origin main || true`), commit, and push to `origin main`.
-6. Send Owner Ayoub a sharp, truthful Arabic report detailing the real bugs fixed, fun/juice upgrades added, and curriculum coverage verified.
+6. Send Owner Ayoub a sharp, truthful Arabic report with `[SEND_FILE: /home/ubuntu/Math-Arcid-V2/evolution/screenshots/<slug>_desktop.png]` detailing the real bugs fixed, fun/juice upgrades added, and curriculum coverage verified.
 EOF_POLISH_PROMPT
 fi
 
@@ -258,13 +267,16 @@ PAYLOAD=$(node -e '
     chatId: "8959256425",
     chatKey: "auto_math_arcid_v2",
     chatTitle: "Math-Arcid-V2 Creative Monster",
+    newSession: true,
+    cwd: "/home/ubuntu/Math-Arcid-V2",
+    model: "gemini-4-neon-xhigh",
     promptText: prompt,
     fallbackModels: [
       "gemini-4-hydrogen-xhigh",
-      "gemini-4-neon-high",
+      "claude-opus-5-5-high",
       "claude-sonnet-5-5-high",
-      "gemini-4-argon-high",
-      "gemini-3.8-flash-high"
+      "gemini-4-neon-high",
+      "gemini-4-hydrogen-high"
     ]
   }));
 ' "$PROMPT")
