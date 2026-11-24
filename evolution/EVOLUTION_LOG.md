@@ -3,6 +3,12 @@
 
 ---
 
+### [Cycle 004 — REMASTER v4.0] 2026-11-24 22:30 UTC | Real-Time Arcade Rebuild + Unified Start Menu & Controller Parity
+* **Root Fix (Zero Passive Sliders)**: Replaced the passive GeoGebra-slider design of `sequence-weaver` and `continuity-rider` with true real-time action gameplay (`v2.0.0`):
+  - **`sequence-weaver` v2.0.0**: 5 active real-time modes (induction seed catching + rogue shield deflect `▢`, MCT polarity beam shooter `▢/△/◯`, 3-lane geometric rhythm highway + `Sₙ` nova, homographic fixed-point sniper amid bullet hell, and Gendarme pinch tunnel survival `L2/R2`).
+  - **`continuity-rider` v2.0.0**: High-speed continuous physics skater (double-jump over $E(x)$ stairs & $D_f$ gaps, real-time `▢/△/◯` algebraic bridge beams for $0/0$ holes, asymptote pitch-surfing, `L2/R2` live TVI bisection wall-smashing, and `◯/R2` $y=x$ mirror gravity flip).
+* **Platform & Charter Upgrade (`GOLD_STANDARD.md` v4.0)**: Built `ArcadeCore.PauseMenu.attach` (`Start (9)` / `Esc` -> Resume / Restart / Exit to Hub) + `ArcadeCore.Gamepad.sampleAnalogAxes` in `shared/arcade-core.js`, banned passive slider applets (`<input type="range">`), and enforced Start/Gamepad/No-Slider gates in `verify.sh`.
+
 ### [Cycle 003 — CREATE] 2026-11-24 17:10 UTC | Milestone 1.3: Continuity Rider (الدرس 1: النهايات والاتصال | 1–22)
 * **Invention & Web Research**: Researched SineRider track-rider mechanics, Root Hunter TVI bisection zooming, floor function step discontinuities, and mirror optics; invented **`continuity-rider` («متزلّج الاتصال — مسار النهايات و TVI»)** (`physics-curve-rider-and-bisection-arcade`, `dynamic-zoom-side-scrolling-track-camera`, `click-cut-track-tools-and-jump-timing`, `blueprint-cobalt-coral-glass-track`).
 * **Math-as-Gameplay (13 Physics Tracks across 6 Sectors)**: Repair $\frac{0}{0}$ track holes via factoring/square-conjugate/cubic-conjugate/trig-composite surgery, weld one-sided piecewise continuity, time live jumps over $E(x)$ floor discontinuities at $\mathbb{Z}$, carve safe continuous domains in $D_f$, align oblique/vertical/horizontal asymptotes with $0^\pm$ polarity, slice intervals 4× via dynamic-zoom TVI Dichotomie, project decreasing interval images, animate $y=x$ mirror fold for $f^{-1}$, and bend $y=x^r$ through $(8,4)$ (zero `Hors-programme`).

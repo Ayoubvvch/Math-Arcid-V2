@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, viewport-fit=cover" />
-  <title>نسّاج التقارب — المتتاليات العددية | Math-Arcid-V2</title>
-  <meta name="description" content="لعبة تفاعلية مبتكرة للدرس 3 (المتتاليات العددية 2BAC PC): وجّه المسارات العنكبوتية uₙ₊₁=f(uₙ)، اضبط حواجز الترجع، حوّل المتخاطة بالعدسة المساعدة، واحصر التذبذب بممر الدركيين." />
+  <title>نسّاج المتتاليات — معركة التقارب | Math-Arcid-V2</title>
+  <meta name="description" content="لعبة أركيد تفاعلية حقيقية للدرس 3 (المتتاليات العددية 2BAC PC): حارس الترجع والمكبر، قنّاص الرتابة MCT، إيقاع المتتاليات الهندسية، صائد النقط الصامدة، ونفق الدركيين بدعم كامل لـ DualSense." />
   <link rel="stylesheet" href="../../css/common.css" />
   <link rel="stylesheet" href="../../shared/vendor/katex/katex.min.css" />
   <link rel="stylesheet" href="css/style.css" />
@@ -12,122 +12,74 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
 </head>
-<body class="weaver-body">
-  <div class="weaver-shell">
-    <!-- الشريط العلوي المختصر -->
-    <header class="weaver-topbar">
-      <div class="topbar-group">
-        <a href="../../index.html?from=game" class="back-pill" title="العودة إلى بوابة الألعاب">
-          <span>‹</span>
-          <span>بوابة الألعاب</span>
-        </a>
-        <div class="brand-title-wrap">
-          <span class="brand-emblem" data-tex="u_n" dir="ltr">uₙ</span>
+<body class="sw-arcade-body">
+  <div class="sw-shell">
+    <header class="sw-topbar">
+      <div class="sw-top-group">
+        <button id="btnPause" class="sw-pill sw-pause-btn" type="button" title="القائمة والإيقاف [Start / Esc]">
+          <span>⏸</span>
+          <span>القائمة (Start)</span>
+        </button>
+        <div class="sw-brand">
+          <span class="sw-emblem" data-tex="u_n" dir="ltr"></span>
           <div>
-            <h1 class="brand-title">نسّاج التقارب</h1>
-            <div class="brand-sub">المتتاليات العددية • <bdi dir="ltr" class="math-ltr">2BAC PC (41–52)</bdi></div>
+            <h1 class="sw-title">نسّاج المتتاليات</h1>
+            <div class="sw-sub">معركة التقارب • <bdi dir="ltr" class="math-ltr">2BAC PC (41–52)</bdi></div>
           </div>
         </div>
       </div>
 
-      <!-- شريط الميادين الستة -->
-      <nav id="stageTabs" class="stage-tabs" aria-label="ميادين المتتاليات">
-        <!-- تملأ عبر game.js -->
-      </nav>
+      <nav id="stageNav" class="sw-stage-nav" aria-label="أطوار المتتاليات"></nav>
 
-      <div class="topbar-group topbar-metrics">
-        <div class="metric-chip">
-          <span class="metric-label">النتيجة</span>
-          <span id="scoreVal" class="metric-val" dir="ltr">0</span>
-        </div>
-        <div class="metric-chip">
-          <span class="metric-label">الإتقان</span>
-          <span id="clearedVal" class="metric-val" dir="ltr">0/6</span>
-        </div>
-        <button id="btnHint" class="icon-pill" type="button" title="ملخص منهجية الوطني [H]">💡 المنهجية</button>
-        <button id="btnAudio" class="icon-pill" type="button" title="تبديل الصوت [M]">🔊</button>
-        <button id="btnReset" class="icon-pill" type="button" title="إعادة ضبط الميدان [R]">🔄</button>
+      <div class="sw-top-group sw-hud-stats">
+        <div id="gpBadge" class="gp-pill-badge">🎮 لوحة المفاتيح / الماوس</div>
+        <div class="sw-stat"><span>النقاط</span><strong id="hudScore" dir="ltr">0</strong></div>
+        <div class="sw-stat"><span>الكومبو</span><strong id="hudCombo" dir="ltr">×1</strong></div>
+        <div class="sw-stat"><span>الدرع</span><strong id="hudHp" dir="ltr">♥♥♥♥♥</strong></div>
+        <button id="btnAudio" class="sw-pill" type="button" title="الصوت [M]">🔊</button>
       </div>
     </header>
 
-    <!-- خشبة اللعب التفاعلية -->
-    <main class="weaver-main">
-      <!-- لوحة المبيان الفيزيائي العنكبوتي -->
-      <section class="canvas-stage" aria-label="المختبر التفاعلي للمتتاليات">
-        <div class="stage-banner">
-          <div class="stage-badge-row">
-            <span id="stageTag" class="stage-pill">الميدان 1</span>
-            <div id="roundSwitcher" class="round-switcher" role="tablist" aria-label="جولات الميدان"></div>
-            <span id="formulaTag" class="formula-pill" data-tex="u_{n+1} = \frac{1}{2}u_n + 2" dir="ltr"></span>
-          </div>
-          <div id="dragGuide" class="drag-guide">اسحب النقط والحواجز مباشرة على المبيان أو استعمل الأسهم</div>
+    <main class="sw-arena-wrap">
+      <div class="sw-mission-strip">
+        <div class="sw-mission-left">
+          <span id="stageBadge" class="sw-badge">الطور 1/5</span>
+          <span id="stageTitle" class="sw-stage-title">حارس الترجع والمكبر</span>
+          <span id="stageFormula" class="sw-formula" data-tex="u_{n+1} = \frac{1}{2}u_n + 2" dir="ltr"></span>
         </div>
+        <div class="sw-mission-right">
+          <span id="stageGoal" class="sw-goal"></span>
+          <div class="sw-progress-track"><div id="stageProgressFill" class="sw-progress-fill"></div></div>
+        </div>
+      </div>
 
-        <div id="canvasWrap" class="canvas-wrap">
-          <canvas id="weaverCanvas" role="application" aria-label="مبيان التفاعلي للمتتالية العددية"></canvas>
-          <div id="stageFeedback" class="stage-feedback hidden" aria-live="polite"></div>
-        </div>
-      </section>
+      <div id="canvasBox" class="sw-canvas-box">
+        <canvas id="weaverCanvas" role="application" aria-label="ساحة معركة المتتاليات التفاعلية"></canvas>
+        <div id="toastFeed" class="sw-toast hidden" aria-live="polite"></div>
+      </div>
 
-      <!-- وحدة الضبط والتحقق المنهجي -->
-      <aside class="control-dock" aria-label="لوحة الضبط الرياضي">
-        <div class="dock-card mission-card">
-          <div class="dock-eyebrow">المهمة الرياضية</div>
-          <h2 id="roundTitle" class="round-title">برج الترجع والمكبر</h2>
-          <p id="missionText" class="mission-text">اضبط u₀ داخل المجال الآمن وحجم السقف M ثم أطلق النبضة.</p>
-        </div>
-
-        <!-- مصابيح التحقق الرياضي الحيّة -->
-        <div class="dock-card checks-card">
-          <div class="dock-eyebrow">شروط البرهان الحيّ</div>
-          <ul id="liveChecks" class="live-checks">
-            <!-- تملأ ديناميكياً حسب قانون كل ميدان -->
-          </ul>
-        </div>
-
-        <!-- عناصر التحكم المخصصة لكل ميدان -->
-        <div class="dock-card controls-card">
-          <div class="dock-eyebrow">أدوات المعايرة</div>
-          <div id="dynamicControls" class="dynamic-controls">
-            <!-- سلايدرات وأزرار خاصة بالميدان النشط -->
-          </div>
-        </div>
-
-        <!-- ملخص المنهجية المغربية القابل للفتح -->
-        <div id="proofCard" class="dock-card proof-card hidden">
-          <div class="dock-eyebrow">منهجية الامتحان الوطني (2BAC PC)</div>
-          <p id="proofText" class="proof-text"></p>
-        </div>
-
-        <!-- زر الإطلاق الرئيسي -->
-        <div class="dock-actions">
-          <button id="btnLaunch" class="btn-launch" type="button">
-            <span class="launch-glyph">⚡</span>
-            <span id="btnLaunchLabel">أطلق النبضة وتحقق</span>
-          </button>
-          <button id="btnNextRound" class="btn-next hidden" type="button">
-            <span>التالي</span>
-            <span>←</span>
-          </button>
-        </div>
-      </aside>
+      <footer class="sw-action-deck" aria-label="أزرار اللعب السريعة">
+        <div id="deckButtons" class="sw-deck-btns"></div>
+        <div id="deckHint" class="sw-deck-hint"></div>
+      </footer>
     </main>
   </div>
 
-  <!-- نافذة إتمام المقرر بنجاح -->
-  <div id="victoryModal" class="victory-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="victoryTitle">
-    <div class="victory-box">
-      <div class="victory-crest">🏆</div>
-      <h2 id="victoryTitle" class="victory-title">اكتمل ترويض المتتاليات العددية!</h2>
-      <p id="victoryDesc" class="victory-desc"></p>
-      <div class="victory-stats">
-        <div class="v-stat"><span>النتيجة النهائية</span><strong id="vScore" dir="ltr">0</strong></div>
-        <div class="v-stat"><span>الدقة</span><strong id="vAcc" dir="ltr">100%</strong></div>
-        <div class="v-stat"><span>الرتبة</span><strong id="vRank" dir="ltr">S</strong></div>
+  <!-- شاشة النصر / انتهاء المحاولة -->
+  <div id="endOverlay" class="sw-end-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="sw-end-card">
+      <div id="endGlyph" class="sw-end-glyph">🏆</div>
+      <h2 id="endTitle" class="sw-end-title">انتهت المهمة!</h2>
+      <p id="endDesc" class="sw-end-desc"></p>
+      <div class="sw-end-grid">
+        <div class="sw-end-stat"><span>النتيجة</span><strong id="endScore" dir="ltr">0</strong></div>
+        <div class="sw-end-stat"><span>الدقة</span><strong id="endAcc" dir="ltr">100%</strong></div>
+        <div class="sw-end-stat"><span>الرتبة</span><strong id="endRank" dir="ltr">S</strong></div>
       </div>
-      <div class="victory-btns">
-        <button id="btnReplayAll" class="btn-launch" type="button">إعادة التحدي من البداية</button>
-        <a href="../../index.html?from=game" class="back-pill">العودة لبوابة الألعاب</a>
+      <div class="sw-end-actions">
+        <button id="btnEndPrimary" class="sw-end-btn primary" type="button">🔄 العب مجدداً (✕)</button>
+        <button id="btnEndNext" class="sw-end-btn hidden" type="button">➡ الطور التالي (△)</button>
+        <a id="btnEndHub" href="../../index.html?from=game" class="sw-end-btn danger">🏠 بوابة الألعاب (◯)</a>
       </div>
     </div>
   </div>

@@ -21,9 +21,9 @@
     "lastArchitectTimestamp": "2026-11-24T02:00:00Z"
   },
   "metrics": {
-    "totalCyclesCompleted": 3,
-    "lastCycleTimestamp": "2026-11-24T17:10:00Z",
-    "lastCyclePhase": "Cycle 003 (CREATE): Invented & built Continuity Rider (Lesson 1: النهايات والاتصال, Skills 1–22) with physics curve-riding, E(x) jump timing, TVI dynamic-zoom Dichotomie slicer & y=x inverse mirror fold",
+    "totalCyclesCompleted": 4,
+    "lastCycleTimestamp": "2026-11-24T22:30:00Z",
+    "lastCyclePhase": "Cycle 004 (REMASTER v4.0): Rebuilt sequence-weaver v2.0.0 & continuity-rider v2.0.0 into true real-time arcade games + added ArcadeCore.PauseMenu (Start/Esc) + banned passive slider worksheets in GOLD_STANDARD v4.0 & verify.sh",
     "totalGamesLive": 3,
     "verificationStatus": "PASSED_ALL_7_GATES"
   },
@@ -44,10 +44,10 @@
       "subject": "math",
       "order": 2,
       "slug": "sequence-weaver",
-      "title": "نسّاج التقارب — المتتاليات العنكبوتية",
+      "title": "نسّاج المتتاليات — معركة التقارب",
       "category": "التحليل",
-      "version": "1.2.0",
-      "genre": "cobweb-trajectory-and-bounds-puzzle",
+      "version": "2.0.0",
+      "genre": "multi-mode-convergence-arcade-defender",
       "status": "LIVE_ACTIVE"
     },
     {
@@ -55,20 +55,20 @@
       "subject": "math",
       "order": 3,
       "slug": "continuity-rider",
-      "title": "متزلّج الاتصال — مسار النهايات و TVI",
+      "title": "متزلّج الاتصال — سباق النهايات و TVI",
       "category": "التحليل",
-      "version": "1.0.0",
-      "genre": "physics-curve-rider-and-bisection-arcade",
+      "version": "2.0.0",
+      "genre": "high-speed-calculus-curve-skater",
       "status": "LIVE_ACTIVE"
     }
   ],
   "currentSprint": {
     "id": "REBOOT_SPRINT_01",
-    "name": "الولادة الإبداعية الجديدة — ألعاب خفيفة ومبتكرة للدروس 3، 1، 2، 4",
+    "name": "الولادة الإبداعية الجديدة — ألعاب حقيقية للدروس 3، 1، 2، 4 (v4.0)",
     "status": "ACTIVE",
-    "nextCycleNumber": 4,
-    "nextAlphaMilestone": "Milestone 1.5 (Cycle 005-CREATE): Research & invent an original, lightweight, non-QCM game for Lesson 2: الاشتقاق ودراسة الدوال وتطبيقاتها (Skills 23–40)",
-    "nextOmegaMilestone": "Milestone 1.4 (Cycle 004-POLISH): Playtest, deepen math mechanics & polish Lesson 1 (Continuity Rider) game"
+    "nextCycleNumber": 5,
+    "nextAlphaMilestone": "Milestone 1.5 (Cycle 005-CREATE): Research & invent an original, real-time arcade/action/puzzle game (NO passive sliders!) for Lesson 2: الاشتقاق ودراسة الدوال وتطبيقاتها (Skills 23–40) with full DualSense + Start PauseMenu",
+    "nextOmegaMilestone": "Milestone 1.6 (Cycle 006-POLISH): Playtest, deepen mechanics & polish Lesson 2 game"
   },
   "perpetualRoadmapPolicy": {
     "enabled": true,

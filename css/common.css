@@ -101,3 +101,142 @@ html, body {
   line-height: 1.25;
   color: inherit;
 }
+
+/* Unified PS5 Pause / Start Menu Overlay (60FPS zero backdrop-filter) */
+.arcade-pause-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9990;
+  background: rgba(4, 7, 15, 0.88);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.arcade-pause-overlay.hidden {
+  display: none !important;
+}
+
+.arcade-pause-card {
+  width: min(460px, 100%);
+  background: #0b1120;
+  border: 1.5px solid rgba(0, 229, 255, 0.45);
+  border-radius: 18px;
+  padding: 1.35rem 1.4rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.68);
+  color: var(--text-main);
+}
+
+.arcade-pause-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--accent-cyan);
+  margin-bottom: 0.35rem;
+}
+
+.arcade-pause-title {
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin-bottom: 0.25rem;
+}
+
+.arcade-pause-sub {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  margin-bottom: 0.85rem;
+}
+
+.arcade-pause-controls {
+  list-style: none;
+  background: rgba(15, 23, 42, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 12px;
+  padding: 0.65rem 0.8rem;
+  margin-bottom: 0.95rem;
+  display: grid;
+  gap: 0.32rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+}
+
+.arcade-pause-actions {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.arcade-pause-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.72rem 0.95rem;
+  border-radius: 12px;
+  border: 1.5px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.92);
+  color: #f8fafc;
+  font-family: var(--font-sans);
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.14s ease, border-color 0.14s ease, background 0.14s ease;
+}
+
+.arcade-pause-btn kbd {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.16rem 0.45rem;
+  border-radius: 6px;
+  background: rgba(2, 6, 23, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  color: #94a3b8;
+}
+
+.arcade-pause-btn.primary {
+  border-color: rgba(0, 229, 255, 0.5);
+}
+
+.arcade-pause-btn.danger {
+  border-color: rgba(255, 59, 127, 0.4);
+}
+
+.arcade-pause-btn:hover,
+.arcade-pause-btn.gp-focused {
+  transform: translateX(-3px);
+  border-color: #00e5ff;
+  background: rgba(0, 229, 255, 0.16);
+}
+
+.arcade-pause-btn.danger:hover,
+.arcade-pause-btn.danger.gp-focused {
+  border-color: #ff3b7f;
+  background: rgba(255, 59, 127, 0.18);
+}
+
+.arcade-pause-hint {
+  margin-top: 0.85rem;
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.gp-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  background: rgba(15, 23, 42, 0.85);
+  color: #94a3b8;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.gp-pill-badge.connected {
+  border-color: rgba(16, 185, 129, 0.6);
+  background: rgba(16, 185, 129, 0.16);
+  color: #6ee7b7;
+}

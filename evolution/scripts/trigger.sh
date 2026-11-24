@@ -162,7 +162,7 @@ CRITICAL BOUNDARY RULE:
 
 MANDATORY TRUTHFUL ARCHITECT PROTOCOL:
 1. Read:
-   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md (Creative Charter v3.0)
+   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md (Creative Charter v4.0)
    - /home/ubuntu/Math-Arcid-V2/evolution/CURRICULUM.md (Official 11-lesson, 137-skill 2BAC PC curriculum & Hors-programme limits)
    - /home/ubuntu/Math-Arcid-V2/evolution/STATE.json
    - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md
@@ -188,18 +188,20 @@ CRITICAL BOUNDARY RULE:
 
 UNLEASHED CREATIVE MANDATE (ZERO-CLONE PHILOSOPHY):
 1. Read these files carefully before anything else:
-   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md (Creative Charter v3.0)
+   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md (Creative Charter v4.0)
    - /home/ubuntu/Math-Arcid-V2/evolution/CURRICULUM.md (Read the EXACT target lesson's skills & Hors-programme warnings!)
    - /home/ubuntu/Math-Arcid-V2/evolution/STATE.json
    - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md (Execute the `[NEXT]` milestone!)
    - /home/ubuntu/Math-Arcid-V2/games.json (Inspect existing `creativeProfile` entries so you NEVER repeat them!)
 2. **MANDATORY RESEARCH & IDEATION STEP (`search_web`)**:
    - Use `search_web` with the lesson's Arabic/French/English concepts from `CURRICULUM.md` plus indie math/physics game design ideas (`interactive visualization`, `math game mechanics`, `canvas/webgl puzzle`) to gather fresh inspiration.
-   - Brainstorm 3 radically different game concepts for this lesson, reject anything resembling a QCM quiz or existing game (`math-battle` or others), and pick the **most joyful, lightweight, genuinely clever** concept where **the lesson's mathematical laws ARE the gameplay mechanic**!
-   - Remember Owner Ayoub's bar: `math-battle` and `stickman-cartesian-game` show what happens when math becomes physical/interactive play — draw inspiration from that spirit of creativity, NEVER copy them as a template!
-3. **BUILD LIGHTWEIGHT & DISTINCT**:
-   - Choose whatever file structure (`1+` clean JS files), visual style, camera, and control scheme (mouse drag/aim, keyboard timing, touch, sliders, or DualSense where natural) best fits YOUR invention.
-   - Keep code crisp, light, and bug-free (NO bloated boilerplate, NO `backdrop-filter`, NO `shadowBlur > 0` in draw loops, NO `overrideModal` / 4-door QCM clones).
+   - Brainstorm 3 radically different **TRUE REAL-TIME GAME** concepts for this lesson (arcade action, physics platformer, rhythm/lane defender, trajectory shooter, real-time tactical battler) — **STRICTLY REJECT** any QCM quiz, any existing game clone, AND **any passive GeoGebra/slider applet** (`<input type="range">` + live checklist + watch animation is BANNED!).
+   - Pick the **most joyful, dynamic, skill-based** game where the player actively pilots/aims/times/reacts in real time with lives/combo/score and **the lesson's mathematical laws ARE the core action mechanic**!
+   - Remember Owner Ayoub's bar: `math-battle` shows true arcade energy, tactile DualSense controls, and a clean Start pause menu — draw inspiration from that level of real-time game feel, NEVER copy its genre!
+3. **BUILD LIGHTWEIGHT, REAL-TIME & CONTROLLER-FIRST**:
+   - Choose whatever file structure (`1+` clean JS files), visual style, camera, and action control scheme best fits YOUR invention.
+   - **MANDATORY CONTROLLER & PAUSE PARITY**: Integrate `ArcadeCore.PauseMenu.attach(...)` (`Start/Options` button `9` & `Esc` -> Resume / Restart / Exit to `../../index.html?from=game`), use `ArcadeCore.Gamepad.sampleAnalogAxes` + `sampleDirectionalNav` + face buttons + triggers so EVERY game action works smoothly on PlayStation/Xbox controllers as well as keyboard and mouse/touch, and show a `.gp-pill-badge` + `⏸ القائمة (Start)` button in the top bar.
+   - Keep code crisp, light, and bug-free (NO `input[type="range"]` passive sliders, NO `backdrop-filter`, NO `shadowBlur > 0` in draw loops, NO `overrideModal` / 4-door QCM clones).
    - Respect `<html lang="ar" dir="rtl">`, include `../../shared/vendor/katex/katex.min.{css,js}` + `../../shared/arcade-core.js`, format ALL DOM math in LaTeX (`$...$` / `data-tex`) via `ArcadeCore.renderMath` (NEVER naked ASCII/Unicode math!), draw `<canvas>` math via `ArcadeCore.CanvasAxisKit.drawMathRich` (`KaTeX_Math`/`KaTeX_Main`), record progress with `ArcadeCore.Progress.recordRun`, and route exit links to `../../index.html?from=game`.
    - Strictly obey all `Hors-programme` limits in `CURRICULUM.md`!
 4. **REGISTER & VERIFY**:

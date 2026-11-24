@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, viewport-fit=cover" />
-  <title>متزلّج الاتصال — النهايات والاتصال | Math-Arcid-V2</title>
-  <meta name="description" content="لعبة فيزيائية تفاعلية للدرس 1 (النهايات والاتصال 2BAC PC): قُد المتزلّج على منحنى الدالة، أصلح ثقوب الأشكال غير المحددة، اقفز فوق انقطاعات الجزء الصحيح، اشطر المجال بالتفرع الثنائي، واعكس المسار لتشكيل الدالة العكسية." />
+  <title>متزلّج الاتصال — سباق النهايات و TVI | Math-Arcid-V2</title>
+  <meta name="description" content="لعبة تزلّج فيزيائية سريعة للدرس 1 (النهايات والاتصال 2BAC PC): تزلّج على المنحنى بالزمن الحقيقي، أطلق أشعة التعميل والمرافق والمثلثية لردم ثقوب 0/0، اقفز فوق مدرّج E(x)، اشطر حواجز TVI، واقلب البُعد عبر y=x بدعم كامل لـ DualSense." />
   <link rel="stylesheet" href="../../css/common.css" />
   <link rel="stylesheet" href="../../shared/vendor/katex/katex.min.css" />
   <link rel="stylesheet" href="css/style.css" />
@@ -12,99 +12,74 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
 </head>
-<body class="rider-body">
-  <div class="rider-shell">
-    <!-- الشريط العلوي الرشيق -->
-    <header class="rider-topbar">
-      <div class="top-cluster">
-        <a href="../../index.html?from=game" class="hub-link" title="العودة لبوابة الألعاب">
-          <span>‹</span>
-          <span>بوابة الألعاب</span>
-        </a>
-        <div class="title-block">
-          <span class="emblem-box" data-tex="\lim" dir="ltr"></span>
+<body class="cr-arcade-body">
+  <div class="cr-shell">
+    <header class="cr-topbar">
+      <div class="cr-top-group">
+        <button id="btnPause" class="cr-pill cr-pause-btn" type="button" title="القائمة والإيقاف [Start / Esc]">
+          <span>⏸</span>
+          <span>القائمة (Start)</span>
+        </button>
+        <div class="cr-brand">
+          <span class="cr-emblem" data-tex="\lim" dir="ltr"></span>
           <div>
-            <h1 class="game-title">متزلّج الاتصال</h1>
-            <div class="game-sub">النهايات والاتصال • <bdi dir="ltr" class="math-ltr">2BAC PC (1–22)</bdi></div>
+            <h1 class="cr-title">متزلّج الاتصال</h1>
+            <div class="cr-sub">سباق النهايات و TVI • <bdi dir="ltr" class="math-ltr">2BAC PC (1–22)</bdi></div>
           </div>
         </div>
       </div>
 
-      <nav id="sectorTabs" class="sector-tabs" aria-label="قطاعات الدرس الأول">
-        <!-- تملأ عبر game.js -->
-      </nav>
+      <nav id="sectorNav" class="cr-sector-nav" aria-label="مضامير الدرس الأول"></nav>
 
-      <div class="top-cluster top-stats">
-        <div class="stat-pill"><span>النقاط</span><strong id="scoreVal" dir="ltr">0</strong></div>
-        <div class="stat-pill"><span>القطاعات</span><strong id="sectorClearedVal" dir="ltr">0/6</strong></div>
-        <button id="btnProof" class="tool-pill" type="button" title="منهجية الامتحان الوطني [H]">📜 البرهان</button>
-        <button id="btnAudio" class="tool-pill" type="button" title="الصوت [M]">🔊</button>
-        <button id="btnReset" class="tool-pill" type="button" title="إعادة المسار [R]">🔄</button>
+      <div class="cr-top-group cr-hud-stats">
+        <div id="gpBadge" class="gp-pill-badge">🎮 لوحة المفاتيح / الماوس</div>
+        <div class="cr-stat"><span>النقاط</span><strong id="hudScore" dir="ltr">0</strong></div>
+        <div class="cr-stat"><span>الكومبو</span><strong id="hudCombo" dir="ltr">×1</strong></div>
+        <div class="cr-stat"><span>الطاقة</span><strong id="hudHp" dir="ltr">♥♥♥♥♥</strong></div>
+        <button id="btnAudio" class="cr-pill" type="button" title="الصوت [M]">🔊</button>
       </div>
     </header>
 
-    <!-- المسرح السينمائي العريض للمتزلج الفيزيائي -->
-    <main class="rider-stage">
-      <div class="stage-hud-strip">
-        <div class="hud-left">
-          <span id="sectorBadge" class="hud-sector">القطاع 1</span>
-          <div id="trackPills" class="track-pills" role="tablist" aria-label="مسارات القطاع"></div>
-          <span id="trackTitle" class="hud-track-title">جسر التعميل</span>
+    <main class="cr-stage">
+      <div class="cr-hud-strip">
+        <div class="cr-hud-left">
+          <span id="sectorBadge" class="cr-badge">المضمار 1/5</span>
+          <span id="sectorTitle" class="cr-sector-title"></span>
+          <span id="sectorFormula" class="cr-formula" dir="ltr"></span>
         </div>
-        <div id="formulaBanner" class="hud-formula" data-tex="f(x) = \frac{x^2 - 4}{x - 2}" dir="ltr"></div>
+        <div class="cr-hud-right">
+          <span id="sectorGoal" class="cr-goal"></span>
+          <div class="cr-progress-track"><div id="progressFill" class="cr-progress-fill"></div></div>
+        </div>
       </div>
 
-      <div id="canvasFrame" class="canvas-frame">
-        <canvas id="riderCanvas" role="application" aria-label="مسار منحنى الدالة التفاعلي"></canvas>
-        <div id="proofDrawer" class="proof-drawer hidden">
-          <div class="proof-drawer-head">
-            <span>منهجية التحرير في الامتحان الوطني (2BAC PC)</span>
-            <button id="btnCloseProof" class="proof-close" type="button" aria-label="إغلاق">&times;</button>
-          </div>
-          <p id="proofBody" class="proof-body"></p>
-        </div>
-        <div id="rideBanner" class="ride-banner hidden" aria-live="polite"></div>
+      <div id="canvasFrame" class="cr-canvas-frame">
+        <canvas id="riderCanvas" role="application" aria-label="مسار التزلّج الرياضي التفاعلي"></canvas>
+        <div id="toastBanner" class="cr-toast hidden" aria-live="polite"></div>
       </div>
 
-      <!-- الشريط السفلي التفاعلي الخاص بكل ميكانيكا -->
-      <section class="bottom-deck" aria-label="أدوات المسار والتحكم">
-        <div class="deck-mission">
-          <div class="deck-label">الهدف التفاعلي</div>
-          <p id="missionLine" class="mission-line"></p>
-        </div>
-
-        <div id="deckTools" class="deck-tools">
-          <!-- تتغير ديناميكياً حسب نوع الميكانيكا: جراحة، شطر ثنائي، قفز، مقاربات، مرآة -->
-        </div>
-
-        <div class="deck-cta">
-          <button id="btnPrimary" class="btn-ride" type="button">
-            <span id="btnPrimaryIcon">▶</span>
-            <span id="btnPrimaryText">أطلق المتزلّج</span>
-          </button>
-          <button id="btnNextTrack" class="btn-next-track hidden" type="button">
-            <span>المسار التالي</span>
-            <span>←</span>
-          </button>
-        </div>
-      </section>
+      <footer class="cr-action-deck" aria-label="أسلحة وأزرار التزلّج">
+        <div id="deckButtons" class="cr-deck-btns"></div>
+        <div id="deckHint" class="cr-deck-hint"></div>
+      </footer>
     </main>
   </div>
 
-  <!-- نافذة الفوز الكامل -->
-  <div id="finishModal" class="finish-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="finishTitle">
-    <div class="finish-card">
-      <div class="finish-trophy">🏆</div>
-      <h2 id="finishTitle" class="finish-title">أتقنت مسارات النهايات والاتصال!</h2>
-      <p id="finishDesc" class="finish-desc"></p>
-      <div class="finish-grid">
-        <div class="f-box"><span>النتيجة</span><strong id="fScore" dir="ltr">0</strong></div>
-        <div class="f-box"><span>الدقة</span><strong id="fAcc" dir="ltr">100%</strong></div>
-        <div class="f-box"><span>الرتبة</span><strong id="fRank" dir="ltr">S</strong></div>
+  <!-- نافذة النتيجة -->
+  <div id="finishOverlay" class="cr-end-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="cr-end-card">
+      <div id="endGlyph" class="cr-end-glyph">🏆</div>
+      <h2 id="endTitle" class="cr-end-title">انتهى السباق!</h2>
+      <p id="endDesc" class="cr-end-desc"></p>
+      <div class="cr-end-grid">
+        <div class="cr-end-stat"><span>النقاط</span><strong id="endScore" dir="ltr">0</strong></div>
+        <div class="cr-end-stat"><span>الدقة</span><strong id="endAcc" dir="ltr">100%</strong></div>
+        <div class="cr-end-stat"><span>الرتبة</span><strong id="endRank" dir="ltr">S</strong></div>
       </div>
-      <div class="finish-actions">
-        <button id="btnReplay" class="btn-ride" type="button">إعادة المغامرة</button>
-        <a href="../../index.html?from=game" class="hub-link">العودة لبوابة الألعاب</a>
+      <div class="cr-end-actions">
+        <button id="btnEndReplay" class="cr-end-btn primary" type="button">🔄 أعد السباق (✕)</button>
+        <button id="btnEndNext" class="cr-end-btn hidden" type="button">➡ المضمار التالي (△)</button>
+        <a id="btnEndHub" href="../../index.html?from=game" class="cr-end-btn danger">🏠 بوابة الألعاب (◯)</a>
       </div>
     </div>
   </div>

@@ -1,12 +1,11 @@
 import { GAME_ID, STAGES } from './levels.js';
 
-const PENTATONIC = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 587.33, 659.25, 783.99];
+const SCALE = [261.63, 293.66, 329.63, 392.0, 440.0, 523.25, 659.25, 783.99];
 
-class SequenceAudio {
+class ArcadeSynth {
   constructor() {
     this.ctx = null;
     this.muted = false;
-    this.lastTickMs = 0;
   }
 
   unlock() {
@@ -25,168 +24,166 @@ class SequenceAudio {
     }
   }
 
-  playTick() {
+  tone(freq, dur = 0.09, type = 'triangle', vol = 0.08) {
     if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
-    const nowMs = performance.now();
-    if (nowMs - this.lastTickMs < 42) return;
-    this.lastTickMs = nowMs;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(860, now);
-    osc.frequency.exponentialRampToValueAtTime(640, now + 0.022);
-    gain.gain.setValueAtTime(0.032, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.024);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
-    osc.start(now);
-    osc.stop(now + 0.026);
-  }
-
-  playStep(val, minV = 0, maxV = 6) {
-    if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
-    const norm = Math.max(0, Math.min(1, (val - minV) / Math.max(0.001, maxV - minV)));
-    const idx = Math.min(PENTATONIC.length - 1, Math.floor(norm * PENTATONIC.length));
-    const freq = PENTATONIC[idx];
-    const now = this.ctx.currentTime;
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-    osc.type = 'triangle';
+    const g = this.ctx.createGain();
+    osc.type = type;
     osc.frequency.setValueAtTime(freq, now);
-    gain.gain.setValueAtTime(0.07, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    g.gain.setValueAtTime(vol, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    osc.connect(g);
+    g.connect(this.ctx.destination);
     osc.start(now);
-    osc.stop(now + 0.15);
+    osc.stop(now + dur + 0.01);
   }
 
-  playSuccess() {
-    if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
-    const now = this.ctx.currentTime;
-    [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      const t = now + i * 0.055;
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(freq, t);
-      gain.gain.setValueAtTime(0.09, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start(t);
-      osc.stop(t + 0.26);
-    });
+  playHit(combo = 1) {
+    const f = SCALE[Math.min(SCALE.length - 1, Math.max(0, combo - 1))];
+    this.tone(f, 0.11, 'triangle', 0.085);
   }
 
-  playFail() {
+  playDamage() {
     if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
+    const g = this.ctx.createGain();
     osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(190, now);
-    osc.frequency.exponentialRampToValueAtTime(95, now + 0.22);
-    gain.gain.setValueAtTime(0.08, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.23);
-    osc.connect(gain);
-    gain.connect(this.ctx.destination);
+    osc.frequency.setValueAtTime(170, now);
+    osc.frequency.exponentialRampToValueAtTime(62, now + 0.22);
+    g.gain.setValueAtTime(0.09, now);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.23);
+    osc.connect(g);
+    g.connect(this.ctx.destination);
     osc.start(now);
     osc.stop(now + 0.24);
   }
-}
 
-function bidi(el, text) {
-  if (!el) return;
-  if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
-    window.ArcadeCore.setBidiSafeMath(el, text);
-  } else {
-    el.textContent = String(text ?? '');
+  playStageClear() {
+    if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
+    const now = this.ctx.currentTime;
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, idx) => {
+      const osc = this.ctx.createOscillator();
+      const g = this.ctx.createGain();
+      const t = now + idx * 0.06;
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(f, t);
+      g.gain.setValueAtTime(0.085, t);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 0.24);
+      osc.connect(g);
+      g.connect(this.ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.25);
+    });
   }
 }
 
-function clamp(v, min, max) {
-  return Math.max(min, Math.min(max, v));
+function clamp(v, lo, hi) {
+  return Math.max(lo, Math.min(hi, v));
 }
 
-function snap(v, min, max, step) {
-  const s = step || 0.1;
-  const snapped = Math.round((v - min) / s) * s + min;
-  const fixed = Number(snapped.toFixed(4));
-  return clamp(fixed, min, max);
+function renderTex(el, txt) {
+  if (!el) return;
+  if (window.ArcadeCore && typeof window.ArcadeCore.renderMath === 'function') {
+    window.ArcadeCore.renderMath(el, txt);
+  } else {
+    el.textContent = String(txt ?? '');
+  }
 }
 
-class SequenceWeaverGame {
+class SequenceArcadeGame {
   constructor() {
     this.canvas = document.getElementById('weaverCanvas');
     this.ctx = this.canvas.getContext('2d');
-    this.wrap = document.getElementById('canvasWrap');
+    this.canvasBox = document.getElementById('canvasBox');
 
-    this.stageTabsEl = document.getElementById('stageTabs');
-    this.scoreEl = document.getElementById('scoreVal');
-    this.clearedEl = document.getElementById('clearedVal');
-    this.stageTagEl = document.getElementById('stageTag');
-    this.roundSwitcherEl = document.getElementById('roundSwitcher');
-    this.formulaTagEl = document.getElementById('formulaTag');
-    this.roundTitleEl = document.getElementById('roundTitle');
-    this.missionTextEl = document.getElementById('missionText');
-    this.liveChecksEl = document.getElementById('liveChecks');
-    this.controlsEl = document.getElementById('dynamicControls');
-    this.proofCardEl = document.getElementById('proofCard');
-    this.proofTextEl = document.getElementById('proofText');
-    this.feedbackEl = document.getElementById('stageFeedback');
-    this.btnLaunch = document.getElementById('btnLaunch');
-    this.btnLaunchLabel = document.getElementById('btnLaunchLabel');
-    this.btnNextRound = document.getElementById('btnNextRound');
-    this.btnHint = document.getElementById('btnHint');
+    this.stageNavEl = document.getElementById('stageNav');
+    this.gpBadgeEl = document.getElementById('gpBadge');
+    this.hudScoreEl = document.getElementById('hudScore');
+    this.hudComboEl = document.getElementById('hudCombo');
+    this.hudHpEl = document.getElementById('hudHp');
+    this.stageBadgeEl = document.getElementById('stageBadge');
+    this.stageTitleEl = document.getElementById('stageTitle');
+    this.stageFormulaEl = document.getElementById('stageFormula');
+    this.stageGoalEl = document.getElementById('stageGoal');
+    this.progressFillEl = document.getElementById('stageProgressFill');
+    this.toastEl = document.getElementById('toastFeed');
+    this.deckButtonsEl = document.getElementById('deckButtons');
+    this.deckHintEl = document.getElementById('deckHint');
     this.btnAudio = document.getElementById('btnAudio');
-    this.btnReset = document.getElementById('btnReset');
-    this.victoryModal = document.getElementById('victoryModal');
+    this.btnPause = document.getElementById('btnPause');
 
-    this.audio = new SequenceAudio();
+    this.endOverlayEl = document.getElementById('endOverlay');
+    this.endGlyphEl = document.getElementById('endGlyph');
+    this.endTitleEl = document.getElementById('endTitle');
+    this.endDescEl = document.getElementById('endDesc');
+    this.endScoreEl = document.getElementById('endScore');
+    this.endAccEl = document.getElementById('endAcc');
+    this.endRankEl = document.getElementById('endRank');
+    this.btnEndPrimary = document.getElementById('btnEndPrimary');
+    this.btnEndNext = document.getElementById('btnEndNext');
+    this.btnEndHub = document.getElementById('btnEndHub');
+
+    this.audio = new ArcadeSynth();
     this.gpState = window.ArcadeCore?.Gamepad?.createState ? window.ArcadeCore.Gamepad.createState() : null;
 
     this.stageIdx = 0;
-    this.roundIdx = 0;
-    this.paramState = {};
-    this.clearedRounds = new Set();
     this.clearedStages = new Set();
     this.score = 0;
+    this.combo = 1;
+    this.hp = 5;
+    this.maxHp = 5;
+    this.hits = 0;
     this.attempts = 0;
-    this.correctAttempts = 0;
-    this.showProof = false;
+    this.correctHits = 0;
+    this.paused = false;
+    this.ended = false;
+    this.endFocusIdx = 0;
 
-    this.handles = [];
-    this.activeDrag = null;
-    this.hoverHandleId = null;
+    this.keys = {};
+    this.pointer = { active: false, x: 360, y: 220 };
     this.particles = [];
-    this.ripples = [];
-    this.flashTimer = null;
-    this.anim = { active: false, progress: 0, maxSteps: 12, lastStepChime: -1, evalResult: null };
+    this.beams = [];
+    this.cobwebs = [];
+    this.toastTimer = 0;
+    this.shake = 0;
 
-    this.w = 720;
+    this.w = 840;
     this.h = 460;
     this.dpr = 1;
     this.lastTs = 0;
 
-    this.init();
-  }
+    // Mode-specific dynamic entities
+    this.st = {};
 
-  init() {
+    this.pauseMenu = window.ArcadeCore?.PauseMenu?.attach({
+      title: 'نسّاج المتتاليات — إيقاف مؤقت',
+      subtitle: 'معركة التقارب (الدرس 3 • 2BAC PC)',
+      controlsHelp: [
+        '🎮 عصا اليسار / WASD / الماوس: الحركة والتصويب',
+        '✕ / Space: تنفيذ الفعل أو الاندفاع • ▢ / △ / ◯: أسلحة الرتابة والصدّ',
+        'L1 / R1: تبديل الطور • L2 / R2: ضبط السقف M أو فكّي الدركيين',
+        'Options (Start) / Esc: فتح هذه القائمة في أي لحظة'
+      ],
+      gpState: this.gpState,
+      onPause: () => { this.paused = true; },
+      onResume: () => { this.paused = false; this.lastTs = performance.now(); },
+      onRestart: () => { this.restartFullRun(); }
+    });
+
     this.setupResize();
-    this.renderStageTabs();
-    this.loadRound(0, 0);
     this.bindEvents();
+    this.loadStage(0);
     requestAnimationFrame((ts) => this.loop(ts));
   }
 
   setupResize() {
-    const updateSize = () => {
-      if (!this.wrap || !this.canvas) return;
-      const rect = this.wrap.getBoundingClientRect();
-      const w = Math.max(300, Math.floor(rect.width));
-      const h = Math.max(280, Math.floor(rect.height));
+    const sync = () => {
+      if (!this.canvasBox || !this.canvas) return;
+      const r = this.canvasBox.getBoundingClientRect();
+      const w = Math.max(320, Math.floor(r.width));
+      const h = Math.max(240, Math.floor(r.height));
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       if (w !== this.w || h !== this.h || dpr !== this.dpr) {
         this.w = w;
@@ -194,16 +191,13 @@ class SequenceWeaverGame {
         this.dpr = dpr;
         this.canvas.width = Math.floor(w * dpr);
         this.canvas.height = Math.floor(h * dpr);
-        if (this.paramState && Object.keys(this.paramState).length > 0) {
-          this.render();
-        }
       }
     };
-    updateSize();
+    sync();
     if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(updateSize).observe(this.wrap);
+      new ResizeObserver(sync).observe(this.canvasBox);
     } else {
-      window.addEventListener('resize', updateSize);
+      window.addEventListener('resize', sync);
     }
   }
 
@@ -211,587 +205,603 @@ class SequenceWeaverGame {
     return STAGES[this.stageIdx];
   }
 
-  getRound() {
-    return this.getStage().rounds[this.roundIdx];
+  restartFullRun() {
+    this.endOverlayEl?.classList.add('hidden');
+    this.ended = false;
+    this.paused = false;
+    this.score = 0;
+    this.combo = 1;
+    this.hp = this.maxHp;
+    this.attempts = 0;
+    this.correctHits = 0;
+    this.clearedStages.clear();
+    this.loadStage(0);
   }
 
-  renderStageTabs() {
-    if (!this.stageTabsEl) return;
-    this.stageTabsEl.innerHTML = STAGES.map((st, idx) => {
-      const cls = ['stage-tab'];
+  renderStageNav() {
+    if (!this.stageNavEl) return;
+    this.stageNavEl.innerHTML = STAGES.map((st, idx) => {
+      const cls = ['sw-stage-pill'];
       if (idx === this.stageIdx) cls.push('active');
-      if (this.clearedStages.has(st.id)) cls.push('done');
-      return `<button class="${cls.join(' ')}" data-stage="${idx}" type="button"><span class="tab-dot"></span><span>${st.tabTitle}</span></button>`;
+      if (this.clearedStages.has(st.id)) cls.push('cleared');
+      return `<button type="button" class="${cls.join(' ')}" data-idx="${idx}">${st.tab}</button>`;
     }).join('');
-
-    this.stageTabsEl.querySelectorAll('.stage-tab').forEach((btn) => {
-      btn.addEventListener('click', () => {
+    this.stageNavEl.querySelectorAll('.sw-stage-pill').forEach((b) => {
+      b.addEventListener('click', () => {
         this.audio.unlock();
-        const idx = Number(btn.getAttribute('data-stage'));
-        this.loadRound(idx, 0);
+        this.loadStage(Number(b.getAttribute('data-idx')));
       });
     });
   }
 
-  renderRoundSwitcher() {
-    if (!this.roundSwitcherEl) return;
-    const stage = this.getStage();
-    this.roundSwitcherEl.textContent = '';
-    stage.rounds.forEach((rd, idx) => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      const done = this.clearedRounds.has(rd.id);
-      const cls = ['round-btn'];
-      if (idx === this.roundIdx) cls.push('active');
-      if (done) cls.push('done');
-      btn.className = cls.join(' ');
-      btn.setAttribute('role', 'tab');
-      btn.setAttribute('aria-selected', idx === this.roundIdx ? 'true' : 'false');
-      btn.textContent = done ? `✓ جولة ${idx + 1}` : `جولة ${idx + 1}`;
+  renderDeck(stage) {
+    if (!this.deckButtonsEl) return;
+    this.deckButtonsEl.innerHTML = stage.controls
+      .map((c) => `<button type="button" class="sw-deck-btn ${c.cls}" data-act="${c.action}">${c.label}</button>`)
+      .join('');
+    this.deckButtonsEl.querySelectorAll('.sw-deck-btn').forEach((btn) => {
       btn.addEventListener('click', () => {
         this.audio.unlock();
-        this.loadRound(this.stageIdx, idx);
+        this.triggerAction(btn.getAttribute('data-act'));
       });
-      this.roundSwitcherEl.appendChild(btn);
     });
+    renderTex(this.deckHintEl, stage.deckHint);
   }
 
-  loadRound(stageIdx, roundIdx) {
-    this.stageIdx = clamp(stageIdx, 0, STAGES.length - 1);
+  loadStage(idx) {
+    this.stageIdx = ((idx % STAGES.length) + STAGES.length) % STAGES.length;
     const stage = this.getStage();
-    this.roundIdx = clamp(roundIdx, 0, stage.rounds.length - 1);
-    const round = this.getRound();
+    this.ended = false;
+    this.paused = false;
+    this.endOverlayEl?.classList.add('hidden');
+    this.hits = 0;
+    this.hp = this.maxHp;
+    this.combo = 1;
+    this.particles = [];
+    this.beams = [];
+    this.cobwebs = [];
 
-    this.paramState = {};
-    for (const p of round.params || []) {
-      this.paramState[p.key] = p.init;
+    renderTex(this.stageBadgeEl, `الطور ${this.stageIdx + 1}/${STAGES.length}`);
+    renderTex(this.stageTitleEl, stage.title);
+    renderTex(this.stageFormulaEl, stage.formula);
+    renderTex(this.stageGoalEl, stage.goalText);
+    this.renderStageNav();
+    this.renderDeck(stage);
+
+    if (stage.mode === 'induction-catcher') {
+      this.st = {
+        paddleX: 2.2,
+        ceilM: 4.0,
+        shieldTimer: 0,
+        spawnTimer: 0.6,
+        orbs: []
+      };
+    } else if (stage.mode === 'monotone-shooter') {
+      this.st = {
+        px: 2.1,
+        py: 2.0,
+        dashCd: 0,
+        dashTime: 0,
+        spawnTimer: 0.5,
+        orbs: [],
+        variant: 0
+      };
+    } else if (stage.mode === 'rhythm-lanes') {
+      this.st = {
+        lane: 0, // 0=converge 0, 1=converge L!=0 / const, 2=diverge
+        sumCharge: 0,
+        spawnTimer: 0.5,
+        notes: []
+      };
+    } else if (stage.mode === 'homographic-boss') {
+      this.st = {
+        px: 2.4,
+        py: 2.6,
+        dashCd: 0,
+        dashTime: 0,
+        bossHp: stage.targetHits,
+        spawnTimer: 0.7,
+        bullets: [],
+        lockedIdx: new Set(),
+        wavePhase: 0,
+        targetIdx: 0
+      };
+    } else if (stage.mode === 'squeeze-tunnel') {
+      this.st = {
+        centerY: 2.5,
+        halfGap: 0.85,
+        targetL: 2.5,
+        shieldTimer: 0,
+        scrollT: 0,
+        gateTimer: 1.4,
+        gates: [],
+        meteors: []
+      };
     }
-    if (round.choice) {
-      this.paramState[round.choice.key] = round.choice.init;
-    }
 
-    this.anim = { active: false, progress: 0, maxSteps: 12, lastStepChime: -1, evalResult: null };
-    this.ripples = [];
-    this.hideFeedback();
-    this.btnNextRound?.classList.add('hidden');
-    if (this.btnLaunchLabel) {
-      this.btnLaunchLabel.textContent = this.clearedRounds.has(round.id) ? 'إعادة المحاكاة ⚡' : 'أطلق النبضة وتحقق';
-    }
-
-    if (this.stageTagEl) bidi(this.stageTagEl, `${stage.tabTitle} • ${stage.skillLabel}`);
-    if (this.formulaTagEl) bidi(this.formulaTagEl, round.formula);
-    bidi(this.roundTitleEl, round.title);
-    bidi(this.missionTextEl, round.mission);
-    bidi(this.proofTextEl, round.proof);
-
-    this.renderStageTabs();
-    this.renderRoundSwitcher();
-    this.renderDynamicControls();
-    this.updateLiveChecks();
-    this.updateTopMetrics();
-    if (this.w > 0 && this.h > 0) this.render();
+    this.syncHUD();
+    this.showToast(`انطلق! ${stage.tab}`, false);
   }
 
-  renderDynamicControls() {
-    if (!this.controlsEl) return;
-    const round = this.getRound();
-    this.controlsEl.textContent = '';
-
-    for (const p of round.params || []) {
-      const row = document.createElement('div');
-      row.className = 'ctrl-row';
-
-      const head = document.createElement('div');
-      head.className = 'ctrl-head';
-      const lbl = document.createElement('span');
-      bidi(lbl, p.label);
-      const valSpan = document.createElement('span');
-      valSpan.className = 'ctrl-val';
-      valSpan.dir = 'ltr';
-      valSpan.id = `val_${p.key}`;
-      valSpan.textContent = this.formatParam(p.key, this.paramState[p.key]);
-      head.appendChild(lbl);
-      head.appendChild(valSpan);
-
-      const sliderRow = document.createElement('div');
-      sliderRow.className = 'ctrl-slider-row';
-
-      const minusBtn = document.createElement('button');
-      minusBtn.type = 'button';
-      minusBtn.className = 'nudge-btn';
-      minusBtn.textContent = '−';
-      minusBtn.addEventListener('click', () => {
-        this.audio.unlock();
-        this.setParam(p.key, this.paramState[p.key] - p.step);
-      });
-
-      const range = document.createElement('input');
-      range.type = 'range';
-      range.className = 'ctrl-range';
-      range.id = `rng_${p.key}`;
-      range.min = String(p.min);
-      range.max = String(p.max);
-      range.step = String(p.step);
-      range.value = String(this.paramState[p.key]);
-      range.addEventListener('input', () => {
-        this.audio.unlock();
-        this.setParam(p.key, parseFloat(range.value));
-      });
-
-      const plusBtn = document.createElement('button');
-      plusBtn.type = 'button';
-      plusBtn.className = 'nudge-btn';
-      plusBtn.textContent = '+';
-      plusBtn.addEventListener('click', () => {
-        this.audio.unlock();
-        this.setParam(p.key, this.paramState[p.key] + p.step);
-      });
-
-      sliderRow.appendChild(minusBtn);
-      sliderRow.appendChild(range);
-      sliderRow.appendChild(plusBtn);
-      row.appendChild(head);
-      row.appendChild(sliderRow);
-      this.controlsEl.appendChild(row);
+  syncHUD() {
+    const stage = this.getStage();
+    if (this.hudScoreEl) this.hudScoreEl.textContent = String(this.score);
+    if (this.hudComboEl) this.hudComboEl.textContent = `×${this.combo}`;
+    if (this.hudHpEl) {
+      this.hudHpEl.textContent = '♥'.repeat(Math.max(0, this.hp)) + '♡'.repeat(Math.max(0, this.maxHp - this.hp));
     }
-
-    if (round.choice) {
-      const c = round.choice;
-      const row = document.createElement('div');
-      row.className = 'ctrl-row';
-      const head = document.createElement('div');
-      head.className = 'ctrl-head';
-      const lbl = document.createElement('span');
-      bidi(lbl, c.label);
-      head.appendChild(lbl);
-
-      const cRow = document.createElement('div');
-      cRow.className = 'choice-row';
-      cRow.id = `choice_${c.key}`;
-      c.options.forEach((opt) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.dataset.val = opt.value;
-        btn.className = `choice-btn ${this.paramState[c.key] === opt.value ? 'active' : ''}`;
-        bidi(btn, opt.label);
-        btn.addEventListener('click', () => {
-          this.audio.unlock();
-          this.setChoice(c.key, opt.value);
-        });
-        cRow.appendChild(btn);
-      });
-
-      row.appendChild(head);
-      row.appendChild(cRow);
-      this.controlsEl.appendChild(row);
+    if (this.progressFillEl) {
+      const pct = Math.min(100, Math.round((this.hits / stage.targetHits) * 100));
+      this.progressFillEl.style.width = `${pct}%`;
     }
   }
 
-  setChoice(key, val) {
-    if (this.paramState[key] === val) return;
-    this.paramState[key] = val;
-    this.audio.playTick();
-    const cRow = document.getElementById(`choice_${key}`);
-    if (cRow) {
-      cRow.querySelectorAll('.choice-btn').forEach((b) => {
-        b.classList.toggle('active', b.dataset.val === val);
+  showToast(msg, isBad = false) {
+    if (!this.toastEl) return;
+    this.toastEl.classList.remove('hidden', 'bad');
+    if (isBad) this.toastEl.classList.add('bad');
+    renderTex(this.toastEl, msg);
+    this.toastTimer = 1.65;
+  }
+
+  spawnParticles(sx, sy, color, count = 12) {
+    for (let i = 0; i < count; i += 1) {
+      const ang = (Math.PI * 2 * i) / count + Math.random() * 0.4;
+      const spd = 65 + Math.random() * 140;
+      this.particles.push({
+        x: sx,
+        y: sy,
+        vx: Math.cos(ang) * spd,
+        vy: Math.sin(ang) * spd,
+        color,
+        life: 0.45 + Math.random() * 0.25,
+        maxLife: 0.7
       });
     }
-    this.anim.active = false;
-    this.hideFeedback();
-    this.updateLiveChecks();
   }
 
-  cycleChoice(delta) {
-    const round = this.getRound();
-    if (!round.choice) return;
-    const opts = round.choice.options;
-    const idx = Math.max(0, opts.findIndex((o) => o.value === this.paramState[round.choice.key]));
-    const next = opts[(idx + delta + opts.length) % opts.length];
-    this.setChoice(round.choice.key, next.value);
-  }
-
-  formatParam(key, val) {
-    if (key === 'steps') return String(Math.round(val));
-    if (key === 'est') return Number(val).toFixed(3);
-    return Number(val).toFixed(2);
-  }
-
-  setParam(key, val) {
-    const round = this.getRound();
-    const spec = (round.params || []).find((p) => p.key === key);
-    if (!spec) return;
-    const clamped = snap(val, spec.min, spec.max, spec.step);
-    const changed = Math.abs(clamped - this.paramState[key]) > 1e-6;
-    this.paramState[key] = clamped;
-    const rng = document.getElementById(`rng_${key}`);
-    if (rng) rng.value = String(clamped);
-    const vEl = document.getElementById(`val_${key}`);
-    if (vEl) vEl.textContent = this.formatParam(key, clamped);
-    if (changed) this.audio.playTick();
-    this.anim.active = false;
-    this.hideFeedback();
-    this.updateLiveChecks();
-  }
-
-  updateLiveChecks() {
-    if (!this.liveChecksEl) return;
-    const round = this.getRound();
-    const res = round.evaluate(this.paramState);
-    this.liveChecksEl.textContent = '';
-    for (const chk of res.checks) {
-      const li = document.createElement('li');
-      li.className = `live-check-item ${chk.ok ? 'pass' : 'fail'}`;
-      const txt = document.createElement('span');
-      bidi(txt, chk.label);
-      const st = document.createElement('span');
-      st.className = 'check-status';
-      st.textContent = chk.ok ? '✓' : '✕';
-      li.appendChild(txt);
-      li.appendChild(st);
-      this.liveChecksEl.appendChild(li);
-    }
-    return res;
-  }
-
-  updateTopMetrics() {
-    if (this.scoreEl) this.scoreEl.textContent = String(this.score);
-    if (this.clearedEl) this.clearedEl.textContent = `${this.clearedStages.size}/${STAGES.length}`;
-  }
-
-  flashWrap(kind) {
-    if (!this.wrap) return;
-    this.wrap.classList.remove('flash-ok', 'flash-err');
-    void this.wrap.offsetWidth;
-    this.wrap.classList.add(kind === 'ok' ? 'flash-ok' : 'flash-err');
-    clearTimeout(this.flashTimer);
-    this.flashTimer = setTimeout(() => {
-      this.wrap?.classList.remove('flash-ok', 'flash-err');
-    }, 520);
-  }
-
-  showFeedback(msg, type) {
-    if (!this.feedbackEl) return;
-    this.feedbackEl.className = `stage-feedback ${type}`;
-    bidi(this.feedbackEl, msg);
-  }
-
-  hideFeedback() {
-    if (!this.feedbackEl) return;
-    this.feedbackEl.className = 'stage-feedback hidden';
-  }
-
-  launchSimulation() {
-    this.audio.unlock();
-    const round = this.getRound();
-    const res = this.updateLiveChecks();
-
+  awardHit(points, sx, sy, color, msg) {
+    this.hits += 1;
     this.attempts += 1;
-    if (res.ok) this.correctAttempts += 1;
-
-    if (window.ArcadeCore?.Progress?.recordAnswer) {
-      window.ArcadeCore.Progress.recordAnswer(GAME_ID, round.skillTopic, res.ok);
+    this.correctHits += 1;
+    this.score += points * this.combo;
+    this.combo = Math.min(8, this.combo + 1);
+    this.audio.playHit(this.combo);
+    window.ArcadeCore?.Gamepad?.triggerHaptic(this.gpState, 60, 0.2, 0.45);
+    if (sx !== undefined && sy !== undefined) {
+      this.spawnParticles(sx, sy, color || '#10b981', 14);
     }
+    if (msg) this.showToast(msg, false);
+    this.syncHUD();
 
-    this.anim = {
-      active: true,
-      progress: 0,
-      maxSteps: 12,
-      lastStepChime: -1,
-      evalResult: res
-    };
-    this.ripples = [];
-
-    if (res.ok) {
-      const wasCleared = this.clearedRounds.has(round.id);
-      this.clearedRounds.add(round.id);
-      if (!wasCleared) this.score += 200;
-
-      const stage = this.getStage();
-      if (stage.rounds.every((r) => this.clearedRounds.has(r.id))) {
-        this.clearedStages.add(stage.id);
-      }
-
-      this.spawnBurst(this.w * 0.45, this.h * 0.45, '#10b981', 22);
-      this.spawnRipple(this.w * 0.45, this.h * 0.45, '#f59e0b');
-      this.flashWrap('ok');
-      this.audio.playSuccess();
-      this.showFeedback(res.okMsg, 'ok');
-      this.btnNextRound?.classList.remove('hidden');
-      this.renderStageTabs();
-      this.renderRoundSwitcher();
-      this.updateTopMetrics();
-      this.syncProgress();
-    } else {
-      this.flashWrap('err');
-      this.audio.playFail();
-      this.showFeedback(res.failMsg, 'err');
-      this.syncProgress();
+    if (this.hits >= this.getStage().targetHits) {
+      this.completeStage();
     }
   }
 
-  syncProgress() {
-    if (!window.ArcadeCore?.Progress?.recordRun) return;
-    const acc = this.attempts > 0 ? Math.round((this.correctAttempts / this.attempts) * 100) : 100;
-    const victory = this.clearedStages.size >= STAGES.length;
-    window.ArcadeCore.Progress.recordRun(GAME_ID, {
+  takeDamage(msg, sx, sy) {
+    this.attempts += 1;
+    this.combo = 1;
+    this.hp = Math.max(0, this.hp - 1);
+    this.shake = 0.28;
+    this.audio.playDamage();
+    window.ArcadeCore?.Gamepad?.triggerHaptic(this.gpState, 160, 0.7, 0.85);
+    if (sx !== undefined && sy !== undefined) {
+      this.spawnParticles(sx, sy, '#fb7185', 16);
+    }
+    this.showToast(msg, true);
+    this.syncHUD();
+
+    if (this.hp <= 0) {
+      this.finishRun(false);
+    }
+  }
+
+  completeStage() {
+    const stage = this.getStage();
+    this.clearedStages.add(stage.id);
+    this.audio.playStageClear();
+    this.renderStageNav();
+    const allCleared = this.clearedStages.size >= STAGES.length;
+    if (allCleared) {
+      this.finishRun(true);
+      return;
+    }
+    this.showEndModal(true, false);
+  }
+
+  finishRun(victory) {
+    const acc = this.attempts > 0 ? Math.round((this.correctHits / this.attempts) * 100) : 100;
+    window.ArcadeCore?.Progress?.recordRun(GAME_ID, {
       score: this.score,
       stagesCleared: this.clearedStages.size,
       totalStages: STAGES.length,
       victory,
       accuracy: acc,
-      answersAlreadyRecorded: true
+      bypasses: 0
     });
+    this.showEndModal(victory, true);
   }
 
-  advanceRound() {
-    this.audio.unlock();
-    const stage = this.getStage();
-    if (this.roundIdx + 1 < stage.rounds.length) {
-      this.loadRound(this.stageIdx, this.roundIdx + 1);
-      return;
+  showEndModal(victory, isFinal) {
+    this.ended = true;
+    const acc = this.attempts > 0 ? Math.round((this.correctHits / this.attempts) * 100) : 100;
+    const rank = window.ArcadeCore?.Progress?.computeRank({
+      victory: victory && isFinal,
+      sealsCleared: Math.round((this.clearedStages.size / STAGES.length) * 4),
+      accuracy: acc
+    }) || 'A';
+
+    if (this.endGlyphEl) this.endGlyphEl.textContent = victory ? '🏆' : '💥';
+    if (this.endTitleEl) {
+      this.endTitleEl.textContent = !victory
+        ? 'انهار درع التقارب!'
+        : (isFinal ? 'سيطرة تامة على المتتاليات العددية!' : `تمت السيطرة على ${this.getStage().tab}!`);
     }
-    if (this.stageIdx + 1 < STAGES.length) {
-      this.loadRound(this.stageIdx + 1, 0);
-      return;
+    if (this.endDescEl) {
+      this.endDescEl.textContent = !victory
+        ? 'أعد المحاولة — راقب إشارة f(x)−x وقيمة الحدّ لتفادي الفخاخ!'
+        : (isFinal ? 'أتممت جميع الأطوار الـ 5 في المقرر الرسمي (41–52) بنجاح.' : 'انتقل للطور التالي أو أعد هذا الطور لتحسين الرتبة.');
     }
-    this.openVictory();
-  }
+    if (this.endScoreEl) this.endScoreEl.textContent = String(this.score);
+    if (this.endAccEl) this.endAccEl.textContent = `${acc}%`;
+    if (this.endRankEl) this.endRankEl.textContent = rank;
 
-  openVictory() {
-    const acc = this.attempts > 0 ? Math.round((this.correctAttempts / this.attempts) * 100) : 100;
-    const rank = window.ArcadeCore?.Progress?.computeRank
-      ? window.ArcadeCore.Progress.computeRank({ victory: true, accuracy: acc, sealsCleared: 4, bypasses: 0 })
-      : 'S';
-    const descEl = document.getElementById('victoryDesc');
-    bidi(descEl, 'أتممت بنجاح جميع مهارات الدرس 3 (41–52): الترجع، المحدودية، الرتابة، الهندسية والحسابية ومجاميعهما، المساعدة المتخاطة، الدركيين والمقارنة، والنقطة الصامدة ($u_{n+1}=f(u_n)$)!');
-    const vs = document.getElementById('vScore');
-    const va = document.getElementById('vAcc');
-    const vr = document.getElementById('vRank');
-    if (vs) vs.textContent = String(this.score);
-    if (va) va.textContent = `${acc}%`;
-    if (vr) vr.textContent = rank;
-    this.victoryModal?.classList.remove('hidden');
-    this.syncProgress();
-  }
-
-  spawnBurst(x, y, color, count) {
-    for (let i = 0; i < count; i += 1) {
-      const a = (Math.PI * 2 * i) / count + Math.random() * 0.4;
-      const spd = 45 + Math.random() * 115;
-      this.particles.push({
-        x, y,
-        vx: Math.cos(a) * spd,
-        vy: Math.sin(a) * spd,
-        life: 0.75,
-        maxLife: 0.75,
-        color
-      });
-    }
-  }
-
-  spawnRipple(x, y, color) {
-    this.ripples.push({ x, y, r: 6, maxR: 38, life: 0.45, maxLife: 0.45, color });
+    const hasNext = victory && !isFinal;
+    this.btnEndNext?.classList.toggle('hidden', !hasNext);
+    this.endOverlayEl?.classList.remove('hidden');
   }
 
   bindEvents() {
-    this.btnLaunch?.addEventListener('click', () => this.launchSimulation());
-    this.btnNextRound?.addEventListener('click', () => this.advanceRound());
-
-    this.btnHint?.addEventListener('click', () => {
+    this.btnPause?.addEventListener('click', () => {
       this.audio.unlock();
-      this.showProof = !this.showProof;
-      this.proofCardEl?.classList.toggle('hidden', !this.showProof);
-      this.btnHint?.classList.toggle('active', this.showProof);
+      this.pauseMenu?.toggle();
     });
 
     this.btnAudio?.addEventListener('click', () => {
       this.audio.muted = !this.audio.muted;
-      if (this.btnAudio) this.btnAudio.textContent = this.audio.muted ? '🔇' : '🔊';
+      this.btnAudio.textContent = this.audio.muted ? '🔇' : '🔊';
       if (!this.audio.muted) this.audio.unlock();
     });
 
-    this.btnReset?.addEventListener('click', () => {
+    this.btnEndPrimary?.addEventListener('click', () => {
       this.audio.unlock();
-      this.loadRound(this.stageIdx, this.roundIdx);
+      if (this.hp <= 0 || this.clearedStages.size >= STAGES.length) {
+        this.restartFullRun();
+      } else {
+        this.loadStage(this.stageIdx);
+      }
     });
 
-    document.getElementById('btnReplayAll')?.addEventListener('click', () => {
-      this.victoryModal?.classList.add('hidden');
-      this.clearedRounds.clear();
-      this.clearedStages.clear();
-      this.score = 0;
-      this.attempts = 0;
-      this.correctAttempts = 0;
-      this.loadRound(0, 0);
+    this.btnEndNext?.addEventListener('click', () => {
+      this.audio.unlock();
+      this.loadStage((this.stageIdx + 1) % STAGES.length);
     });
-
-    const toLocal = (e) => {
-      const r = this.canvas.getBoundingClientRect();
-      return { x: e.clientX - r.left, y: e.clientY - r.top };
-    };
 
     this.canvas.addEventListener('pointerdown', (e) => {
       this.audio.unlock();
-      const pt = toLocal(e);
-      let best = null;
-      let bestDist = 30;
-      for (const h of this.handles) {
-        const d = Math.hypot(pt.x - h.x, pt.y - h.y);
-        if (d <= bestDist) {
-          bestDist = d;
-          best = h;
-        }
-      }
-      if (best) {
-        this.activeDrag = best;
-        this.canvas.classList.add('dragging');
-        this.canvas.setPointerCapture?.(e.pointerId);
-        best.onDrag(pt.x, pt.y);
+      const r = this.canvas.getBoundingClientRect();
+      this.pointer.active = true;
+      this.pointer.x = e.clientX - r.left;
+      this.pointer.y = e.clientY - r.top;
+      const mode = this.getStage().mode;
+      if (mode === 'induction-catcher') this.triggerAction('shield');
+      else if (mode === 'homographic-boss') this.triggerAction('lockPoint');
+      else if (mode === 'rhythm-lanes') {
+        const lane = clamp(Math.floor((this.pointer.x / this.w) * 3), 0, 2);
+        this.st.lane = lane;
+        this.triggerAction('pulseHit');
+      } else if (mode === 'squeeze-tunnel') {
+        this.triggerAction('shield');
       }
     });
 
     this.canvas.addEventListener('pointermove', (e) => {
-      const pt = toLocal(e);
-      if (this.activeDrag) {
-        this.activeDrag.onDrag(pt.x, pt.y);
-        return;
-      }
-      let hover = null;
-      let bestDist = 26;
-      for (const h of this.handles) {
-        const d = Math.hypot(pt.x - h.x, pt.y - h.y);
-        if (d <= bestDist) {
-          bestDist = d;
-          hover = h.id;
-        }
-      }
-      this.hoverHandleId = hover;
-      this.canvas.style.cursor = hover ? 'grab' : 'default';
+      const r = this.canvas.getBoundingClientRect();
+      this.pointer.active = true;
+      this.pointer.x = e.clientX - r.left;
+      this.pointer.y = e.clientY - r.top;
     });
 
-    const stopDrag = () => {
-      this.activeDrag = null;
-      this.canvas.classList.remove('dragging');
-    };
-    this.canvas.addEventListener('pointerup', stopDrag);
-    this.canvas.addEventListener('pointercancel', stopDrag);
+    this.canvas.addEventListener('wheel', (e) => {
+      const mode = this.getStage().mode;
+      if (mode === 'induction-catcher') {
+        e.preventDefault();
+        this.st.ceilM = clamp(this.st.ceilM + (e.deltaY < 0 ? 0.25 : -0.25), 2.0, 5.8);
+      } else if (mode === 'squeeze-tunnel') {
+        e.preventDefault();
+        this.st.halfGap = clamp(this.st.halfGap + (e.deltaY < 0 ? 0.1 : -0.1), 0.2, 1.5);
+      }
+    }, { passive: false });
 
     window.addEventListener('keydown', (e) => {
-      if (!this.victoryModal?.classList.contains('hidden')) return;
+      this.keys[e.code] = true;
+      if (this.pauseMenu?.isOpen()) return;
       this.audio.unlock();
-      const round = this.getRound();
-      const stage = this.getStage();
-      const p0 = round.params?.[0];
-      const p1 = round.params?.[1];
 
-      if (e.code === 'Space' || e.code === 'Enter') {
-        e.preventDefault();
-        if (!this.btnNextRound?.classList.contains('hidden')) {
-          this.advanceRound();
-        } else {
-          this.launchSimulation();
+      if (this.ended) {
+        if (e.code === 'Enter' || e.code === 'Space') {
+          e.preventDefault();
+          if (!this.btnEndNext?.classList.contains('hidden')) this.btnEndNext.click();
+          else this.btnEndPrimary?.click();
         }
-      } else if ((e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') && p0) {
-        e.preventDefault();
-        this.setParam(p0.key, this.paramState[p0.key] + p0.step);
-      } else if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && p0) {
-        e.preventDefault();
-        this.setParam(p0.key, this.paramState[p0.key] - p0.step);
-      } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
-        e.preventDefault();
-        if (p1) this.setParam(p1.key, this.paramState[p1.key] + p1.step);
-        else if (round.choice) this.cycleChoice(1);
-      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
-        e.preventDefault();
-        if (p1) this.setParam(p1.key, this.paramState[p1.key] - p1.step);
-        else if (round.choice) this.cycleChoice(-1);
-      } else if (e.key === '1' || e.key === '2' || e.key === '3') {
-        const idx = Number(e.key) - 1;
-        if (idx < stage.rounds.length) this.loadRound(this.stageIdx, idx);
-      } else if (e.key === 'h' || e.key === 'H') {
-        this.btnHint?.click();
-      } else if (e.key === 'r' || e.key === 'R') {
-        this.loadRound(this.stageIdx, this.roundIdx);
-      } else if (e.key === 'm' || e.key === 'M') {
-        this.btnAudio?.click();
-      } else if (e.key === ']') {
-        this.loadRound((this.stageIdx + 1) % STAGES.length, 0);
-      } else if (e.key === '[') {
-        this.loadRound((this.stageIdx - 1 + STAGES.length) % STAGES.length, 0);
+        return;
       }
+
+      const mode = this.getStage().mode;
+      if (e.code === 'KeyM') this.btnAudio?.click();
+      else if (e.code === 'BracketRight') this.loadStage((this.stageIdx + 1) % STAGES.length);
+      else if (e.code === 'BracketLeft') this.loadStage((this.stageIdx - 1 + STAGES.length) % STAGES.length);
+      else if (e.code === 'Space') {
+        e.preventDefault();
+        if (mode === 'induction-catcher') this.triggerAction('shield');
+        else if (mode === 'monotone-shooter') this.triggerAction('dash');
+        else if (mode === 'rhythm-lanes') this.triggerAction('pulseHit');
+        else if (mode === 'homographic-boss') this.triggerAction('dash');
+        else if (mode === 'squeeze-tunnel') this.triggerAction('shield');
+      } else if (e.code === 'Digit1' || e.code === 'KeyQ') {
+        if (mode === 'monotone-shooter') this.triggerAction('beamInc');
+        else if (mode === 'homographic-boss') this.triggerAction('lockPoint');
+      } else if (e.code === 'Digit2' || e.code === 'KeyE') {
+        if (mode === 'monotone-shooter') this.triggerAction('beamDec');
+        else if (mode === 'rhythm-lanes') this.triggerAction('sumNova');
+      } else if (e.code === 'Digit3' || e.code === 'KeyF') {
+        if (mode === 'monotone-shooter') this.triggerAction('beamDiv');
+        else if (mode === 'homographic-boss') this.triggerAction('lockPoint');
+      } else if (mode === 'rhythm-lanes' && (e.code === 'ArrowLeft' || e.code === 'KeyA')) {
+        this.st.lane = clamp(this.st.lane - 1, 0, 2);
+      } else if (mode === 'rhythm-lanes' && (e.code === 'ArrowRight' || e.code === 'KeyD')) {
+        this.st.lane = clamp(this.st.lane + 1, 0, 2);
+      }
+    });
+
+    window.addEventListener('keyup', (e) => {
+      this.keys[e.code] = false;
     });
   }
 
-  pollGamepad() {
+  triggerAction(act) {
+    if (this.paused || this.ended) return;
+    const mode = this.getStage().mode;
+
+    if (mode === 'induction-catcher') {
+      if (act === 'shield') {
+        this.st.shieldTimer = 0.28;
+        this.audio.tone(440, 0.08, 'sine', 0.07);
+      } else if (act === 'ceilUp') {
+        this.st.ceilM = clamp(this.st.ceilM + 0.25, 2.0, 5.8);
+      } else if (act === 'ceilDown') {
+        this.st.ceilM = clamp(this.st.ceilM - 0.25, 2.0, 5.8);
+      }
+    } else if (mode === 'monotone-shooter') {
+      if (act === 'dash' && this.st.dashCd <= 0) {
+        this.st.dashTime = 0.2;
+        this.st.dashCd = 0.7;
+        this.audio.tone(620, 0.08, 'sine', 0.08);
+      } else if (act === 'beamInc' || act === 'beamDec' || act === 'beamDiv') {
+        const want = act === 'beamInc' ? 'inc' : (act === 'beamDec' ? 'dec' : 'div');
+        this.fireMonotoneBeam(want);
+      }
+    } else if (mode === 'rhythm-lanes') {
+      if (act === 'laneLeft') this.st.lane = clamp(this.st.lane - 1, 0, 2);
+      else if (act === 'laneRight') this.st.lane = clamp(this.st.lane + 1, 0, 2);
+      else if (act === 'pulseHit') this.hitRhythmLane();
+      else if (act === 'sumNova') this.fireSumNova();
+    } else if (mode === 'homographic-boss') {
+      if (act === 'dash' && this.st.dashCd <= 0) {
+        this.st.dashTime = 0.22;
+        this.st.dashCd = 0.75;
+        this.audio.tone(640, 0.08, 'sine', 0.08);
+      } else if (act === 'lockPoint') {
+        this.attemptFixedPointLock();
+      }
+    } else if (mode === 'squeeze-tunnel') {
+      if (act === 'shield') {
+        this.st.shieldTimer = 0.35;
+        this.audio.tone(520, 0.09, 'triangle', 0.08);
+      } else if (act === 'pinchIn') {
+        this.st.halfGap = clamp(this.st.halfGap - 0.14, 0.18, 1.5);
+      } else if (act === 'pinchOut') {
+        this.st.halfGap = clamp(this.st.halfGap + 0.14, 0.18, 1.5);
+      }
+    }
+  }
+
+  pollGamepad(dt) {
     const GP = window.ArcadeCore?.Gamepad;
-    if (!GP || !this.gpState) return;
+    if (!GP || !this.gpState) return { lx: 0, ly: 0, l2: 0, r2: 0 };
     const gp = GP.resolveActiveGamepad(this.gpState);
-    if (!gp) return;
+    GP.updateBanner(this.gpState, this.gpBadgeEl, this.gpBadgeEl, '🎮 لوحة المفاتيح / الماوس');
 
-    const round = this.getRound();
-    const p0 = round.params?.[0];
-    const p1 = round.params?.[1];
+    if (this.pauseMenu?.pollGamepad(gp, this.gpState)) {
+      return { lx: 0, ly: 0, l2: 0, r2: 0 };
+    }
+
+    if (!gp) return { lx: 0, ly: 0, l2: 0, r2: 0 };
+
+    if (this.ended) {
+      if (GP.justPressed(gp, this.gpState, 0)) {
+        this.btnEndPrimary?.click();
+      } else if (GP.justPressed(gp, this.gpState, 3) && !this.btnEndNext?.classList.contains('hidden')) {
+        this.btnEndNext?.click();
+      } else if (GP.justPressed(gp, this.gpState, 1)) {
+        window.location.href = '../../index.html?from=game';
+      }
+      GP.snapshotButtons(gp, this.gpState);
+      return { lx: 0, ly: 0, l2: 0, r2: 0 };
+    }
+
+    const axes = GP.sampleAnalogAxes(gp, 0.18);
     const nav = GP.sampleDirectionalNav(gp, this.gpState);
+    const mode = this.getStage().mode;
 
-    if (p0 && nav.dRight) this.setParam(p0.key, this.paramState[p0.key] + p0.step);
-    if (p0 && nav.dLeft) this.setParam(p0.key, this.paramState[p0.key] - p0.step);
-    if (nav.dUp) {
-      if (p1) this.setParam(p1.key, this.paramState[p1.key] + p1.step);
-      else if (round.choice) this.cycleChoice(1);
-    }
-    if (nav.dDown) {
-      if (p1) this.setParam(p1.key, this.paramState[p1.key] - p1.step);
-      else if (round.choice) this.cycleChoice(-1);
-    }
+    if (GP.justPressed(gp, this.gpState, 4)) this.loadStage((this.stageIdx - 1 + STAGES.length) % STAGES.length);
+    if (GP.justPressed(gp, this.gpState, 5)) this.loadStage((this.stageIdx + 1) % STAGES.length);
 
-    if (GP.justPressed(gp, this.gpState, 0)) {
-      if (!this.btnNextRound?.classList.contains('hidden')) this.advanceRound();
-      else this.launchSimulation();
+    if (mode === 'induction-catcher') {
+      if (GP.justPressed(gp, this.gpState, 2) || GP.justPressed(gp, this.gpState, 0)) this.triggerAction('shield');
+    } else if (mode === 'monotone-shooter') {
+      if (GP.justPressed(gp, this.gpState, 2)) this.triggerAction('beamInc');
+      if (GP.justPressed(gp, this.gpState, 3)) this.triggerAction('beamDec');
+      if (GP.justPressed(gp, this.gpState, 1)) this.triggerAction('beamDiv');
+      if (GP.justPressed(gp, this.gpState, 0)) this.triggerAction('dash');
+    } else if (mode === 'rhythm-lanes') {
+      if (nav.dLeft) this.st.lane = clamp(this.st.lane - 1, 0, 2);
+      if (nav.dRight) this.st.lane = clamp(this.st.lane + 1, 0, 2);
+      if (GP.justPressed(gp, this.gpState, 0) || GP.justPressed(gp, this.gpState, 2)) this.triggerAction('pulseHit');
+      if (GP.justPressed(gp, this.gpState, 1) || GP.justPressed(gp, this.gpState, 3)) this.triggerAction('sumNova');
+    } else if (mode === 'homographic-boss') {
+      if (GP.justPressed(gp, this.gpState, 2)) this.triggerAction('lockPoint');
+      if (GP.justPressed(gp, this.gpState, 0)) this.triggerAction('dash');
+    } else if (mode === 'squeeze-tunnel') {
+      if (GP.justPressed(gp, this.gpState, 2) || GP.justPressed(gp, this.gpState, 0)) this.triggerAction('shield');
     }
-    if (GP.justPressed(gp, this.gpState, 1)) this.loadRound(this.stageIdx, this.roundIdx);
-    if (GP.justPressed(gp, this.gpState, 4)) this.loadRound((this.stageIdx - 1 + STAGES.length) % STAGES.length, 0);
-    if (GP.justPressed(gp, this.gpState, 5)) this.loadRound((this.stageIdx + 1) % STAGES.length, 0);
 
     GP.snapshotButtons(gp, this.gpState);
+    return {
+      lx: axes.lx || (gp.buttons[14]?.pressed ? -1 : gp.buttons[15]?.pressed ? 1 : 0),
+      ly: axes.ly || (gp.buttons[12]?.pressed ? -1 : gp.buttons[13]?.pressed ? 1 : 0),
+      l2: axes.l2,
+      r2: axes.r2
+    };
+  }
+
+  // ---------- Stage 2 Action ----------
+  fireMonotoneBeam(want) {
+    const stage = this.getStage();
+    let best = null;
+    let bestD = 999;
+    for (const orb of this.st.orbs) {
+      const d = Math.hypot(orb.x - this.st.px, orb.y - this.st.py);
+      if (d < bestD) {
+        bestD = d;
+        best = orb;
+      }
+    }
+    if (!best || bestD > 1.45) {
+      this.showToast('اقترب من الحدّة أولاً لتوجيه الشعاع!', true);
+      return;
+    }
+    const sx = this.mapX(best.x, stage.domain);
+    const sy = this.mapY(best.y, stage.domain);
+    if (best.kind === want) {
+      this.st.orbs = this.st.orbs.filter((o) => o !== best);
+      this.beams.push({
+        x1: this.mapX(this.st.px, stage.domain),
+        y1: this.mapY(this.st.py, stage.domain),
+        x2: sx,
+        y2: sy,
+        color: want === 'inc' ? '#38bdf8' : want === 'dec' ? '#f59e0b' : '#fb7185',
+        life: 0.24
+      });
+      this.awardHit(120, sx, sy, '#10b981', want === 'div' ? 'صدّ التباعد!' : 'إشارة f(x)−x دقيقة ✓');
+    } else {
+      this.takeDamage('خطأ في رتابة f(x) − x!', sx, sy);
+    }
+  }
+
+  // ---------- Stage 3 Action ----------
+  hitRhythmLane() {
+    const hitY = this.h - 86;
+    const lane = this.st.lane;
+    let target = null;
+    let bestDy = 999;
+    for (const n of this.st.notes) {
+      if (n.lane !== lane) continue;
+      const dy = Math.abs(n.y - hitY);
+      if (dy < 62 && dy < bestDy) {
+        bestDy = dy;
+        target = n;
+      }
+    }
+    if (!target) {
+      this.audio.tone(210, 0.06, 'sine', 0.04);
+      return;
+    }
+    const lx = ((target.targetLane + 0.5) / 3) * this.w;
+    if (target.lane === target.targetLane) {
+      this.st.notes = this.st.notes.filter((n) => n !== target);
+      this.st.sumCharge = Math.min(100, this.st.sumCharge + 25);
+      this.awardHit(110, lx, hitY, '#10b981', `${target.label} ✓`);
+    } else {
+      this.st.notes = this.st.notes.filter((n) => n !== target);
+      this.takeDamage(`مسار خاطئ! (${target.label})`, lx, hitY);
+    }
+  }
+
+  fireSumNova() {
+    if (this.st.sumCharge < 100) {
+      this.showToast(`اشحن خزان Sₙ إلى 100% أولاً (${this.st.sumCharge}%)`, true);
+      return;
+    }
+    this.st.sumCharge = 0;
+    const cleared = this.st.notes.length;
+    this.st.notes = [];
+    this.spawnParticles(this.w * 0.5, this.h * 0.5, '#f59e0b', 28);
+    this.awardHit(250 + cleared * 40, this.w * 0.5, this.h * 0.5, '#f59e0b', 'تفجير المجموع Sₙ = u₀(1−qⁿ)/(1−q)!');
+  }
+
+  // ---------- Stage 4 Action ----------
+  attemptFixedPointLock() {
+    const stage = this.getStage();
+    const tgt = stage.fixedTargets[this.st.targetIdx % stage.fixedTargets.length];
+    const d = Math.hypot(this.st.px - tgt.x, this.st.py - tgt.y);
+    const sx = this.mapX(tgt.x, stage.domain);
+    const sy = this.mapY(tgt.y, stage.domain);
+    if (d <= 0.55) {
+      this.beams.push({
+        x1: this.mapX(this.st.px, stage.domain),
+        y1: this.mapY(this.st.py, stage.domain),
+        x2: sx,
+        y2: sy,
+        color: '#f59e0b',
+        life: 0.35
+      });
+      this.st.targetIdx = (this.st.targetIdx + 1) % stage.fixedTargets.length;
+      this.st.bullets = [];
+      this.awardHit(180, sx, sy, '#f59e0b', `إقفال النقطة الصامدة ${tgt.label} (f(L)=L)!`);
+    } else {
+      this.takeDamage(`صوّب على التقاطع ${tgt.label} على y = x!`, this.mapX(this.st.px, stage.domain), this.mapY(this.st.py, stage.domain));
+    }
+  }
+
+  mapX(vx, domain) {
+    const pad = 48;
+    return pad + ((vx - domain.min) / (domain.max - domain.min)) * (this.w - pad * 2);
+  }
+
+  mapY(vy, domain) {
+    const pad = 34;
+    return pad + (this.h - pad * 2) - ((vy - domain.min) / (domain.max - domain.min)) * (this.h - pad * 2);
+  }
+
+  unmapX(px, domain) {
+    const pad = 48;
+    return domain.min + ((px - pad) / Math.max(1, this.w - pad * 2)) * (domain.max - domain.min);
+  }
+
+  unmapY(py, domain) {
+    const pad = 34;
+    return domain.min + ((pad + (this.h - pad * 2) - py) / Math.max(1, this.h - pad * 2)) * (domain.max - domain.min);
   }
 
   loop(ts) {
     const dt = Math.min(0.05, this.lastTs ? (ts - this.lastTs) / 1000 : 0.016);
     this.lastTs = ts;
-
-    this.pollGamepad();
-    this.update(dt);
+    const inp = this.pollGamepad(dt);
+    if (!this.paused && !this.ended) {
+      this.update(dt, inp);
+    }
     this.render();
     requestAnimationFrame((t) => this.loop(t));
   }
 
-  update(dt) {
-    if (this.anim.active && this.anim.progress < this.anim.maxSteps) {
-      this.anim.progress = Math.min(this.anim.maxSteps, this.anim.progress + dt * 11.5);
-      const stepIdx = Math.floor(this.anim.progress);
-      if (stepIdx > this.anim.lastStepChime && stepIdx < this.anim.maxSteps) {
-        this.anim.lastStepChime = stepIdx;
-        const round = this.getRound();
-        if (round.f) {
-          let u = this.paramState.u0 ?? round.u0 ?? 1;
-          for (let i = 0; i < stepIdx; i += 1) u = round.f(u);
-          if (Number.isFinite(u)) {
-            this.audio.playStep(u, round.domain?.min ?? 0, round.domain?.max ?? 6);
-          }
-        } else if (round.mode === 'geometric-spectrum') {
-          const val = round.u0 * Math.pow(this.paramState.q, stepIdx);
-          if (Number.isFinite(val)) this.audio.playStep(val, -4, 4);
-        } else if (round.mode === 'geometric-sum-tower' && stepIdx <= 4) {
-          this.audio.playStep(stepIdx, 0, 4);
-        } else if (round.mode === 'arithmetic-and-ref' && stepIdx <= 5) {
-          this.audio.playStep(stepIdx, 0, 5);
-        } else if (round.seqFn) {
-          const val = round.seqFn(stepIdx + 1);
-          if (Number.isFinite(val)) this.audio.playStep(val, 0, 8);
-        }
-      }
+  update(dt, inp) {
+    if (this.toastTimer > 0) {
+      this.toastTimer -= dt;
+      if (this.toastTimer <= 0) this.toastEl?.classList.add('hidden');
     }
+    if (this.shake > 0) this.shake = Math.max(0, this.shake - dt);
 
     for (let i = this.particles.length - 1; i >= 0; i -= 1) {
       const p = this.particles[i];
@@ -800,1212 +810,624 @@ class SequenceWeaverGame {
       p.life -= dt;
       if (p.life <= 0) this.particles.splice(i, 1);
     }
-
-    for (let i = this.ripples.length - 1; i >= 0; i -= 1) {
-      const rp = this.ripples[i];
-      rp.life -= dt;
-      rp.r = 6 + (1 - Math.max(0, rp.life / rp.maxLife)) * (rp.maxR - 6);
-      if (rp.life <= 0) this.ripples.splice(i, 1);
+    for (let i = this.beams.length - 1; i >= 0; i -= 1) {
+      this.beams[i].life -= dt;
+      if (this.beams[i].life <= 0) this.beams.splice(i, 1);
     }
-  }
-
-  drawLabel(text, x, y, opts = {}) {
-    const ctx = this.ctx;
-    const str = String(text ?? '');
-    const rich = window.ArcadeCore?.CanvasAxisKit?.drawMathRich;
-    const hasArabic = /[\u0600-\u06FF]/.test(str);
-    const hasRichMath = !hasArabic && /[₀-₉⁰-⁹ₙˣ√=_^{}\\]/.test(str);
-    if (hasRichMath && rich) {
-      const sz = opts.fontSize || (opts.font && /(\d+)px/.test(opts.font) ? Number(RegExp.$1) + 1 : 12);
-      rich(ctx, str, x, y, {
-        fontSize: sz,
-        color: opts.color || '#e2e8f0',
-        align: opts.align || 'center',
-        baseline: opts.baseline || 'middle'
-      });
-      return;
+    for (let i = this.cobwebs.length - 1; i >= 0; i -= 1) {
+      this.cobwebs[i].life -= dt;
+      if (this.cobwebs[i].life <= 0) this.cobwebs.splice(i, 1);
     }
-    ctx.save();
-    ctx.direction = hasArabic ? 'rtl' : 'ltr';
-    ctx.font = opts.font || '700 11px "Cairo", "KaTeX_Main", sans-serif';
-    ctx.textAlign = opts.align || 'center';
-    ctx.textBaseline = opts.baseline || 'middle';
-    ctx.fillStyle = opts.color || '#e2e8f0';
-    ctx.fillText(str, x, y);
-    ctx.restore();
-  }
 
-  drawAxisTicks(rect, dMin, dMax, toPxX, toPxY) {
-    const ctx = this.ctx;
-    const span = dMax - dMin;
-    const tickStep = span <= 3.5 ? 0.5 : span <= 7 ? 1 : 2;
-    const first = Math.ceil(dMin / tickStep) * tickStep;
-    const ox = clamp(toPxX(0), rect.x + 14, rect.x + rect.w - 14);
-    const oy = clamp(toPxY(0), rect.y + 14, rect.y + rect.h - 14);
+    let kx = (this.keys.ArrowRight || this.keys.KeyD ? 1 : 0) - (this.keys.ArrowLeft || this.keys.KeyA ? 1 : 0);
+    let ky = (this.keys.ArrowDown || this.keys.KeyS ? 1 : 0) - (this.keys.ArrowUp || this.keys.KeyW ? 1 : 0);
+    const moveX = Math.abs(inp.lx) > 0.1 ? inp.lx : kx;
+    const moveY = Math.abs(inp.ly) > 0.1 ? inp.ly : ky;
 
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
-    ctx.lineWidth = 1;
-    for (let v = first; v <= dMax - 0.05; v += tickStep) {
-      if (Math.abs(v) < 1e-4) continue;
-      const px = toPxX(v);
-      const py = toPxY(v);
-      const lbl = Number.isInteger(v) ? String(v) : v.toFixed(1);
-      if (px > rect.x + 16 && px < rect.x + rect.w - 14) {
-        ctx.beginPath();
-        ctx.moveTo(px, oy - 3);
-        ctx.lineTo(px, oy + 3);
-        ctx.stroke();
-        this.drawLabel(lbl, px, oy + 12, { color: 'rgba(148, 163, 184, 0.72)', font: '700 9px "KaTeX_Main", monospace' });
+    const stage = this.getStage();
+    const mode = stage.mode;
+
+    if (mode === 'induction-catcher') {
+      if (this.pointer.active) {
+        const tx = this.unmapX(this.pointer.x, stage.domain);
+        this.st.paddleX += (clamp(tx, 0.3, 5.7) - this.st.paddleX) * Math.min(1, dt * 12);
+      } else {
+        this.st.paddleX = clamp(this.st.paddleX + moveX * dt * 3.8, 0.3, 5.7);
       }
-      if (py > rect.y + 14 && py < rect.y + rect.h - 16) {
-        ctx.beginPath();
-        ctx.moveTo(ox - 3, py);
-        ctx.lineTo(ox + 3, py);
-        ctx.stroke();
-        this.drawLabel(lbl, ox - 12, py, { color: 'rgba(148, 163, 184, 0.72)', font: '700 9px "KaTeX_Main", monospace' });
+      const ceilDelta = (inp.r2 - inp.l2) + (this.keys.ArrowUp || this.keys.KeyW ? 1 : 0) - (this.keys.ArrowDown || this.keys.KeyS ? 1 : 0);
+      this.st.ceilM = clamp(this.st.ceilM + ceilDelta * dt * 2.2, 2.0, 5.8);
+      if (this.st.shieldTimer > 0) this.st.shieldTimer -= dt;
+
+      this.st.spawnTimer -= dt;
+      if (this.st.spawnTimer <= 0) {
+        this.st.spawnTimer = 1.25;
+        const rogue = Math.random() < 0.38;
+        const u0 = rogue ? (4.35 + Math.random() * 1.3) : (0.5 + Math.random() * 3.2);
+        this.st.orbs.push({
+          x: u0,
+          y: 5.7,
+          vy: -(1.25 + Math.random() * 0.45),
+          rogue
+        });
+      }
+
+      for (let i = this.st.orbs.length - 1; i >= 0; i -= 1) {
+        const o = this.st.orbs[i];
+        o.y += o.vy * dt;
+        const caught = Math.abs(o.x - this.st.paddleX) < 0.58 && o.y <= 0.65 && o.y >= 0.0;
+        if (caught) {
+          this.st.orbs.splice(i, 1);
+          const sx = this.mapX(o.x, stage.domain);
+          const sy = this.mapY(0.4, stage.domain);
+          if (o.rogue) {
+            if (this.st.shieldTimer > 0) {
+              this.awardHit(130, sx, sy, '#38bdf8', `تم صدّ u₀=${o.x.toFixed(1)} > M!`);
+            } else {
+              this.takeDamage(`فخ! u₀=${o.x.toFixed(1)} خارج [0, 4] (صدّه بـ ▢)`, sx, sy);
+            }
+          } else {
+            const ceilOk = Math.abs(this.st.ceilM - 4.0) <= 0.65;
+            this.cobwebs.push({ u0: o.x, life: 1.4 });
+            this.awardHit(ceilOk ? 150 : 100, sx, sy, '#10b981', ceilOk ? 'ترجع مضبوط M≈4 ✓' : 'مقبول (قرّب السقف M→4)');
+          }
+          continue;
+        }
+        if (o.y < -0.1) {
+          this.st.orbs.splice(i, 1);
+          if (!o.rogue) {
+            this.takeDamage(`فاتتك البذرة الآمنة u₀=${o.x.toFixed(1)}!`, this.mapX(o.x, stage.domain), this.mapY(0.1, stage.domain));
+          }
+        }
+      }
+    } else if (mode === 'monotone-shooter') {
+      if (this.st.dashCd > 0) this.st.dashCd -= dt;
+      if (this.st.dashTime > 0) this.st.dashTime -= dt;
+      const spd = this.st.dashTime > 0 ? 5.8 : 2.9;
+      if (this.pointer.active && Math.abs(moveX) < 0.05 && Math.abs(moveY) < 0.05) {
+        const tx = this.unmapX(this.pointer.x, stage.domain);
+        const ty = this.unmapY(this.pointer.y, stage.domain);
+        this.st.px += (clamp(tx, 0.2, 4.0) - this.st.px) * Math.min(1, dt * 8);
+        this.st.py += (clamp(ty, 0.2, 4.0) - this.st.py) * Math.min(1, dt * 8);
+      } else {
+        this.st.px = clamp(this.st.px + moveX * spd * dt, 0.2, 4.0);
+        this.st.py = clamp(this.st.py - moveY * spd * dt, 0.2, 4.0);
+      }
+
+      this.st.spawnTimer -= dt;
+      if (this.st.spawnTimer <= 0 && this.st.orbs.length < 5) {
+        this.st.spawnTimer = 1.65;
+        const r = Math.random();
+        let x0, kind, label;
+        if (r < 0.35) {
+          x0 = 0.35 + Math.random() * 0.45;
+          kind = 'inc';
+          label = `u₀=${x0.toFixed(1)}`;
+        } else if (r < 0.72) {
+          x0 = 1.35 + Math.random() * 1.3;
+          kind = 'dec';
+          label = `u₀=${x0.toFixed(1)}`;
+        } else {
+          x0 = 3.25 + Math.random() * 0.65;
+          kind = 'div';
+          label = `u₀=${x0.toFixed(1)}`;
+        }
+        this.st.orbs.push({ x: x0, y: stage.f(x0), kind, label, life: 9.0, drift: (Math.random() - 0.5) * 0.25 });
+      }
+
+      for (let i = this.st.orbs.length - 1; i >= 0; i -= 1) {
+        const o = this.st.orbs[i];
+        o.life -= dt;
+        o.x = clamp(o.x + o.drift * dt, 0.25, 3.95);
+        o.y = stage.f(o.x);
+        if (o.life <= 0) {
+          this.st.orbs.splice(i, 1);
+          this.takeDamage('انتهى وقت تصنيف الحدّ!', this.mapX(o.x, stage.domain), this.mapY(o.y, stage.domain));
+        }
+      }
+    } else if (mode === 'rhythm-lanes') {
+      this.st.spawnTimer -= dt;
+      if (this.st.spawnTimer <= 0) {
+        this.st.spawnTimer = 1.3;
+        const catalog = [
+          { label: '(0.6)^n', targetLane: 0 },
+          { label: '(-0.5)^n', targetLane: 0 },
+          { label: 'n^{-2}', targetLane: 0 },
+          { label: '3·(1)^n', targetLane: 1 },
+          { label: '2 + (0.4)^n', targetLane: 1 },
+          { label: '(1.4)^n', targetLane: 2 },
+          { label: '(-1.2)^n', targetLane: 2 },
+          { label: 'n^{0.5}', targetLane: 2 }
+        ];
+        const pick = catalog[Math.floor(Math.random() * catalog.length)];
+        const spawnLane = Math.floor(Math.random() * 3);
+        this.st.notes.push({
+          lane: spawnLane,
+          targetLane: pick.targetLane,
+          label: pick.label,
+          y: 36,
+          vy: 120 + this.hits * 4
+        });
+      }
+      const hitY = this.h - 86;
+      for (let i = this.st.notes.length - 1; i >= 0; i -= 1) {
+        const n = this.st.notes[i];
+        n.y += n.vy * dt;
+        // Player's active gate redirects matching lane if aligned
+        if (Math.abs(n.y - hitY) < 42 && n.lane !== this.st.lane) {
+          // keep note in its spawn lane; player moves to note's lane OR sorts it!
+        }
+        if (n.y > this.h - 24) {
+          this.st.notes.splice(i, 1);
+          this.takeDamage(`فاتتك ${n.label}!`, ((n.lane + 0.5) / 3) * this.w, hitY);
+        }
+      }
+    } else if (mode === 'homographic-boss') {
+      if (this.st.dashCd > 0) this.st.dashCd -= dt;
+      if (this.st.dashTime > 0) this.st.dashTime -= dt;
+      const spd = this.st.dashTime > 0 ? 5.5 : 2.6;
+      if (this.pointer.active && Math.abs(moveX) < 0.05 && Math.abs(moveY) < 0.05) {
+        this.st.px += (clamp(this.unmapX(this.pointer.x, stage.domain), 0.5, 4.3) - this.st.px) * Math.min(1, dt * 8);
+        this.st.py += (clamp(this.unmapY(this.pointer.y, stage.domain), 0.5, 4.3) - this.st.py) * Math.min(1, dt * 8);
+      } else {
+        this.st.px = clamp(this.st.px + moveX * spd * dt, 0.5, 4.3);
+        this.st.py = clamp(this.st.py - moveY * spd * dt, 0.5, 4.3);
+      }
+
+      this.st.wavePhase += dt * 1.4;
+      this.st.spawnTimer -= dt;
+      if (this.st.spawnTimer <= 0) {
+        this.st.spawnTimer = 0.85;
+        const ang = this.st.wavePhase;
+        this.st.bullets.push({
+          x: 2.6,
+          y: 2.6,
+          vx: Math.cos(ang) * 1.65,
+          vy: Math.sin(ang) * 1.65
+        });
+      }
+      for (let i = this.st.bullets.length - 1; i >= 0; i -= 1) {
+        const b = this.st.bullets[i];
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        if (b.x < 0.3 || b.x > 4.6 || b.y < 0.3 || b.y > 4.6) {
+          this.st.bullets.splice(i, 1);
+          continue;
+        }
+        if (this.st.dashTime <= 0 && Math.hypot(b.x - this.st.px, b.y - this.st.py) < 0.26) {
+          this.st.bullets.splice(i, 1);
+          this.takeDamage('أصابتك موجة متخاطة! تفادَ بـ [✕]', this.mapX(this.st.px, stage.domain), this.mapY(this.st.py, stage.domain));
+        }
+      }
+    } else if (mode === 'squeeze-tunnel') {
+      this.st.scrollT += dt;
+      if (this.st.shieldTimer > 0) this.st.shieldTimer -= dt;
+      if (this.pointer.active && Math.abs(moveY) < 0.05) {
+        const ty = 5.0 - (this.pointer.y / Math.max(1, this.h)) * 5.0;
+        this.st.centerY += (clamp(ty, 0.7, 4.3) - this.st.centerY) * Math.min(1, dt * 10);
+      } else {
+        this.st.centerY = clamp(this.st.centerY - moveY * 2.4 * dt, 0.7, 4.3);
+      }
+      const gapDelta = (inp.r2 - inp.l2) + (this.keys.ArrowRight || this.keys.KeyD ? 1 : 0) - (this.keys.ArrowLeft || this.keys.KeyA ? 1 : 0);
+      this.st.halfGap = clamp(this.st.halfGap + gapDelta * 1.2 * dt, 0.18, 1.5);
+
+      this.st.gateTimer -= dt;
+      if (this.st.gateTimer <= 0) {
+        this.st.gateTimer = 2.0;
+        const isMeteor = Math.random() < 0.35;
+        if (isMeteor) {
+          this.st.meteors.push({ x: this.w + 30, y: this.h * (0.25 + Math.random() * 0.5), vx: -(210 + this.hits * 8) });
+        } else {
+          const L = 1.4 + Math.random() * 2.2;
+          const reqAmp = 0.25 + Math.random() * 0.4;
+          this.st.gates.push({ x: this.w + 40, L, reqAmp, vx: -(185 + this.hits * 6) });
+        }
+      }
+
+      const shipX = this.w * 0.24;
+      const toScreenY = (yv) => this.h - (yv / 5.0) * this.h;
+      const shipY = toScreenY(this.st.centerY);
+
+      for (let i = this.st.gates.length - 1; i >= 0; i -= 1) {
+        const g = this.st.gates[i];
+        g.x += g.vx * dt;
+        if (g.x < shipX + 16 && g.x > shipX - 16) {
+          const distL = Math.abs(this.st.centerY - g.L);
+          const gapOk = this.st.halfGap >= g.reqAmp * 0.85 && this.st.halfGap <= g.reqAmp + 0.45;
+          this.st.gates.splice(i, 1);
+          if (distL <= 0.65 && gapOk) {
+            this.awardHit(135, shipX, shipY, '#10b981', `حصر مثالي عند L=${g.L.toFixed(1)} ✓`);
+          } else {
+            this.takeDamage(distL > 0.65 ? `مركِز عند L=${g.L.toFixed(1)}!` : 'اضبط فكّي الدركيين (L2/R2 أو ◀▶)!', shipX, shipY);
+          }
+          continue;
+        }
+        if (g.x < -40) this.st.gates.splice(i, 1);
+      }
+
+      for (let i = this.st.meteors.length - 1; i >= 0; i -= 1) {
+        const m = this.st.meteors[i];
+        m.x += m.vx * dt;
+        if (Math.hypot(m.x - shipX, m.y - shipY) < 42) {
+          this.st.meteors.splice(i, 1);
+          if (this.st.shieldTimer > 0) {
+            this.awardHit(140, shipX, shipY, '#38bdf8', 'تدمير شهاب +∞ بدرع α√n!');
+          } else {
+            this.takeDamage('اصطدمت بشهاب التباعد! فعّل الدرع [▢]', shipX, shipY);
+          }
+          continue;
+        }
+        if (m.x < -40) this.st.meteors.splice(i, 1);
       }
     }
-  }
-
-  drawPhotonBeacon(x, y, color) {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.arc(x, y, 8, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    ctx.arc(x, y, 3.6, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  }
-
-  drawDragHandle(id, x, y, label, color) {
-    const ctx = this.ctx;
-    const active = this.activeDrag?.id === id || this.hoverHandleId === id;
-    const r = active ? 10 : 8;
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(x, y, r + 5, 0, Math.PI * 2);
-    ctx.fillStyle = `${color}33`;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.lineWidth = 2;
-    ctx.strokeStyle = '#041014';
-    ctx.stroke();
-
-    if (label) {
-      const plainLen = label.replace(/[_^{}\\]/g, '').length;
-      const w = Math.max(50, plainLen * 7.2 + 16);
-      const pillX = clamp(x - w / 2, 6, this.w - w - 6);
-      const pillY = y - r - 24 < 6 ? y + r + 6 : y - r - 24;
-      ctx.fillStyle = 'rgba(4, 15, 20, 0.92)';
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.roundRect(pillX, pillY, w, 19, 5);
-      ctx.fill();
-      ctx.stroke();
-      this.drawLabel(label, pillX + w / 2, pillY + 9.5, { color: '#fff', fontSize: 11 });
-    }
-    ctx.restore();
   }
 
   render() {
     const ctx = this.ctx;
+    const AK = window.ArcadeCore?.CanvasAxisKit;
     ctx.save();
     ctx.scale(this.dpr, this.dpr);
+    if (this.shake > 0) {
+      ctx.translate((Math.random() - 0.5) * 9, (Math.random() - 0.5) * 9);
+    }
 
-    this.handles = [];
-    if (window.ArcadeCore?.CanvasAxisKit?.clearWithGrid) {
-      window.ArcadeCore.CanvasAxisKit.clearWithGrid(ctx, this.w, this.h, {
-        bg: '#030b0e',
-        gridColor: 'rgba(16, 185, 129, 0.08)',
-        step: 34,
-        offset: 18
-      });
-    } else {
-      ctx.fillStyle = '#030b0e';
+    if (AK) AK.clearWithGrid(ctx, this.w, this.h, { bg: '#040b12', gridColor: 'rgba(16, 185, 129, 0.08)', step: 36 });
+    else {
+      ctx.fillStyle = '#040b12';
       ctx.fillRect(0, 0, this.w, this.h);
     }
 
-    const round = this.getRound();
-    const mode = round.mode;
+    const stage = this.getStage();
+    const mode = stage.mode;
 
-    if (mode === 'geometric-spectrum') {
-      this.renderGeometricSpectrum(round);
-    } else if (mode === 'geometric-sum-tower') {
-      this.renderGeometricSumTower(round);
-    } else if (mode === 'arithmetic-and-ref') {
-      this.renderArithmeticAndRef(round);
-    } else if (mode === 'squeeze-corridor' || mode === 'squeeze-contraction') {
-      this.renderSqueezeCorridor(round);
-    } else if (mode === 'comparison-infinity') {
-      this.renderComparisonInfinity(round);
-    } else if (mode.startsWith('auxiliary-')) {
-      this.renderCobwebAndAuxiliary(round);
-    } else {
-      this.renderCobwebAndTrajectory(round);
-    }
+    if (mode === 'induction-catcher') this.renderInductionCatcher(stage);
+    else if (mode === 'monotone-shooter') this.renderMonotoneShooter(stage);
+    else if (mode === 'rhythm-lanes') this.renderRhythmLanes();
+    else if (mode === 'homographic-boss') this.renderHomographicBoss(stage);
+    else if (mode === 'squeeze-tunnel') this.renderSqueezeTunnel();
 
-    for (const rp of this.ripples) {
-      const alpha = Math.max(0, rp.life / rp.maxLife);
-      ctx.globalAlpha = alpha * 0.7;
-      ctx.strokeStyle = rp.color;
-      ctx.lineWidth = 2;
+    for (const b of this.beams) {
+      ctx.save();
+      ctx.strokeStyle = b.color;
+      ctx.lineWidth = 4;
+      ctx.globalAlpha = Math.max(0, b.life / 0.35);
       ctx.beginPath();
-      ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+      ctx.moveTo(b.x1, b.y1);
+      ctx.lineTo(b.x2, b.y2);
       ctx.stroke();
+      ctx.restore();
     }
 
     for (const p of this.particles) {
-      const alpha = Math.max(0, p.life / p.maxLife);
-      ctx.globalAlpha = alpha;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
       ctx.fillStyle = p.color;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, 3.2, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, 3.4, 0, Math.PI * 2);
       ctx.fill();
+      ctx.restore();
     }
-    ctx.globalAlpha = 1;
+
     ctx.restore();
   }
 
-  renderCobwebAndTrajectory(round) {
-    const ctx = this.ctx;
-    const isWide = this.w >= 620;
-    const pad = 22;
-    const cobRect = isWide
-      ? { x: pad, y: 18, w: Math.floor(this.w * 0.56) - pad, h: this.h - 40 }
-      : { x: pad, y: 14, w: this.w - pad * 2, h: Math.floor(this.h * 0.56) - 18 };
-    const trajRect = isWide
-      ? { x: cobRect.x + cobRect.w + 20, y: 18, w: this.w - (cobRect.x + cobRect.w + 36), h: this.h - 40 }
-      : { x: pad, y: cobRect.y + cobRect.h + 18, w: this.w - pad * 2, h: this.h - (cobRect.y + cobRect.h + 32) };
-
-    const dMin = round.domain.min;
-    const dMax = round.domain.max;
-    const toPxX = (x) => cobRect.x + ((x - dMin) / (dMax - dMin)) * cobRect.w;
-    const toPxY = (y) => cobRect.y + cobRect.h - ((y - dMin) / (dMax - dMin)) * cobRect.h;
-    const fromPxX = (px) => dMin + ((px - cobRect.x) / cobRect.w) * (dMax - dMin);
-    const fromPxY = (py) => dMin + ((cobRect.y + cobRect.h - py) / cobRect.h) * (dMax - dMin);
-
-    ctx.save();
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.roundRect(cobRect.x, cobRect.y, cobRect.w, cobRect.h, 10);
-    ctx.fill();
-    ctx.stroke();
-    ctx.clip();
-
-    const ox = toPxX(0);
-    const oy = toPxY(0);
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
-    ctx.beginPath();
-    ctx.moveTo(cobRect.x, oy);
-    ctx.lineTo(cobRect.x + cobRect.w, oy);
-    ctx.moveTo(ox, cobRect.y);
-    ctx.lineTo(ox, cobRect.y + cobRect.h);
-    ctx.stroke();
-    this.drawAxisTicks(cobRect, dMin, dMax, toPxX, toPxY);
-
-    if (round.mode === 'monotone-balance') {
-      const steps = 90;
-      for (let i = 0; i < steps; i += 1) {
-        const x0 = dMin + (i / steps) * (dMax - dMin);
-        const x1 = dMin + ((i + 1) / steps) * (dMax - dMin);
-        const xm = 0.5 * (x0 + x1);
-        const fx = round.f(xm);
-        if (!Number.isFinite(fx)) continue;
-        const px0 = toPxX(x0);
-        const px1 = toPxX(x1);
-        const pyF = toPxY(fx);
-        const pyD = toPxY(xm);
-        ctx.fillStyle = fx >= xm ? 'rgba(16, 185, 129, 0.14)' : 'rgba(245, 158, 11, 0.14)';
-        ctx.fillRect(px0, Math.min(pyF, pyD), Math.max(1, px1 - px0), Math.abs(pyF - pyD));
-      }
-    }
-
-    if (round.mode === 'cobweb-bound-ceil' || round.mode === 'cobweb-bound-floor') {
-      const lo = round.mode === 'cobweb-bound-floor' ? this.paramState.boundm : 0;
-      const hi = round.mode === 'cobweb-bound-ceil' ? this.paramState.boundM : 6;
-      const bx0 = toPxX(lo);
-      const bx1 = toPxX(hi);
-      const by0 = toPxY(hi);
-      const by1 = toPxY(lo);
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
-      ctx.fillRect(bx0, by0, bx1 - bx0, by1 - by0);
-      ctx.setLineDash([5, 4]);
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 1.6;
-      ctx.strokeRect(bx0, by0, bx1 - bx0, by1 - by0);
-      ctx.setLineDash([]);
-    }
-
-    ctx.setLineDash([6, 5]);
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.72)';
-    ctx.lineWidth = 1.6;
-    ctx.beginPath();
-    ctx.moveTo(toPxX(dMin), toPxY(dMin));
-    ctx.lineTo(toPxX(dMax), toPxY(dMax));
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.lineWidth = 2.5;
-    ctx.strokeStyle = '#38bdf8';
-    ctx.beginPath();
-    let started = false;
-    for (let i = 0; i <= 160; i += 1) {
-      const x = dMin + (i / 160) * (dMax - dMin);
-      const y = round.f(x);
-      if (!Number.isFinite(y)) {
-        started = false;
-        continue;
-      }
-      const px = toPxX(x);
-      const py = toPxY(y);
-      if (!started) {
-        ctx.moveTo(px, py);
-        started = true;
-      } else {
-        ctx.lineTo(px, py);
-      }
-    }
-    ctx.stroke();
-
-    if (round.mode === 'cobweb-bound-ceil' || round.mode === 'cobweb-bound-floor') {
-      const lo = round.mode === 'cobweb-bound-floor' ? this.paramState.boundm : 0;
-      const hi = round.mode === 'cobweb-bound-ceil' ? this.paramState.boundM : 6;
-      ctx.strokeStyle = '#fb7185';
-      ctx.lineWidth = 3.2;
-      ctx.beginPath();
-      let segStarted = false;
-      for (let i = 0; i <= 100; i += 1) {
-        const x = lo + (i / 100) * (hi - lo);
-        const y = round.f(x);
-        const outside = !Number.isFinite(y) || y > hi + 1e-4 || y < lo - 1e-4;
-        if (outside && Number.isFinite(y)) {
-          const px = toPxX(x);
-          const py = toPxY(y);
-          if (!segStarted) {
-            ctx.moveTo(px, py);
-            segStarted = true;
-          } else {
-            ctx.lineTo(px, py);
-          }
-        } else {
-          segStarted = false;
-        }
-      }
-      ctx.stroke();
-    }
-
-    for (const fp of round.fixedPoints || []) {
-      const fpx = toPxX(fp);
-      const fpy = toPxY(fp);
-      ctx.strokeStyle = '#f59e0b';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(fpx, fpy, 6, 0, Math.PI * 2);
-      ctx.stroke();
-      this.drawLabel(`L=${Number(fp.toFixed(2))}`, fpx + 20, fpy - 12, { color: '#fcd34d', fontSize: 11 });
-    }
-
-    const u0 = this.paramState.u0;
-    const terms = [u0];
-    let curr = u0;
-    const maxTerms = round.mode === 'heron-approx' ? Math.max(5, Math.round(this.paramState.steps) + 1) : 13;
-    for (let i = 0; i < maxTerms; i += 1) {
-      const nxt = round.f(curr);
-      if (!Number.isFinite(nxt) || Math.abs(nxt) > 50) break;
-      terms.push(nxt);
-      curr = nxt;
-    }
-
-    const visibleSteps = this.anim.active ? Math.min(terms.length - 1, this.anim.progress) : Math.min(terms.length - 1, 8);
-    const beamColor = this.anim.active && this.anim.evalResult && !this.anim.evalResult.ok ? '#fb7185' : '#10b981';
-    ctx.strokeStyle = beamColor;
-    ctx.lineWidth = this.anim.active ? 2.3 : 1.5;
-    ctx.beginPath();
-    ctx.moveTo(toPxX(u0), toPxY(0));
-    const fullSteps = Math.floor(visibleSteps);
-    const frac = visibleSteps - fullSteps;
-    let tipX = toPxX(u0);
-    let tipY = toPxY(0);
-
-    for (let i = 0; i < fullSteps; i += 1) {
-      const u = terms[i];
-      const nu = terms[i + 1];
-      ctx.lineTo(toPxX(u), toPxY(nu));
-      ctx.lineTo(toPxX(nu), toPxY(nu));
-      tipX = toPxX(nu);
-      tipY = toPxY(nu);
-    }
-    if (frac > 0 && fullSteps < terms.length - 1) {
-      const u = terms[fullSteps];
-      const nu = terms[fullSteps + 1];
-      if (frac < 0.5) {
-        const t = frac * 2;
-        const startY = fullSteps === 0 ? 0 : u;
-        tipX = toPxX(u);
-        tipY = toPxY(startY + (nu - startY) * t);
-        ctx.lineTo(tipX, tipY);
-      } else {
-        const t = (frac - 0.5) * 2;
-        ctx.lineTo(toPxX(u), toPxY(nu));
-        tipX = toPxX(u + (nu - u) * t);
-        tipY = toPxY(nu);
-        ctx.lineTo(tipX, tipY);
-      }
-    }
-    ctx.stroke();
-
-    if (this.anim.active) {
-      this.drawPhotonBeacon(tipX, tipY, beamColor);
-    }
-
-    // Curve legends inside top-left corner
-    this.drawLabel('y = f(x)', cobRect.x + 36, cobRect.y + 15, { color: '#38bdf8', fontSize: 11 });
-    this.drawLabel('y = x', cobRect.x + 86, cobRect.y + 15, { color: '#fcd34d', fontSize: 11 });
-
-    ctx.restore();
-
-    const u0Spec = (round.params || []).find((p) => p.key === 'u0');
-    if (u0Spec) {
-      const hx = clamp(toPxX(u0), cobRect.x + 8, cobRect.x + cobRect.w - 8);
-      const hy = clamp(toPxY(0), cobRect.y + 12, cobRect.y + cobRect.h - 12);
-      this.drawDragHandle('u0', hx, hy, `u_0=${u0.toFixed(2)}`, '#10b981');
-      this.handles.push({
-        id: 'u0', x: hx, y: hy,
-        onDrag: (px) => this.setParam('u0', fromPxX(px))
-      });
-    }
-
-    if (round.mode === 'cobweb-bound-ceil') {
-      const M = this.paramState.boundM;
-      const hx = clamp(toPxX(M * 0.52), cobRect.x + 26, cobRect.x + cobRect.w - 26);
-      const hy = clamp(toPxY(M), cobRect.y + 14, cobRect.y + cobRect.h - 14);
-      this.drawDragHandle('boundM', hx, hy, `M=${M.toFixed(2)}`, '#f59e0b');
-      this.handles.push({
-        id: 'boundM', x: hx, y: hy,
-        onDrag: (_, py) => this.setParam('boundM', fromPxY(py))
-      });
-    }
-
-    if (round.mode === 'cobweb-bound-floor') {
-      const m = this.paramState.boundm;
-      const hx = clamp(toPxX((m + 6) * 0.5), cobRect.x + 26, cobRect.x + cobRect.w - 26);
-      const hy = clamp(toPxY(m), cobRect.y + 14, cobRect.y + cobRect.h - 14);
-      this.drawDragHandle('boundm', hx, hy, `m=${m.toFixed(2)}`, '#f59e0b');
-      this.handles.push({
-        id: 'boundm', x: hx, y: hy,
-        onDrag: (_, py) => this.setParam('boundm', fromPxY(py))
-      });
-    }
-
-    ctx.save();
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
-    ctx.beginPath();
-    ctx.roundRect(trajRect.x, trajRect.y, trajRect.w, trajRect.h, 10);
-    ctx.fill();
-    ctx.stroke();
-    ctx.restore();
-
-    if (round.mode === 'heron-approx') {
-      this.renderHeronMicroscope(round, trajRect, terms);
-    } else if (round.mode === 'fixed-point-composite') {
-      this.renderCompositeStrip(round, trajRect, terms);
-    } else {
-      this.renderTermTimeline(round, trajRect, terms, dMin, dMax);
+  drawRich(expr, x, y, opts) {
+    const AK = window.ArcadeCore?.CanvasAxisKit;
+    if (AK && AK.drawMathRich) AK.drawMathRich(this.ctx, expr, x, y, opts);
+    else {
+      this.ctx.fillStyle = opts?.color || '#f8fafc';
+      this.ctx.fillText(expr, x, y);
     }
   }
 
-  renderTermTimeline(round, rect, terms, yMin, yMax) {
+  renderInductionCatcher(stage) {
     const ctx = this.ctx;
-    const padX = 28;
-    const padY = 28;
-    const innerW = rect.w - padX * 2;
-    const innerH = rect.h - padY * 2 - 14;
-    const count = Math.min(terms.length, 12);
-    const toX = (n) => rect.x + padX + (n / Math.max(1, count - 1)) * innerW;
-    const toY = (v) => rect.y + padY + innerH - ((clamp(v, yMin, yMax) - yMin) / (yMax - yMin)) * innerH;
+    const d = stage.domain;
+    const toX = (v) => this.mapX(v, d);
+    const toY = (v) => this.mapY(v, d);
 
-    this.drawLabel('u_n  (n = 0..11)', rect.x + rect.w / 2, rect.y + 14, { color: '#94a3b8', fontSize: 12 });
-
-    if (round.mode === 'cobweb-bound-ceil') {
-      const cy = toY(this.paramState.boundM);
-      ctx.setLineDash([5, 4]);
-      ctx.strokeStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.moveTo(rect.x + padX, cy);
-      ctx.lineTo(rect.x + rect.w - padX, cy);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      this.drawLabel(`M=${this.paramState.boundM.toFixed(2)}`, rect.x + padX + 26, cy - 10, { color: '#fcd34d', fontSize: 11 });
-    } else if (round.mode === 'cobweb-bound-floor') {
-      const fy = toY(this.paramState.boundm);
-      ctx.setLineDash([5, 4]);
-      ctx.strokeStyle = '#f59e0b';
-      ctx.beginPath();
-      ctx.moveTo(rect.x + padX, fy);
-      ctx.lineTo(rect.x + rect.w - padX, fy);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      this.drawLabel(`m=${this.paramState.boundm.toFixed(2)}`, rect.x + padX + 26, fy + 12, { color: '#fcd34d', fontSize: 11 });
-    }
-
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.55)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let i = 0; i < count; i += 1) {
-      const px = toX(i);
-      const py = toY(terms[i]);
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    for (let i = 0; i < count; i += 1) {
-      const v = terms[i];
-      const px = toX(i);
-      const py = toY(v);
-      const out = (round.mode === 'cobweb-bound-ceil' && v > this.paramState.boundM + 1e-4) ||
-                  (round.mode === 'cobweb-bound-floor' && v < this.paramState.boundm - 1e-4) ||
-                  v > yMax;
-      ctx.fillStyle = out ? '#fb7185' : '#10b981';
-      ctx.beginPath();
-      ctx.arc(px, py, 4.5, 0, Math.PI * 2);
-      ctx.fill();
-      if (i % 3 === 0 || i === count - 1) {
-        this.drawLabel(v.toFixed(2), px, py - 12, { color: out ? '#fda4af' : '#a7f3d0', font: '700 9px "KaTeX_Main", monospace' });
-      }
-    }
-
-    // Live first-3 terms footer readout
-    const preview = terms.slice(0, 3).map((v, idx) => `u_${idx}=${v.toFixed(2)}`).join('   ');
-    this.drawLabel(preview, rect.x + rect.w / 2, rect.y + rect.h - 11, { color: '#94a3b8', fontSize: 10 });
-  }
-
-  renderCompositeStrip(round, rect, terms) {
-    const ctx = this.ctx;
-    const padX = 28;
-    const padY = 30;
-    const innerW = rect.w - padX * 2;
-    const innerH = rect.h - padY * 2;
-    const yMin = 1.5;
-    const yMax = 6.5;
-    const toX = (n) => rect.x + padX + (n / 10) * innerW;
-    const toY = (v) => rect.y + padY + innerH - ((clamp(v, yMin, yMax) - yMin) / (yMax - yMin)) * innerH;
-
-    this.drawLabel('v_n = g(u_n) → g(L)', rect.x + rect.w / 2, rect.y + 15, { color: '#bae6fd', fontSize: 12 });
-
-    const gateY = toY(this.paramState.gLim);
-    ctx.setLineDash([4, 4]);
-    ctx.strokeStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.moveTo(rect.x + padX, gateY);
-    ctx.lineTo(rect.x + rect.w - padX, gateY);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    const count = Math.min(terms.length, 11);
-    ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let i = 0; i < count; i += 1) {
-      const gv = round.g(terms[i]);
-      const px = toX(i);
-      const py = toY(gv);
-      if (i === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    for (let i = 0; i < count; i += 1) {
-      const gv = round.g(terms[i]);
-      ctx.fillStyle = '#38bdf8';
-      ctx.beginPath();
-      ctx.arc(toX(i), toY(gv), 4, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    const hx = rect.x + rect.w - padX - 8;
-    this.drawDragHandle('gLim', hx, gateY, `g(L)=${this.paramState.gLim.toFixed(2)}`, '#f59e0b');
-    this.handles.push({
-      id: 'gLim', x: hx, y: gateY,
-      onDrag: (_, py) => {
-        const val = yMin + ((rect.y + padY + innerH - py) / innerH) * (yMax - yMin);
-        this.setParam('gLim', val);
-      }
-    });
-  }
-
-  renderHeronMicroscope(round, rect, terms) {
-    const ctx = this.ctx;
-    const zMin = 1.37;
-    const zMax = 1.46;
-    const padX = 24;
-    const innerW = rect.w - padX * 2;
-    const midY = rect.y + rect.h * 0.58;
-    const toX = (v) => rect.x + padX + ((clamp(v, zMin, zMax) - zMin) / (zMax - zMin)) * innerW;
-
-    this.drawLabel('مجهر التقريب التربيعي', rect.x + rect.w / 2, rect.y + 15, { color: '#fcd34d', font: '800 11px "Cairo", sans-serif' });
-    this.drawLabel('\\sqrt{2} ≈ 1.4142', rect.x + rect.w / 2, rect.y + 32, { color: '#6ee7b7', fontSize: 12 });
-
-    const est = this.paramState.est;
-    const bx0 = toX(est - 0.004);
-    const bx1 = toX(est + 0.004);
-    ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
-    ctx.fillRect(bx0, midY - 38, Math.max(4, bx1 - bx0), 76);
-
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(rect.x + padX, midY);
-    ctx.lineTo(rect.x + rect.w - padX, midY);
-    ctx.stroke();
-
-    const sx = toX(Math.SQRT2);
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(sx, midY - 45);
-    ctx.lineTo(sx, midY + 45);
-    ctx.stroke();
-    this.drawLabel('\\sqrt{2}', sx, midY - 54, { color: '#6ee7b7', fontSize: 12 });
-
-    const nIdx = Math.min(terms.length - 1, Math.round(this.paramState.steps));
-    const uN = terms[nIdx];
-    const ux = toX(uN);
-    ctx.fillStyle = '#38bdf8';
-    ctx.beginPath();
-    ctx.arc(ux, midY - 22, 6, 0, Math.PI * 2);
-    ctx.fill();
-    this.drawLabel(`u_${nIdx}=${uN.toFixed(4)}`, ux, midY - 36, { color: '#bae6fd', fontSize: 11 });
-
-    const ex = toX(est);
-    this.drawDragHandle('est', ex, midY + 18, `${est.toFixed(3)}`, '#f59e0b');
-    this.handles.push({
-      id: 'est', x: ex, y: midY + 18,
-      onDrag: (px) => {
-        const val = zMin + ((px - (rect.x + padX)) / innerW) * (zMax - zMin);
-        this.setParam('est', val);
-      }
-    });
-  }
-
-  renderGeometricSpectrum(round) {
-    const ctx = this.ctx;
-    const padX = 48;
-    const padY = 44;
-    const w = this.w - padX * 2;
-    const h = this.h - padY * 2;
-    const q = this.paramState.q;
-    const nMax = 14;
-    const yMin = -5;
-    const yMax = 5;
-    const toX = (n) => padX + (n / nMax) * w;
-    const toY = (y) => padY + h - ((clamp(y, yMin, yMax) - yMin) / (yMax - yMin)) * h;
-    const y0 = toY(0);
-
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(padX, y0);
-    ctx.lineTo(padX + w, y0);
-    ctx.stroke();
-    this.drawLabel('y = 0', padX + 26, y0 - 12, { color: '#94a3b8', fontSize: 12 });
-    this.drawLabel('نهاية التقارب', padX + 86, y0 - 12, { color: '#94a3b8', font: '700 10px "Cairo", sans-serif' });
-
-    const gx = toX(2);
-    const gy = toY(1);
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 2.5;
-    ctx.beginPath();
-    ctx.arc(gx, gy, 11, 0, Math.PI * 2);
-    ctx.stroke();
-    this.drawLabel('u_2 = 1', gx, gy - 19, { color: '#fcd34d', fontSize: 12 });
-
-    const lim = this.anim.active ? Math.min(nMax, Math.floor(this.anim.progress * 1.25)) : nMax;
-    for (let n = 0; n <= lim; n += 1) {
-      const val = round.u0 * Math.pow(q, n);
-      const px = toX(n);
-      const py = toY(val);
-      const out = Math.abs(val) > 5;
-      const col = out ? '#fb7185' : (val >= 0 ? '#10b981' : '#38bdf8');
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(px, y0);
-      ctx.lineTo(px, py);
-      ctx.stroke();
-
-      ctx.fillStyle = col;
-      ctx.beginPath();
-      ctx.arc(px, py, 5, 0, Math.PI * 2);
-      ctx.fill();
-      if (n <= 4) {
-        this.drawLabel(`u_${n}`, px, y0 + (val >= 0 ? 15 : -15), { color: '#94a3b8', fontSize: 11 });
-      }
-    }
-
-    const u1 = round.u0 * q;
-    const h1x = toX(1);
-    const h1y = clamp(toY(u1), padY + 12, padY + h - 12);
-    this.drawDragHandle('q', h1x, h1y, `q=${q.toFixed(2)}`, '#f59e0b');
-    this.handles.push({
-      id: 'q', x: h1x, y: h1y,
-      onDrag: (_, py) => {
-        const yVal = yMin + ((padY + h - py) / h) * (yMax - yMin);
-        this.setParam('q', yVal / round.u0);
-      }
-    });
-  }
-
-  renderGeometricSumTower(round) {
-    const ctx = this.ctx;
-    const padX = 40;
-    const padY = 28;
-    const towerW = Math.min(200, Math.floor(this.w * 0.36));
-    const barsRect = { x: padX, y: padY, w: this.w - padX * 2 - towerW - 24, h: this.h - padY * 2 };
-    const tankRect = { x: barsRect.x + barsRect.w + 24, y: padY, w: towerW, h: this.h - padY * 2 };
-
-    const q = this.paramState.q;
-    const terms = [0, 1, 2, 3, 4].map((k) => round.u0 * Math.pow(q, k));
-    const isOne = Math.abs(q - 1) < 1e-4;
-    const totalSum = isOne ? 5 * round.u0 : round.u0 * ((1 - Math.pow(q, 5)) / (1 - q));
-
-    // Left panel: individual geometric terms u_0..u_4
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
-    ctx.beginPath();
-    ctx.roundRect(barsRect.x, barsRect.y, barsRect.w, barsRect.h, 10);
-    ctx.fill();
-    ctx.stroke();
-    this.drawLabel('u_k = u_0 · q^k   (k = 0..4)', barsRect.x + barsRect.w / 2, barsRect.y + 18, { color: '#bae6fd', fontSize: 12 });
-
-    const yZero = barsRect.y + barsRect.h - 46;
-    const maxScale = 26;
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
-    ctx.beginPath();
-    ctx.moveTo(barsRect.x + 20, yZero);
-    ctx.lineTo(barsRect.x + barsRect.w - 20, yZero);
-    ctx.stroke();
-
-    const stepX = (barsRect.w - 64) / 4;
-    const animLim = this.anim.active ? Math.min(5, Math.floor(this.anim.progress * 0.7) + 1) : 5;
-    for (let k = 0; k < animLim; k += 1) {
-      const val = terms[k];
-      const bx = barsRect.x + 32 + k * stepX;
-      const barH = clamp(val / maxScale, -0.35, 1.0) * (barsRect.h - 95);
-      const col = val >= 0 ? '#10b981' : '#38bdf8';
-      ctx.fillStyle = `${col}99`;
-      ctx.strokeStyle = col;
-      ctx.lineWidth = 1.5;
-      const topY = barH >= 0 ? yZero - barH : yZero;
-      ctx.fillRect(bx - 16, topY, 32, Math.abs(barH));
-      ctx.strokeRect(bx - 16, topY, 32, Math.abs(barH));
-      this.drawLabel(`u_${k}`, bx, yZero + 16, { color: '#94a3b8', fontSize: 11 });
-      this.drawLabel(val.toFixed(1), bx, barH >= 0 ? topY - 12 : yZero + Math.abs(barH) + 12, { color: '#ecfdf5', font: '700 10px "KaTeX_Main", monospace' });
-    }
-
-    // Right panel: Stacked Geometric Sum Energy Tank (target = 31)
-    const hit = Math.abs(totalSum - round.targetSum) <= 0.15;
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.8)';
-    ctx.strokeStyle = hit ? '#10b981' : '#f59e0b';
+    // y = x & y = f(x)
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.7)';
     ctx.lineWidth = 1.8;
     ctx.beginPath();
-    ctx.roundRect(tankRect.x, tankRect.y, tankRect.w, tankRect.h, 12);
-    ctx.fill();
-    ctx.stroke();
-
-    this.drawLabel(`S_4 = ${totalSum.toFixed(2)}`, tankRect.x + tankRect.w / 2, tankRect.y + 18, { color: hit ? '#6ee7b7' : '#fcd34d', fontSize: 13 });
-
-    const tankInnerH = tankRect.h - 68;
-    const tankBottom = tankRect.y + tankRect.h - 20;
-    const maxTank = 42;
-    const targetY = tankBottom - (round.targetSum / maxTank) * tankInnerH;
-
-    // Stacked colored layers for each positive contribution
-    const palette = ['#059669', '#10b981', '#14b8a6', '#38bdf8', '#f59e0b'];
-    let accY = tankBottom;
-    for (let k = 0; k < animLim; k += 1) {
-      const seg = Math.max(0, terms[k]);
-      const segH = Math.min(accY - (tankRect.y + 34), (seg / maxTank) * tankInnerH);
-      if (segH > 1) {
-        ctx.fillStyle = `${palette[k]}cc`;
-        ctx.fillRect(tankRect.x + 18, accY - segH, tankRect.w - 36, segH - 1);
-        accY -= segH;
-      }
-    }
-
-    // Golden target line S_4 = 31
-    ctx.setLineDash([5, 4]);
-    ctx.strokeStyle = '#f59e0b';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(tankRect.x + 8, targetY);
-    ctx.lineTo(tankRect.x + tankRect.w - 8, targetY);
+    ctx.moveTo(toX(d.min), toY(d.min));
+    ctx.lineTo(toX(d.max), toY(d.max));
     ctx.stroke();
     ctx.setLineDash([]);
-    this.drawLabel('S_4 = 31', tankRect.x + 36, targetY - 12, { color: '#fcd34d', fontSize: 11 });
 
-    // Draggable q handle on the tank fill level
-    const handleY = clamp(tankBottom - (clamp(totalSum, 0, maxTank) / maxTank) * tankInnerH, tankRect.y + 38, tankBottom - 10);
-    const handleX = tankRect.x + tankRect.w / 2;
-    this.drawDragHandle('q', handleX, handleY, `q=${q.toFixed(2)}`, '#f59e0b');
-    this.handles.push({
-      id: 'q', x: handleX, y: handleY,
-      onDrag: (_, py) => {
-        const frac = clamp((tankBottom - py) / tankInnerH, 0, 1);
-        this.setParam('q', -1.0 + frac * 3.5);
-      }
-    });
-  }
-
-  renderArithmeticAndRef(round) {
-    const ctx = this.ctx;
-    const padX = 44;
-    const topRect = { x: padX, y: 20, w: this.w - padX * 2 - 90, h: Math.floor(this.h * 0.48) - 20 };
-    const tankRect = { x: topRect.x + topRect.w + 18, y: 20, w: 68, h: topRect.h };
-    const botRect = { x: padX, y: topRect.y + topRect.h + 24, w: this.w - padX * 2, h: this.h - (topRect.y + topRect.h + 38) };
-
-    const r = this.paramState.r;
-    const p = this.paramState.p;
-
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2.6;
     ctx.beginPath();
-    ctx.roundRect(topRect.x, topRect.y, topRect.w, topRect.h, 10);
-    ctx.fill();
+    for (let i = 0; i <= 80; i += 1) {
+      const xv = d.min + (i / 80) * (d.max - d.min);
+      const px = toX(xv);
+      const py = toY(stage.f(xv));
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
     ctx.stroke();
 
-    const toAX = (n) => topRect.x + 28 + ((n - 2) / 5) * (topRect.w - 56);
-    const toAY = (y) => topRect.y + topRect.h - 22 - ((clamp(y, -5, 36) + 5) / 41) * (topRect.h - 44);
-
-    const tx = toAX(7);
-    const ty = toAY(20);
-    ctx.strokeStyle = '#f59e0b';
+    // Ceiling laser M
+    const my = toY(this.st.ceilM);
+    const ceilGood = Math.abs(this.st.ceilM - 4.0) <= 0.65;
+    ctx.strokeStyle = ceilGood ? '#10b981' : '#f59e0b';
     ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.arc(tx, ty, 10, 0, Math.PI * 2);
+    ctx.moveTo(toX(0), my);
+    ctx.lineTo(toX(this.st.ceilM), my);
+    ctx.lineTo(toX(this.st.ceilM), toY(0));
     ctx.stroke();
-    this.drawLabel('u_7 = 20', tx, ty - 17, { color: '#fcd34d', fontSize: 11 });
+    this.drawRich(`M = ${this.st.ceilM.toFixed(2)}`, toX(0) + 52, my - 12, { color: ceilGood ? '#6ee7b7' : '#fde68a', fontSize: 13 });
 
-    const animN = this.anim.active ? Math.min(7, 2 + Math.floor(this.anim.progress * 0.6)) : 7;
-    for (let n = 2; n <= animN; n += 1) {
-      const val = 5 + (n - 2) * r;
-      const bx = toAX(n);
-      const by = toAY(val);
-      const base = toAY(0);
-      ctx.fillStyle = 'rgba(16, 185, 129, 0.55)';
-      ctx.fillRect(bx - 11, Math.min(by, base), 22, Math.abs(base - by));
-      this.drawLabel(val.toFixed(0), bx, by - 10, { color: '#d1fae5', font: '700 10px "KaTeX_Main", monospace' });
-      this.drawLabel(`n=${n}`, bx, topRect.y + topRect.h - 10, { color: '#94a3b8', fontSize: 10 });
-    }
-
-    const u7 = 5 + 5 * r;
-    const sum = (6 * (5 + u7)) / 2;
-    const dragY = clamp(toAY(u7), topRect.y + 14, topRect.y + topRect.h - 14);
-    this.drawDragHandle('r', tx, dragY, `r=${r.toFixed(1)}`, '#f59e0b');
-    this.handles.push({
-      id: 'r', x: tx, y: dragY,
-      onDrag: (_, py) => {
-        const yVal = -5 + ((topRect.y + topRect.h - 22 - py) / (topRect.h - 44)) * 41;
-        this.setParam('r', (yVal - 5) / 5);
+    // Live cobweb trails from caught seeds
+    for (const cw of this.cobwebs) {
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, cw.life / 1.4);
+      ctx.strokeStyle = '#10b981';
+      ctx.lineWidth = 2.2;
+      ctx.beginPath();
+      let u = cw.u0;
+      ctx.moveTo(toX(u), toY(0));
+      for (let k = 0; k < 5; k += 1) {
+        const nu = stage.f(u);
+        ctx.lineTo(toX(u), toY(nu));
+        ctx.lineTo(toX(nu), toY(nu));
+        u = nu;
       }
-    });
-
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.8)';
-    ctx.strokeStyle = Math.abs(sum - 75) < 1 ? '#10b981' : '#f59e0b';
-    ctx.beginPath();
-    ctx.roundRect(tankRect.x, tankRect.y, tankRect.w, tankRect.h, 10);
-    ctx.fill();
-    ctx.stroke();
-    const fillRatio = clamp(sum / 110, 0, 1);
-    const fillH = fillRatio * (tankRect.h - 32);
-    ctx.fillStyle = Math.abs(sum - 75) < 1 ? 'rgba(16, 185, 129, 0.65)' : 'rgba(56, 189, 248, 0.5)';
-    ctx.fillRect(tankRect.x + 8, tankRect.y + tankRect.h - 10 - fillH, tankRect.w - 16, fillH);
-    const markY = tankRect.y + tankRect.h - 10 - (75 / 110) * (tankRect.h - 32);
-    ctx.strokeStyle = '#f59e0b';
-    ctx.beginPath();
-    ctx.moveTo(tankRect.x + 4, markY);
-    ctx.lineTo(tankRect.x + tankRect.w - 4, markY);
-    ctx.stroke();
-    this.drawLabel(`S=${sum.toFixed(0)}`, tankRect.x + tankRect.w / 2, tankRect.y + 13, { color: '#fcd34d', fontSize: 11 });
-
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
-    ctx.beginPath();
-    ctx.roundRect(botRect.x, botRect.y, botRect.w, botRect.h, 10);
-    ctx.fill();
-    ctx.stroke();
-    this.drawLabel(`w_n = n^{${p.toFixed(1)}} → ${p < 0 ? '0' : p === 0 ? '1' : '+∞'}`, botRect.x + botRect.w / 2, botRect.y + 16, { color: p < 0 ? '#6ee7b7' : '#fda4af', fontSize: 12 });
-
-    const toRX = (n) => botRect.x + 28 + ((n - 1) / 13) * (botRect.w - 56);
-    const toRY = (v) => botRect.y + botRect.h - 18 - (clamp(v, 0, 6) / 6) * (botRect.h - 42);
-    ctx.strokeStyle = p < 0 ? '#10b981' : '#fb7185';
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
-    for (let n = 1; n <= 14; n += 1) {
-      const wn = Math.pow(n, p);
-      const px = toRX(n);
-      const py = toRY(wn);
-      if (n === 1) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-      ctx.fillStyle = p < 0 ? '#10b981' : '#fb7185';
-      ctx.fillRect(px - 2.5, py - 2.5, 5, 5);
+      ctx.stroke();
+      ctx.restore();
     }
-    ctx.stroke();
+
+    // Falling seed orbs
+    for (const o of this.st.orbs) {
+      const px = toX(o.x);
+      const py = toY(o.y);
+      ctx.fillStyle = o.rogue ? '#fb7185' : '#10b981';
+      ctx.beginPath();
+      ctx.arc(px, py, 14, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      this.drawRich(`u_0=${o.x.toFixed(1)}`, px, py - 22, { color: o.rogue ? '#fda4af' : '#d1fae5', fontSize: 11 });
+    }
+
+    // Player catcher paddle
+    const px = toX(this.st.paddleX);
+    const py = toY(0.35);
+    ctx.fillStyle = this.st.shieldTimer > 0 ? '#38bdf8' : '#f59e0b';
+    ctx.beginPath();
+    ctx.roundRect(px - 42, py - 9, 84, 18, 9);
+    ctx.fill();
+    if (this.st.shieldTimer > 0) {
+      ctx.strokeStyle = '#bae6fd';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(px, py, 48, Math.PI, 0);
+      ctx.stroke();
+    }
   }
 
-  renderCobwebAndAuxiliary(round) {
+  renderMonotoneShooter(stage) {
     const ctx = this.ctx;
-    const pad = 22;
-    const isWide = this.w >= 620;
-    const cobRect = isWide
-      ? { x: pad, y: 18, w: Math.floor(this.w * 0.48) - pad, h: this.h - 38 }
-      : { x: pad, y: 14, w: this.w - pad * 2, h: Math.floor(this.h * 0.48) - 18 };
-    const auxRect = isWide
-      ? { x: cobRect.x + cobRect.w + 20, y: 18, w: this.w - (cobRect.x + cobRect.w + 36), h: this.h - 38 }
-      : { x: pad, y: cobRect.y + cobRect.h + 18, w: this.w - pad * 2, h: this.h - (cobRect.y + cobRect.h + 32) };
+    const d = stage.domain;
+    const toX = (v) => this.mapX(v, d);
+    const toY = (v) => this.mapY(v, d);
 
-    const dMin = round.domain.min;
-    const dMax = round.domain.max;
-    const toX = (x) => cobRect.x + ((x - dMin) / (dMax - dMin)) * cobRect.w;
-    const toY = (y) => cobRect.y + cobRect.h - ((y - dMin) / (dMax - dMin)) * cobRect.h;
-    const fromX = (px) => dMin + ((px - cobRect.x) / cobRect.w) * (dMax - dMin);
-
-    ctx.save();
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
-    ctx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
+    // y = x divider
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = 'rgba(245, 158, 11, 0.8)';
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.roundRect(cobRect.x, cobRect.y, cobRect.w, cobRect.h, 10);
-    ctx.fill();
+    ctx.moveTo(toX(d.min), toY(d.min));
+    ctx.lineTo(toX(d.max), toY(d.max));
     ctx.stroke();
-    ctx.clip();
+    ctx.setLineDash([]);
 
-    this.drawAxisTicks(cobRect, dMin, dMax, toX, toY);
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    for (let i = 0; i <= 80; i += 1) {
+      const xv = d.min + (i / 80) * (d.max - d.min);
+      if (i === 0) ctx.moveTo(toX(xv), toY(stage.f(xv)));
+      else ctx.lineTo(toX(xv), toY(stage.f(xv)));
+    }
+    ctx.stroke();
+
+    this.drawRich('f(x) > x', toX(0.55), toY(1.3), { color: '#7dd3fc', fontSize: 12 });
+    this.drawRich('f(x) < x', toX(2.2), toY(1.65), { color: '#fcd34d', fontSize: 12 });
+
+    for (const o of this.st.orbs) {
+      const ox = toX(o.x);
+      const oy = toY(o.y);
+      const col = o.kind === 'inc' ? '#38bdf8' : o.kind === 'dec' ? '#f59e0b' : '#fb7185';
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.arc(ox, oy, 15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      this.drawRich(o.label, ox, oy - 22, { color: '#f8fafc', fontSize: 11 });
+    }
+
+    const px = toX(this.st.px);
+    const py = toY(this.st.py);
+    ctx.strokeStyle = this.st.dashTime > 0 ? '#6ee7b7' : '#ffffff';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.arc(px, py, 16, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.arc(px, py, 7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  renderRhythmLanes() {
+    const ctx = this.ctx;
+    const laneTitles = ['→ 0  (|q| < 1, n^{-p})', '→ L ≠ 0  (q = 1)', '→ ±∞  (|q| > 1, n^{+p})'];
+    const laneCols = ['#10b981', '#f59e0b', '#fb7185'];
+    const hitY = this.h - 86;
+
+    for (let l = 0; l < 3; l += 1) {
+      const x0 = (l / 3) * this.w;
+      const lw = this.w / 3;
+      const active = this.st.lane === l;
+      ctx.fillStyle = active ? 'rgba(16, 185, 129, 0.12)' : 'rgba(15, 23, 42, 0.45)';
+      ctx.fillRect(x0 + 6, 12, lw - 12, this.h - 24);
+      ctx.strokeStyle = active ? laneCols[l] : 'rgba(148, 163, 184, 0.2)';
+      ctx.lineWidth = active ? 2.5 : 1;
+      ctx.strokeRect(x0 + 6, 12, lw - 12, this.h - 24);
+
+      this.drawRich(laneTitles[l], x0 + lw * 0.5, 32, { color: laneCols[l], fontSize: 12 });
+
+      // Receptor pad at hitY
+      ctx.fillStyle = active ? laneCols[l] : 'rgba(30, 41, 59, 0.85)';
+      ctx.beginPath();
+      ctx.roundRect(x0 + 22, hitY - 14, lw - 44, 28, 14);
+      ctx.fill();
+    }
+
+    for (const n of this.st.notes) {
+      const nx = ((n.lane + 0.5) / 3) * this.w;
+      ctx.fillStyle = laneCols[n.targetLane];
+      ctx.beginPath();
+      ctx.roundRect(nx - 60, n.y - 17, 120, 34, 10);
+      ctx.fill();
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 1.6;
+      ctx.stroke();
+      this.drawRich(n.label, nx, n.y, { color: '#04090e', fontSize: 13 });
+    }
+
+    // Sum tank bar
+    this.drawRich(`S_n = ${this.st.sumCharge}%`, this.w - 75, hitY + 46, { color: '#fcd34d', fontSize: 12 });
+  }
+
+  renderHomographicBoss(stage) {
+    const ctx = this.ctx;
+    const d = stage.domain;
+    const toX = (v) => this.mapX(v, d);
+    const toY = (v) => this.mapY(v, d);
 
     ctx.setLineDash([5, 4]);
     ctx.strokeStyle = 'rgba(245, 158, 11, 0.75)';
-    ctx.lineWidth = 1.6;
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(toX(dMin), toY(dMin));
-    ctx.lineTo(toX(dMax), toY(dMax));
+    ctx.moveTo(toX(d.min), toY(d.min));
+    ctx.lineTo(toX(d.max), toY(d.max));
     ctx.stroke();
     ctx.setLineDash([]);
 
     ctx.strokeStyle = '#38bdf8';
-    ctx.lineWidth = 2.4;
+    ctx.lineWidth = 2.6;
     ctx.beginPath();
-    let started = false;
-    for (let i = 0; i <= 120; i += 1) {
-      const x = dMin + (i / 120) * (dMax - dMin);
-      const y = round.f(x);
-      if (!Number.isFinite(y) || Math.abs(y) > 25) {
-        started = false;
-        continue;
-      }
-      if (!started) {
-        ctx.moveTo(toX(x), toY(y));
-        started = true;
-      } else {
-        ctx.lineTo(toX(x), toY(y));
-      }
+    for (let i = 0; i <= 80; i += 1) {
+      const xv = d.min + (i / 80) * (d.max - d.min);
+      if (i === 0) ctx.moveTo(toX(xv), toY(stage.f(xv)));
+      else ctx.lineTo(toX(xv), toY(stage.f(xv)));
     }
     ctx.stroke();
 
-    const terms = [round.u0];
-    let curr = round.u0;
-    for (let i = 0; i < 8; i += 1) {
-      const nxt = round.f(curr);
-      if (!Number.isFinite(nxt)) break;
-      terms.push(nxt);
-      curr = nxt;
-    }
-    const visSteps = this.anim.active ? Math.min(terms.length - 1, Math.floor(this.anim.progress)) : terms.length - 1;
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = this.anim.active ? 2.2 : 1.7;
-    ctx.beginPath();
-    ctx.moveTo(toX(terms[0]), toY(0));
-    let tipX = toX(terms[0]);
-    let tipY = toY(0);
-    for (let i = 0; i < visSteps; i += 1) {
-      ctx.lineTo(toX(terms[i]), toY(terms[i + 1]));
-      ctx.lineTo(toX(terms[i + 1]), toY(terms[i + 1]));
-      tipX = toX(terms[i + 1]);
-      tipY = toY(terms[i + 1]);
-    }
-    ctx.stroke();
-    if (this.anim.active) this.drawPhotonBeacon(tipX, tipY, '#10b981');
-
-    this.drawLabel('y = f(x)', cobRect.x + 36, cobRect.y + 15, { color: '#38bdf8', fontSize: 11 });
-    this.drawLabel('y = x', cobRect.x + 86, cobRect.y + 15, { color: '#fcd34d', fontSize: 11 });
-    ctx.restore();
-
-    const a = this.paramState.alpha;
-    const ax = clamp(toX(a), cobRect.x + 10, cobRect.x + cobRect.w - 10);
-    const ay = clamp(toY(a), cobRect.y + 10, cobRect.y + cobRect.h - 10);
-    this.drawDragHandle('alpha', ax, ay, `α=${a.toFixed(1)}`, '#f59e0b');
-    this.handles.push({
-      id: 'alpha', x: ax, y: ay,
-      onDrag: (px) => this.setParam('alpha', fromX(px))
+    stage.fixedTargets.forEach((tgt, i) => {
+      const isCur = i === this.st.targetIdx % stage.fixedTargets.length;
+      const tx = toX(tgt.x);
+      const ty = toY(tgt.y);
+      ctx.strokeStyle = isCur ? '#f59e0b' : 'rgba(148, 163, 184, 0.4)';
+      ctx.lineWidth = isCur ? 3 : 1.5;
+      ctx.beginPath();
+      ctx.arc(tx, ty, isCur ? 20 : 13, 0, Math.PI * 2);
+      ctx.stroke();
+      this.drawRich(tgt.label, tx, ty - 26, { color: isCur ? '#fde68a' : '#94a3b8', fontSize: 12 });
     });
 
-    if (this.paramState.beta !== undefined) {
-      const b = this.paramState.beta;
-      const bx = clamp(toX(b), cobRect.x + 10, cobRect.x + cobRect.w - 10);
-      const by = clamp(toY(b), cobRect.y + 10, cobRect.y + cobRect.h - 10);
-      this.drawDragHandle('beta', bx, by, `β=${b.toFixed(1)}`, '#a855f7');
-      this.handles.push({
-        id: 'beta', x: bx, y: by,
-        onDrag: (px) => this.setParam('beta', fromX(px))
-      });
+    for (const b of this.st.bullets) {
+      ctx.fillStyle = '#fb7185';
+      ctx.beginPath();
+      ctx.arc(toX(b.x), toY(b.y), 7, 0, Math.PI * 2);
+      ctx.fill();
     }
 
-    ctx.save();
-    ctx.fillStyle = 'rgba(6, 20, 26, 0.78)';
-    ctx.strokeStyle = 'rgba(245, 158, 11, 0.3)';
+    const px = toX(this.st.px);
+    const py = toY(this.st.py);
+    ctx.strokeStyle = this.st.dashTime > 0 ? '#6ee7b7' : '#ffffff';
+    ctx.lineWidth = 2.5;
     ctx.beginPath();
-    ctx.roundRect(auxRect.x, auxRect.y, auxRect.w, auxRect.h, 10);
-    ctx.fill();
+    ctx.arc(px, py, 14, 0, Math.PI * 2);
     ctx.stroke();
-
-    const vVals = terms.slice(0, 6).map((u) => round.auxFn(u, this.paramState.alpha, this.paramState.beta));
-    this.drawLabel(round.auxType === 'ratio' ? 'عدسة النسب الهندسية' : 'عدسة الفروق الحسابية', auxRect.x + auxRect.w * 0.65, auxRect.y + 16, { color: '#fcd34d', font: '800 11px "Cairo", sans-serif' });
-    this.drawLabel(round.auxType === 'ratio' ? '\\frac{v_{n+1}}{v_n}' : 'v_{n+1} - v_n', auxRect.x + auxRect.w * 0.24, auxRect.y + 16, { color: '#bae6fd', fontSize: 12 });
-
-    const metrics = [];
-    for (let i = 0; i < vVals.length - 1; i += 1) {
-      const v0 = vVals[i];
-      const v1 = vVals[i + 1];
-      const m = round.auxType === 'ratio' ? (Math.abs(v0) > 1e-4 ? v1 / v0 : NaN) : v1 - v0;
-      metrics.push(m);
-    }
-    const valid = metrics.filter((m) => Number.isFinite(m) && Math.abs(m) < 50);
-    const uniform = valid.length >= 3 && valid.every((m) => Math.abs(m - valid[0]) < 0.02);
-
-    const rowH = Math.min(40, (auxRect.h - 72) / Math.max(1, metrics.length));
-    const revealCount = this.anim.active ? Math.min(metrics.length, Math.floor(this.anim.progress * 0.8) + 1) : metrics.length;
-    for (let i = 0; i < revealCount; i += 1) {
-      const m = metrics[i];
-      const y = auxRect.y + 44 + i * rowH;
-      const barW = Number.isFinite(m) ? clamp(Math.abs(m) * 45, 6, auxRect.w - 135) : 10;
-      ctx.fillStyle = uniform ? '#10b981' : '#fb7185';
-      ctx.fillRect(auxRect.x + 88, y, barW, Math.max(11, rowH - 14));
-      const tag = round.auxType === 'ratio' ? `\\frac{v_{${i + 1}}}{v_{${i}}}` : `v_{${i + 1}}-v_{${i}}`;
-      this.drawLabel(tag, auxRect.x + 44, y + (rowH - 14) / 2, { color: '#cbd5e1', fontSize: 11 });
-      this.drawLabel(Number.isFinite(m) ? m.toFixed(3) : '∞', auxRect.x + 96 + barW + 24, y + (rowH - 14) / 2, {
-        color: uniform ? '#6ee7b7' : '#fda4af',
-        font: '800 10px "KaTeX_Main", monospace'
-      });
-    }
-
-    this.drawLabel(
-      uniform ? (round.auxType === 'ratio' ? '✓ هندسية منتظمة!' : '✓ حسابية منتظمة!') : 'غير منتظمة — عدّل الأقطاب على المنصف',
-      auxRect.x + auxRect.w / 2,
-      auxRect.y + auxRect.h - 14,
-      { color: uniform ? '#6ee7b7' : '#fda4af', font: '800 11px "Cairo", sans-serif' }
-    );
-    ctx.restore();
+    ctx.beginPath();
+    ctx.moveTo(px - 20, py);
+    ctx.lineTo(px + 20, py);
+    ctx.moveTo(px, py - 20);
+    ctx.lineTo(px, py + 20);
+    ctx.stroke();
   }
 
-  renderSqueezeCorridor(round) {
+  renderSqueezeTunnel() {
     const ctx = this.ctx;
-    const padX = 46;
-    const padY = 34;
-    const w = this.w - padX * 2;
-    const h = this.h - padY * 2;
-    const nMax = round.mode === 'squeeze-contraction' ? 16 : 22;
-    const yMin = 0;
-    const yMax = 5;
-    const toX = (n) => padX + (n / nMax) * w;
-    const toY = (y) => padY + h - ((clamp(y, yMin, yMax) - yMin) / (yMax - yMin)) * h;
-    const fromY = (py) => yMin + ((padY + h - py) / h) * (yMax - yMin);
+    const toScreenY = (yv) => this.h - (yv / 5.0) * this.h;
+    const shipX = this.w * 0.24;
+    const shipY = toScreenY(this.st.centerY);
+    const topY = toScreenY(this.st.centerY + this.st.halfGap);
+    const botY = toScreenY(this.st.centerY - this.st.halfGap);
 
-    const L = this.paramState.L;
-    const radFn = (n) => (round.mode === 'squeeze-contraction' ? 2 * Math.pow(this.paramState.k, n) : this.paramState.A / (n + 1));
-
-    ctx.save();
+    // Gendarme pincers
     ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
-    ctx.beginPath();
-    for (let n = 0; n <= nMax; n += 1) {
-      const py = toY(L + radFn(n));
-      if (n === 0) ctx.moveTo(toX(n), py);
-      else ctx.lineTo(toX(n), py);
-    }
-    for (let n = nMax; n >= 0; n -= 1) {
-      ctx.lineTo(toX(n), toY(L - radFn(n)));
-    }
-    ctx.closePath();
-    ctx.fill();
-
+    ctx.fillRect(0, topY, this.w, botY - topY);
     ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(0, topY);
+    ctx.lineTo(this.w, topY);
+    ctx.moveTo(0, botY);
+    ctx.lineTo(this.w, botY);
+    ctx.stroke();
+
+    this.drawRich('w_n', 36, topY - 12, { color: '#fde68a', fontSize: 12 });
+    this.drawRich('v_n', 36, botY + 14, { color: '#fde68a', fontSize: 12 });
+
+    // Incoming target gates
+    for (const g of this.st.gates) {
+      const gy = toScreenY(g.L);
+      const halfPx = (g.reqAmp / 5.0) * this.h;
+      ctx.fillStyle = 'rgba(56, 189, 248, 0.2)';
+      ctx.fillRect(g.x - 10, gy - halfPx, 20, halfPx * 2);
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 2.5;
+      ctx.strokeRect(g.x - 10, gy - halfPx, 20, halfPx * 2);
+      this.drawRich(`L=${g.L.toFixed(1)}`, g.x, gy - halfPx - 14, { color: '#bae6fd', fontSize: 12 });
+    }
+
+    // Divergence meteors
+    for (const m of this.st.meteors) {
+      ctx.fillStyle = '#fb7185';
+      ctx.beginPath();
+      ctx.arc(m.x, m.y, 16, 0, Math.PI * 2);
+      ctx.fill();
+      this.drawRich('+∞', m.x, m.y, { color: '#ffffff', fontSize: 12 });
+    }
+
+    // Oscillating spark inside corridor
+    const oscY = shipY + Math.sin(this.st.scrollT * 9) * Math.min(24, (botY - topY) * 0.35);
+    ctx.fillStyle = '#10b981';
+    ctx.beginPath();
+    ctx.arc(shipX, oscY, 10, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
-    ctx.beginPath();
-    for (let n = 0; n <= nMax; n += 1) {
-      const px = toX(n);
-      const py = toY(L + radFn(n));
-      if (n === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
     ctx.stroke();
 
-    ctx.beginPath();
-    for (let n = 0; n <= nMax; n += 1) {
-      const px = toX(n);
-      const py = toY(L - radFn(n));
-      if (n === 0) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    const cx = toX(nMax);
-    const cy = toY(round.trueL);
-    ctx.fillStyle = '#38bdf8';
-    ctx.beginPath();
-    ctx.moveTo(cx, cy - 10);
-    ctx.lineTo(cx + 8, cy);
-    ctx.lineTo(cx, cy + 10);
-    ctx.lineTo(cx - 8, cy);
-    ctx.closePath();
-    ctx.fill();
-    this.drawLabel(`L=${round.trueL}`, cx - 24, cy - 16, { color: '#bae6fd', fontSize: 12 });
-
-    const drawLimit = this.anim.active ? Math.min(nMax, Math.floor(this.anim.progress * 2)) : nMax;
-    for (let n = 0; n <= drawLimit; n += 1) {
-      const u = round.seqFn(n);
-      const r = radFn(n);
-      const breach = u > L + r + 1e-6 || u < L - r - 1e-6;
-      ctx.fillStyle = breach ? '#fb7185' : '#10b981';
+    if (this.st.shieldTimer > 0) {
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.arc(toX(n), toY(u), breach ? 5.2 : 4, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.arc(shipX, shipY, 44, 0, Math.PI * 2);
+      ctx.stroke();
     }
-    ctx.restore();
-
-    const lx = toX(nMax);
-    const ly = clamp(toY(L), padY + 12, padY + h - 12);
-    this.drawDragHandle('L', lx, ly, `L=${L.toFixed(2)}`, '#38bdf8');
-    this.handles.push({
-      id: 'L', x: lx, y: ly,
-      onDrag: (_, py) => this.setParam('L', fromY(py))
-    });
-
-    if (round.mode === 'squeeze-corridor') {
-      const ax = toX(0);
-      const ay = clamp(toY(L + this.paramState.A), padY + 12, padY + h - 12);
-      this.drawDragHandle('A', ax, ay, `A=${this.paramState.A.toFixed(1)}`, '#f59e0b');
-      this.handles.push({
-        id: 'A', x: ax, y: ay,
-        onDrag: (_, py) => this.setParam('A', fromY(py) - this.paramState.L)
-      });
-    } else {
-      const kx = toX(1);
-      const ky = clamp(toY(L + 2 * this.paramState.k), padY + 12, padY + h - 12);
-      this.drawDragHandle('k', kx, ky, `k=${this.paramState.k.toFixed(2)}`, '#f59e0b');
-      this.handles.push({
-        id: 'k', x: kx, y: ky,
-        onDrag: (_, py) => this.setParam('k', (fromY(py) - this.paramState.L) / 2)
-      });
-    }
-  }
-
-  renderComparisonInfinity(round) {
-    const ctx = this.ctx;
-    const padX = 48;
-    const padY = 34;
-    const w = this.w - padX * 2;
-    const h = this.h - padY * 2;
-    const nMax = 20;
-    const yMin = -2;
-    const yMax = 11.5;
-    const toX = (n) => padX + ((n - 1) / (nMax - 1)) * w;
-    const toY = (y) => padY + h - ((clamp(y, yMin, yMax) - yMin) / (yMax - yMin)) * h;
-    const fromY = (py) => yMin + ((padY + h - py) / h) * (yMax - yMin);
-
-    const a = this.paramState.alpha;
-
-    // Zero baseline
-    const y0 = toY(0);
-    ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
-    ctx.lineWidth = 1.2;
-    ctx.beginPath();
-    ctx.moveTo(padX, y0);
-    ctx.lineTo(padX + w, y0);
-    ctx.stroke();
-
-    // Shaded area below lower bounding ramp w_n = alpha * sqrt(n)
-    ctx.save();
-    ctx.fillStyle = a > 0 ? 'rgba(245, 158, 11, 0.14)' : 'rgba(251, 113, 133, 0.12)';
-    ctx.beginPath();
-    ctx.moveTo(toX(1), y0);
-    for (let n = 1; n <= nMax; n += 1) {
-      ctx.lineTo(toX(n), toY(a * Math.sqrt(n)));
-    }
-    ctx.lineTo(toX(nMax), y0);
-    ctx.closePath();
-    ctx.fill();
-
-    // Lower ramp curve w_n = alpha * sqrt(n)
-    ctx.strokeStyle = a > 0 ? '#f59e0b' : '#fb7185';
-    ctx.lineWidth = 2.4;
-    ctx.beginPath();
-    for (let n = 1; n <= nMax; n += 1) {
-      const px = toX(n);
-      const py = toY(a * Math.sqrt(n));
-      if (n === 1) ctx.moveTo(px, py);
-      else ctx.lineTo(px, py);
-    }
-    ctx.stroke();
-
-    // Target diverging sequence u_n points
-    const drawLimit = this.anim.active ? Math.min(nMax, Math.max(1, Math.floor(this.anim.progress * 1.8))) : nMax;
-    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    for (let n = 1; n <= drawLimit; n += 1) {
-      const u = round.seqFn(n);
-      if (n === 1) ctx.moveTo(toX(n), toY(u));
-      else ctx.lineTo(toX(n), toY(u));
-    }
-    ctx.stroke();
-
-    for (let n = 1; n <= drawLimit; n += 1) {
-      const u = round.seqFn(n);
-      const wVal = a * Math.sqrt(n);
-      const breach = wVal > u + 1e-6;
-      ctx.fillStyle = breach ? '#fb7185' : '#10b981';
-      ctx.beginPath();
-      ctx.arc(toX(n), toY(u), breach ? 5.5 : 4.2, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    this.drawLabel(`w_n = ${a.toFixed(1)}\\sqrt{n} → ${a > 0 ? '+∞' : a === 0 ? '0' : '-∞'}`, padX + w * 0.5, padY + 12, {
-      color: a > 0 ? '#fcd34d' : '#fda4af',
-      fontSize: 12
-    });
-    ctx.restore();
-
-    // Draggable alpha handle at n = 16 (sqrt(16) = 4)
-    const hx = toX(16);
-    const hy = clamp(toY(a * 4), padY + 14, padY + h - 14);
-    this.drawDragHandle('alpha', hx, hy, `α=${a.toFixed(1)}`, '#f59e0b');
-    this.handles.push({
-      id: 'alpha', x: hx, y: hy,
-      onDrag: (_, py) => this.setParam('alpha', fromY(py) / 4)
-    });
   }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
-  new SequenceWeaverGame();
+  new SequenceArcadeGame();
 });

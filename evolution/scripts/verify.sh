@@ -178,13 +178,25 @@ for game_dir in games/*; do
     exit 1
   fi
 
-  # Guard against secretly recreating the purged QCM-door clone template
+  # Guard against banned legacy QCM-door clones, passive GeoGebra slider applets, and missing Start/Gamepad support
   if [ "$slug" != "math-battle" ]; then
     if grep -rqE 'id="overrideModal"|id="seqOpt0"|StriderInput|pick(Abyss|Asylum|Seq|Argand|Reactor|Forge|Odyssey|Casino)Challenge' "$game_dir"; then
       echo "  ✗ ERROR: Game '$slug' reproduces banned legacy QCM-door clone template!"
       exit 1
     fi
-    if ! grep -rq 'ArcadeCore\.Progress' "$game_dir" && ! grep -rq 'Progress\.' "$game_dir"; then
+    if grep -rqiE '<input[^>]*type=["\x27]range["\x27]|type:\s*["\x27]range["\x27]|class="[^"]*slider' "$game_dir"; then
+      echo "  ✗ ERROR: Game '$slug' uses banned passive GeoGebra slider controls (must be a real-time game, not a slider worksheet)!"
+      exit 1
+    fi
+    if ! grep -rqE 'PauseMenu\??\.attach' "$game_dir"; then
+      echo "  ✗ ERROR: Game '$slug' must integrate ArcadeCore.PauseMenu.attach for Start(9)/Esc pause & Hub exit!"
+      exit 1
+    fi
+    if ! grep -rqE 'ArcadeCore\??\.Gamepad|GamepadEngine' "$game_dir"; then
+      echo "  ✗ ERROR: Game '$slug' must implement full ArcadeCore.Gamepad controller support!"
+      exit 1
+    fi
+    if ! grep -rqE 'ArcadeCore\??\.Progress' "$game_dir" && ! grep -rq 'Progress\.' "$game_dir"; then
       echo "  ✗ ERROR: Game '$slug' must record progress via ArcadeCore.Progress!"
       exit 1
     fi

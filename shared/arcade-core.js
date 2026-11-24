@@ -432,6 +432,21 @@
     },
 
     /**
+     * Sample continuous analog stick axes [-1, 1] and trigger pressure [0, 1].
+     */
+    sampleAnalogAxes(gp, deadzone = 0.18) {
+      if (!gp) {
+        return { lx: 0, ly: 0, rx: 0, ry: 0, l2: 0, r2: 0 };
+      }
+      const ax = gp.axes || [];
+      const ls = Gamepad.applyRadialDeadzone(ax[0] || 0, ax[1] || 0, deadzone);
+      const rs = Gamepad.applyRadialDeadzone(ax[2] || 0, ax[3] || 0, deadzone);
+      const l2 = gp.buttons && gp.buttons[6] ? Number(gp.buttons[6].value || (gp.buttons[6].pressed ? 1 : 0)) : 0;
+      const r2 = gp.buttons && gp.buttons[7] ? Number(gp.buttons[7].value || (gp.buttons[7].pressed ? 1 : 0)) : 0;
+      return { lx: ls.x, ly: ls.y, rx: rs.x, ry: rs.y, l2, r2 };
+    },
+
+    /**
      * Trigger dual-rumble haptic pulse safely on supported controllers.
      */
     triggerHaptic(gpState, duration = 90, weak = 0.35, strong = 0.55) {
@@ -1110,12 +1125,226 @@
     }
   };
 
+  /**
+   * Unified PS5-Style Pause Menu & Start/Options Controller Overlay (`ArcadeCore.PauseMenu`).
+   * Automatically handles Start/Options (button 9), Esc/P keys, D-Pad/Stick modal navigation,
+   * Cross (0) confirm, Circle (1) resume, Resume / Restart / Exit to Hub (`../../index.html?from=game`).
+   */
+  const PauseMenu = {
+    attach(opts) {
+      const o = opts || {};
+      const doc = root && root.document;
+      const exitUrl = o.exitUrl || '../../index.html?from=game';
+      const gpState = o.gpState || Gamepad.createState();
+      let isOpen = false;
+      let focusIdx = 0;
+      let rafId = 0;
+      let lastKeyHandledAt = 0;
+
+      if (!doc || !doc.body) {
+        return {
+          isOpen: () => false,
+          open: () => {},
+          close: () => {},
+          toggle: () => {},
+          pollGamepad: () => false,
+          destroy: () => {}
+        };
+      }
+
+      const overlay = doc.createElement('div');
+      overlay.id = 'arcadePauseOverlay';
+      overlay.className = 'arcade-pause-overlay hidden';
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.setAttribute('aria-label', 'قائمة الإيقاف المؤقت');
+
+      const controlsHtml = Array.isArray(o.controlsHelp) && o.controlsHelp.length
+        ? `<ul class="arcade-pause-controls">${o.controlsHelp.map(c => `<li>${String(c)}</li>`).join('')}</ul>`
+        : '';
+
+      overlay.innerHTML = `
+        <div class="arcade-pause-card" dir="rtl">
+          <div class="arcade-pause-eyebrow">OPTIONS / START • قائمة اللعب</div>
+          <h2 class="arcade-pause-title">${o.title || 'إيقاف مؤقت'}</h2>
+          ${o.subtitle ? `<p class="arcade-pause-sub">${o.subtitle}</p>` : ''}
+          ${controlsHtml}
+          <div class="arcade-pause-actions">
+            <button type="button" class="arcade-pause-btn primary" data-pause-action="resume">
+              <span>▶ استئناف اللعب</span>
+              <kbd>✕ / Esc</kbd>
+            </button>
+            <button type="button" class="arcade-pause-btn" data-pause-action="restart">
+              <span>🔄 إعادة من البداية</span>
+              <kbd>△ / R</kbd>
+            </button>
+            <button type="button" class="arcade-pause-btn danger" data-pause-action="exit">
+              <span>🏠 العودة إلى بوابة الألعاب</span>
+              <kbd>Select</kbd>
+            </button>
+          </div>
+          <div class="arcade-pause-hint">تنقل بـ D-Pad / الأسهم • اضغط ✕ / Enter للتأكيد • اضغط ◯ / Start للرجوع</div>
+        </div>
+      `;
+      doc.body.appendChild(overlay);
+      if (typeof renderAllMath === 'function') {
+        renderAllMath(overlay);
+      }
+
+      const buttons = Array.from(overlay.querySelectorAll('.arcade-pause-btn'));
+
+      const syncFocus = () => {
+        Gamepad.applyFocusRing(buttons, focusIdx);
+      };
+
+      const close = () => {
+        if (!isOpen) return;
+        isOpen = false;
+        overlay.classList.add('hidden');
+        if (rafId) {
+          cancelAnimationFrame(rafId);
+          rafId = 0;
+        }
+        if (typeof o.onResume === 'function') o.onResume();
+      };
+
+      const triggerAction = (action) => {
+        if (action === 'resume') {
+          close();
+        } else if (action === 'restart') {
+          close();
+          if (typeof o.onRestart === 'function') o.onRestart();
+        } else if (action === 'exit') {
+          if (typeof o.onExit === 'function') o.onExit();
+          root.location.href = exitUrl;
+        }
+      };
+
+      buttons.forEach((btn, idx) => {
+        btn.addEventListener('mouseenter', () => {
+          focusIdx = idx;
+          syncFocus();
+        });
+        btn.addEventListener('click', () => {
+          triggerAction(btn.getAttribute('data-pause-action'));
+        });
+      });
+
+      const pollWhileOpen = () => {
+        if (!isOpen) return;
+        const gp = Gamepad.resolveActiveGamepad(gpState);
+        if (gp) {
+          const nav = Gamepad.sampleDirectionalNav(gp, gpState);
+          if (nav.dUp) {
+            focusIdx = (focusIdx - 1 + buttons.length) % buttons.length;
+            syncFocus();
+            Gamepad.triggerHaptic(gpState, 30, 0.15, 0.15);
+          } else if (nav.dDown) {
+            focusIdx = (focusIdx + 1) % buttons.length;
+            syncFocus();
+            Gamepad.triggerHaptic(gpState, 30, 0.15, 0.15);
+          }
+          if (Gamepad.justPressed(gp, gpState, 0)) {
+            const act = buttons[focusIdx]?.getAttribute('data-pause-action');
+            Gamepad.snapshotButtons(gp, gpState);
+            triggerAction(act);
+            return;
+          }
+          if (Gamepad.justPressed(gp, gpState, 1) || Gamepad.justPressed(gp, gpState, 9)) {
+            Gamepad.snapshotButtons(gp, gpState);
+            close();
+            return;
+          }
+          Gamepad.snapshotButtons(gp, gpState);
+        }
+        rafId = requestAnimationFrame(pollWhileOpen);
+      };
+
+      const open = () => {
+        if (isOpen) return;
+        isOpen = true;
+        focusIdx = 0;
+        syncFocus();
+        overlay.classList.remove('hidden');
+        if (typeof o.onPause === 'function') o.onPause();
+        const gp = Gamepad.resolveActiveGamepad(gpState);
+        if (gp) Gamepad.snapshotButtons(gp, gpState);
+        if (!rafId) {
+          rafId = requestAnimationFrame(pollWhileOpen);
+        }
+      };
+
+      const toggle = () => {
+        if (isOpen) close();
+        else open();
+      };
+
+      const onKeyDown = (e) => {
+        const now = performance.now();
+        if (e.code === 'Escape' || (e.code === 'KeyP' && !e.ctrlKey && !e.metaKey)) {
+          if (now - lastKeyHandledAt < 120) return;
+          lastKeyHandledAt = now;
+          e.preventDefault();
+          e.stopPropagation();
+          toggle();
+          return;
+        }
+        if (!isOpen) return;
+        if (e.code === 'ArrowUp' || e.code === 'KeyW') {
+          e.preventDefault();
+          e.stopPropagation();
+          focusIdx = (focusIdx - 1 + buttons.length) % buttons.length;
+          syncFocus();
+        } else if (e.code === 'ArrowDown' || e.code === 'KeyS') {
+          e.preventDefault();
+          e.stopPropagation();
+          focusIdx = (focusIdx + 1) % buttons.length;
+          syncFocus();
+        } else if (e.code === 'Enter' || e.code === 'Space') {
+          e.preventDefault();
+          e.stopPropagation();
+          triggerAction(buttons[focusIdx]?.getAttribute('data-pause-action'));
+        }
+      };
+
+      root.addEventListener('keydown', onKeyDown, true);
+
+      // Call this inside the game's loop BEFORE game-specific gamepad reads.
+      // Returns true when menu is open or just toggled (so the game skips gameplay input).
+      const pollGamepad = (gp, extGpState) => {
+        const st = extGpState || gpState;
+        if (isOpen) return true;
+        if (!gp) return false;
+        if (Gamepad.justPressed(gp, st, 9)) {
+          Gamepad.snapshotButtons(gp, st);
+          open();
+          return true;
+        }
+        return false;
+      };
+
+      return {
+        isOpen: () => isOpen,
+        open,
+        close,
+        toggle,
+        pollGamepad,
+        destroy: () => {
+          root.removeEventListener('keydown', onKeyDown, true);
+          if (rafId) cancelAnimationFrame(rafId);
+          overlay.remove();
+        }
+      };
+    }
+  };
+
   return {
-    version: '1.2.0',
+    version: '1.3.0',
     renderMath,
     renderAllMath,
     setBidiSafeMath,
     Gamepad,
+    PauseMenu,
     Progress,
     CanvasAxisKit
   };
