@@ -334,6 +334,8 @@
       bestScore: 0,
       bestRank: null,
       sealsCleared: 0,
+      stagesCleared: 0,
+      totalStages: 0,
       bossDefeated: false,
       questionsAnswered: 0,
       questionsCorrect: 0,
@@ -452,19 +454,32 @@
       const entry = ensureEntry(store, gameId);
 
       const score = Math.max(0, Math.round(Number(run.score || 0)));
-      const seals = Math.max(0, Math.min(4, Number(run.sealsCleared || 0)));
+      const hasStages = typeof run.totalStages === 'number' && run.totalStages > 0;
+      const totalStages = hasStages ? Math.max(1, Math.round(run.totalStages)) : (entry.totalStages || 4);
+      const rawStages = typeof run.stagesCleared === 'number' ? run.stagesCleared : Number(run.sealsCleared || 0);
+      const stagesCleared = Math.max(0, Math.min(totalStages, Number(rawStages || 0)));
+      const seals = Math.max(0, Math.min(4, Number(run.sealsCleared !== undefined ? run.sealsCleared : Math.round((stagesCleared / totalStages) * 4))));
       const qAns = Math.max(0, Number(run.runQuestionsAnswered || 0));
       const qCorr = Math.max(0, Number(run.runQuestionsCorrect || 0));
-      const accuracy = qAns > 0 ? Math.round((qCorr / qAns) * 100) : 100;
+      const accuracy = typeof run.accuracy === 'number'
+        ? Math.max(0, Math.min(100, Math.round(run.accuracy)))
+        : (qAns > 0 ? Math.round((qCorr / qAns) * 100) : 100);
       const bypasses = Math.max(0, Number(run.bypasses || 0));
       const victory = Boolean(run.victory);
 
       const isNewBest = score > entry.bestScore;
       if (isNewBest) entry.bestScore = score;
       if (seals > entry.sealsCleared) entry.sealsCleared = seals;
+      if (hasStages) entry.totalStages = totalStages;
+      if (stagesCleared > (entry.stagesCleared || 0)) entry.stagesCleared = stagesCleared;
       if (victory) entry.bossDefeated = true;
 
-      const rank = Progress.computeRank({ victory, accuracy, sealsCleared: seals, bypasses });
+      const rank = run.rank || Progress.computeRank({
+        victory,
+        accuracy,
+        sealsCleared: Math.round((stagesCleared / totalStages) * 4),
+        bypasses
+      });
       if (!entry.bestRank || (RANK_ORDER[rank] || 0) > (RANK_ORDER[entry.bestRank] || 0)) {
         entry.bestRank = rank;
       }
@@ -492,23 +507,29 @@
       return readStore();
     },
 
-    getSummary(totalGames = 10) {
+    getSummary(totalGames = 1) {
       const store = readStore();
       const entries = Object.values(store.games || {});
       let gamesPlayed = 0;
       let bossesDefeated = 0;
       let totalSeals = 0;
+      let totalStagesMax = 0;
       let questionsAnswered = 0;
       let questionsCorrect = 0;
 
       for (let i = 0; i < entries.length; i += 1) {
         const g = entries[i];
         if (!g) continue;
-        if ((g.runsCompleted || 0) > 0 || (g.questionsAnswered || 0) > 0 || (g.sealsCleared || 0) > 0) {
+        const tStages = g.totalStages > 0 ? g.totalStages : 4;
+        const cStages = typeof g.stagesCleared === 'number' && g.totalStages > 0
+          ? g.stagesCleared
+          : Number(g.sealsCleared || 0);
+        if ((g.runsCompleted || 0) > 0 || (g.questionsAnswered || 0) > 0 || cStages > 0) {
           gamesPlayed += 1;
         }
         if (g.bossDefeated) bossesDefeated += 1;
-        totalSeals += Number(g.sealsCleared || 0);
+        totalSeals += cStages;
+        totalStagesMax += tStages;
         questionsAnswered += Number(g.questionsAnswered || 0);
         questionsCorrect += Number(g.questionsCorrect || 0);
       }
@@ -522,6 +543,7 @@
         gamesPlayed,
         bossesDefeated,
         totalSeals,
+        totalStagesMax: Math.max(totalStagesMax, totalGames * 4),
         questionsAnswered,
         questionsCorrect,
         accuracyPct,
@@ -531,14 +553,11 @@
 
     computeGameMetrics(gameId) {
       const e = Progress.getGameProgress(gameId);
-      let bestScore = Math.max(0, Number(e.bestScore || 0));
-      if (gameId === 'mathcore-survivor' && bestScore === 0) {
-        try {
-          const legacy = parseInt(root?.localStorage?.getItem('mathcore_high_score') || '0', 10) || 0;
-          if (legacy > bestScore) bestScore = legacy;
-        } catch (_) {}
-      }
-
+      const bestScore = Math.max(0, Number(e.bestScore || 0));
+      const totalStages = e.totalStages > 0 ? Math.max(1, Number(e.totalStages)) : 4;
+      const stagesCleared = e.totalStages > 0
+        ? Math.max(0, Math.min(totalStages, Number(e.stagesCleared || 0)))
+        : Math.max(0, Math.min(4, Number(e.sealsCleared || 0)));
       const sealsCleared = Math.max(0, Math.min(4, Number(e.sealsCleared || 0)));
       const bossDefeated = Boolean(e.bossDefeated);
       const qAns = Math.max(0, Number(e.questionsAnswered || 0));
@@ -549,19 +568,21 @@
       const masteredTopics = Array.isArray(e.masteredTopics) ? e.masteredTopics : [];
       const weakTopics = Array.isArray(e.weakTopics) ? e.weakTopics : [];
       const played = Boolean(
-        (e.runsCompleted || 0) > 0 || qAns > 0 || sealsCleared > 0 || bossDefeated || bestScore > 0
+        (e.runsCompleted || 0) > 0 || qAns > 0 || stagesCleared > 0 || bossDefeated || bestScore > 0
       );
 
-      // Weighted 0..100 mastery progress: 50% seals (4/4), 25% boss defeat, 25% accuracy (when played)
-      const sealScore = (sealsCleared / 4) * 50;
+      // Weighted 0..100 mastery progress: 50% stages/challenges, 25% completion/victory, 25% accuracy
+      const stageScore = (stagesCleared / totalStages) * 50;
       const bossScore = bossDefeated ? 25 : 0;
       const accScore = played ? ((qAns > 0 || typeof e.lastAccuracy === 'number') ? (accuracyPct / 100) * 25 : (bestScore > 0 ? 15 : 0)) : 0;
-      const masteryPct = Math.max(0, Math.min(100, Math.round(sealScore + bossScore + accScore)));
+      const masteryPct = Math.max(0, Math.min(100, Math.round(stageScore + bossScore + accScore)));
 
       return {
         bestScore,
         bestRank: e.bestRank || null,
         sealsCleared,
+        stagesCleared,
+        totalStages,
         bossDefeated,
         questionsAnswered: qAns,
         questionsCorrect: qCorr,
@@ -596,7 +617,7 @@
         } else if (m.played && !m.bossDefeated) {
           priority = 2;
           tag = 'استكمال';
-          reason = `تقدّم جزئي (${m.sealsCleared}/4 أختام) دون هزيمة الزعيم`;
+          reason = `تقدّم جزئي (${m.stagesCleared}/${m.totalStages} مراحل) قبل الإكمال`;
         } else if (!m.played) {
           priority = 1;
           tag = 'لم تبدأ';

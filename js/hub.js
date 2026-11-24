@@ -10,28 +10,6 @@ import { gamepad } from '../shared/gamepad.js';
 function getGameArtworkSVG(game) {
   const accent = game.accentColor || '#00e5ff';
 
-  if (game.id === 'mathcore-survivor') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="mcGlow" cx="50%" cy="50%" r="55%">
-            <stop offset="0%" stop-color="#00f3ff" stop-opacity="0.32" />
-            <stop offset="100%" stop-color="#060914" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="320" height="200" fill="#070c1a" />
-        <circle cx="160" cy="100" r="85" fill="url(#mcGlow)" />
-        <circle cx="160" cy="100" r="56" fill="none" stroke="#00f3ff" stroke-opacity="0.28" stroke-dasharray="6 6" stroke-width="1.5" />
-        <circle cx="160" cy="100" r="28" fill="#09152e" stroke="#00f3ff" stroke-width="2.5" />
-        <text x="160" y="106" text-anchor="middle" fill="#ffffff" font-family="JetBrains Mono, monospace" font-weight="800" font-size="16">X=n</text>
-        <path d="M72 58 L134 88 M248 142 L186 112" stroke="#00ff88" stroke-width="2" stroke-linecap="round" stroke-opacity="0.85" />
-        <polygon points="72,44 86,68 58,68" fill="none" stroke="#ff007f" stroke-width="2.2" />
-        <rect x="234" y="128" width="26" height="26" rx="4" fill="none" stroke="#ffb800" stroke-width="2.2" />
-        <text x="247" y="54" text-anchor="middle" fill="#00e5ff" font-family="JetBrains Mono, monospace" font-weight="800" font-size="14">✕ ◯ ▢ △</text>
-      </svg>
-    `;
-  }
-
   if (game.id === 'math-battle') {
     return `
       <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -51,260 +29,6 @@ function getGameArtworkSVG(game) {
         <circle cx="222" cy="76" r="24" fill="#1b071e" stroke="#ff5500" stroke-width="2.5" />
         <text x="222" y="83" text-anchor="middle" fill="#ff5500" font-family="Cambria Math, Georgia, serif" font-style="italic" font-weight="700" font-size="20">x³</text>
         <text x="255" y="152" text-anchor="middle" fill="#10b981" font-family="JetBrains Mono, monospace" font-weight="800" font-size="13">→ 0</text>
-      </svg>
-    `;
-  }
-
-  if (game.id === 'asymptote-asylum') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="aaGlow" cx="50%" cy="52%" r="55%">
-            <stop offset="0%" stop-color="#ef4444" stop-opacity="0.38" />
-            <stop offset="100%" stop-color="#050205" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="320" height="200" fill="#070204" />
-        <circle cx="160" cy="104" r="92" fill="url(#aaGlow)" />
-        <circle cx="160" cy="100" r="54" fill="none" stroke="#dc2626" stroke-width="2" stroke-opacity="0.55" />
-        <circle cx="160" cy="100" r="38" fill="none" stroke="#991b1b" stroke-dasharray="6 5" stroke-width="1.5" />
-        <path d="M46 156 Q 112 130 160 88 T 274 36" fill="none" stroke="#38bdf8" stroke-width="2.4" />
-        <line x1="78" y1="146" x2="246" y2="30" stroke="#fbbf24" stroke-dasharray="5 4" stroke-width="1.8" />
-        <circle cx="160" cy="88" r="5" fill="#fbbf24" />
-        <ellipse cx="92" cy="148" rx="18" ry="8" fill="#7f1d1d" fill-opacity="0.8" />
-        <ellipse cx="242" cy="146" rx="22" ry="10" fill="#991b1b" fill-opacity="0.72" />
-        <circle cx="240" cy="70" r="3.2" fill="#ff2a2a" />
-        <circle cx="252" cy="70" r="3.2" fill="#ff2a2a" />
-        <text x="160" y="166" text-anchor="middle" fill="#fecaca" font-family="JetBrains Mono, monospace" font-weight="800" font-size="13">f'(x₀) — 23..38</text>
-      </svg>
-    `;
-  }
-
-  if (game.id === 'sequence-strider') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="ssGlow" cx="55%" cy="48%" r="55%">
-            <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.34" />
-            <stop offset="100%" stop-color="#030712" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="320" height="200" fill="#040916" />
-        <circle cx="176" cy="96" r="88" fill="url(#ssGlow)" />
-        <line x1="40" y1="36" x2="280" y2="36" stroke="#fb7185" stroke-dasharray="6 4" stroke-width="1.5" />
-        <line x1="40" y1="164" x2="280" y2="164" stroke="#fb7185" stroke-dasharray="6 4" stroke-width="1.5" />
-        <line x1="45" y1="160" x2="275" y2="42" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1.4" />
-        <path d="M46 155 Q 130 92, 272 52" fill="none" stroke="#38bdf8" stroke-width="2.5" />
-        <polyline points="82,160 82,124 118,124 118,104 156,104 156,88 214,72" fill="none" stroke="#fbbf24" stroke-width="1.8" />
-        <circle cx="214" cy="72" r="6" fill="#10b981" />
-        <text x="160" y="182" text-anchor="middle" fill="#bae6fd" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">uₙ₊₁ = f(uₙ) → L (39..50)</text>
-      </svg>
-    `;
-  }
-
-  if (game.id === 'complex-plane-duel') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="cpGlow" cx="50%" cy="48%" r="55%">
-            <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.34" />
-            <stop offset="100%" stop-color="#040714" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="320" height="200" fill="#040714" />
-        <circle cx="160" cy="96" r="88" fill="url(#cpGlow)" />
-        <line x1="40" y1="96" x2="280" y2="96" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="1.5" />
-        <line x1="160" y1="18" x2="160" y2="168" stroke="#fbbf24" stroke-opacity="0.35" stroke-width="1.5" />
-        <circle cx="160" cy="96" r="54" fill="none" stroke="#38bdf8" stroke-opacity="0.65" stroke-width="2" />
-        <polygon points="214,96 187,49 133,49 106,96 133,143 187,143" fill="none" stroke="#34d399" stroke-dasharray="5 4" stroke-width="1.6" />
-        <line x1="160" y1="96" x2="207" y2="69" stroke="#fbbf24" stroke-width="2.6" />
-        <line x1="160" y1="96" x2="207" y2="123" stroke="#f43f5e" stroke-dasharray="4 4" stroke-width="1.8" />
-        <circle cx="207" cy="69" r="5.5" fill="#fbbf24" />
-        <circle cx="207" cy="123" r="4.5" fill="#f43f5e" />
-        <text x="234" y="66" text-anchor="middle" fill="#fde68a" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">M(z)</text>
-        <text x="234" y="130" text-anchor="middle" fill="#fda4af" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">M̄(z̄)</text>
-        <text x="160" y="184" text-anchor="middle" fill="#fef3c7" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">z = r·e^{iθ} ∈ ℂ (51..64)</text>
-      </svg>
-    `;
-  }
-
-  if (game.id === 'limit-abyss') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="abyssGlow" cx="50%" cy="45%" r="60%">
-            <stop offset="0%" stop-color="#00f3ff" stop-opacity="0.32" />
-            <stop offset="60%" stop-color="#0284c7" stop-opacity="0.12" />
-            <stop offset="100%" stop-color="#01040a" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="320" height="200" fill="#01040a" />
-        <circle cx="160" cy="95" r="88" fill="url(#abyssGlow)" />
-        <!-- Sonar Concentric Rings -->
-        <circle cx="160" cy="95" r="76" fill="none" stroke="#00f3ff" stroke-opacity="0.22" stroke-width="1.2" stroke-dasharray="4 6" />
-        <circle cx="160" cy="95" r="48" fill="none" stroke="#00f3ff" stroke-opacity="0.35" stroke-width="1.5" />
-        <circle cx="160" cy="95" r="22" fill="none" stroke="#38bdf8" stroke-opacity="0.55" stroke-width="1.8" />
-        <!-- Light cones from submarine -->
-        <polygon points="160,95 270,40 270,150" fill="#00f3ff" fill-opacity="0.12" />
-        <!-- Submarine Silhouette -->
-        <ellipse cx="160" cy="95" rx="22" ry="12" fill="#0369a1" stroke="#00f3ff" stroke-width="2" />
-        <circle cx="168" cy="95" r="4.5" fill="#38bdf8" />
-        <rect x="156" y="80" width="7" height="4" fill="#0284c7" />
-        <!-- Discontinuity Curve & Hole -->
-        <path d="M 50 145 Q 110 90, 150 90" fill="none" stroke="#10b981" stroke-width="2.2" />
-        <path d="M 170 90 Q 210 90, 270 50" fill="none" stroke="#10b981" stroke-width="2.2" />
-        <circle cx="160" cy="90" r="4" fill="#01040a" stroke="#f59e0b" stroke-width="2" />
-        <!-- Math Indicators -->
-        <text x="75" y="42" fill="#38bdf8" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">TVI: f(a)·f(b)&lt;0</text>
-        <text x="245" y="42" fill="#f472b6" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">f⁻¹(x) ↔ y=x</text>
-        <text x="160" y="184" text-anchor="middle" fill="#bae6fd" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">lim_{x→x₀} f(x) = L (1..22)</text>
-      </svg>
-    `;
-  }
-
-  if (game.id === 'logarithm-reactor') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="lrGlow" cx="50%" cy="50%" r="58%">
-            <stop offset="0%" stop-color="#10b981" stop-opacity="0.34" />
-            <stop offset="55%" stop-color="#84cc16" stop-opacity="0.12" />
-            <stop offset="100%" stop-color="#03090c" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="320" height="200" fill="#03090c" />
-        <circle cx="160" cy="98" r="90" fill="url(#lrGlow)" />
-        <!-- Containment Reactor Rings -->
-        <circle cx="160" cy="98" r="66" fill="none" stroke="#10b981" stroke-opacity="0.28" stroke-dasharray="7 5" stroke-width="1.6" />
-        <circle cx="160" cy="98" r="44" fill="none" stroke="#a855f7" stroke-opacity="0.35" stroke-width="1.5" />
-        <!-- Axes & Symmetry Line y=x -->
-        <line x1="48" y1="98" x2="272" y2="98" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1" />
-        <line x1="160" y1="22" x2="160" y2="170" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1" />
-        <line x1="72" y1="168" x2="248" y2="28" stroke="#94a3b8" stroke-dasharray="4 4" stroke-width="1.3" />
-        <!-- Exponential Curve e^x -->
-        <path d="M 65 94 Q 145 92, 180 62 T 212 24" fill="none" stroke="#f59e0b" stroke-width="2.6" />
-        <!-- Logarithm Curve ln(x) -->
-        <path d="M 164 166 Q 170 98, 212 72 T 268 48" fill="none" stroke="#10b981" stroke-width="2.6" />
-        <!-- Key Points (0,1) and (1,0) -->
-        <circle cx="160" cy="76" r="4.5" fill="#fbbf24" />
-        <circle cx="182" cy="98" r="4.5" fill="#34d399" />
-        <text x="128" y="66" fill="#fde68a" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">eˣ</text>
-        <text x="242" y="42" fill="#6ee7b7" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">ln(x)</text>
-        <text x="88" y="42" fill="#e9d5ff" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">eˣ ≫ xⁿ ≫ ln x</text>
-        <text x="160" y="185" text-anchor="middle" fill="#a7f3d0" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">(ln|u|)' = u'/u | (65..78)</text>
-      </svg>
-    `;
-  }
-
-  if (game.id === 'integral-forge') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="ifGlow" cx="50%" cy="52%" r="58%">
-            <stop offset="0%" stop-color="#f97316" stop-opacity="0.36" />
-            <stop offset="55%" stop-color="#f59e0b" stop-opacity="0.14" />
-            <stop offset="100%" stop-color="#090605" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="320" height="200" fill="#090605" />
-        <circle cx="160" cy="100" r="92" fill="url(#ifGlow)" />
-        <!-- Axes -->
-        <line x1="36" y1="122" x2="284" y2="122" stroke="#ffffff" stroke-opacity="0.26" stroke-width="1.2" />
-        <line x1="78" y1="24" x2="78" y2="168" stroke="#ffffff" stroke-opacity="0.22" stroke-width="1.2" />
-        <!-- Shaded Definite Integral Area & Revolution Disc -->
-        <path d="M 105 122 L 105 90 Q 150 42, 215 62 L 215 122 Z" fill="#f97316" fill-opacity="0.28" />
-        <path d="M 105 122 L 105 154 Q 150 176, 215 158 L 215 122 Z" fill="#38bdf8" fill-opacity="0.14" />
-        <!-- Boundary Verticals x=a, x=b -->
-        <line x1="105" y1="56" x2="105" y2="156" stroke="#fde047" stroke-dasharray="4 3" stroke-width="1.3" />
-        <line x1="215" y1="50" x2="215" y2="160" stroke="#fde047" stroke-dasharray="4 3" stroke-width="1.3" />
-        <!-- Revolution Cross-Section Ellipse -->
-        <ellipse cx="215" cy="122" rx="10" ry="38" fill="none" stroke="#38bdf8" stroke-width="2" />
-        <ellipse cx="160" cy="122" rx="8" ry="44" fill="none" stroke="#fbbf24" stroke-opacity="0.55" stroke-dasharray="3 3" stroke-width="1.4" />
-        <!-- Curves f(x) and Harmonic ODE Wave -->
-        <path d="M 48 106 Q 145 24, 268 78" fill="none" stroke="#fb923c" stroke-width="2.8" />
-        <path d="M 48 136 Q 90 104, 130 136 T 212 136 T 276 122" fill="none" stroke="#38bdf8" stroke-width="1.8" stroke-opacity="0.85" />
-        <!-- Heavy Integral Glyph -->
-        <text x="52" y="70" fill="#fde047" font-family="Cambria Math, serif" font-weight="900" font-size="36">∫</text>
-        <text x="160" y="34" text-anchor="middle" fill="#fed7aa" font-family="JetBrains Mono, monospace" font-weight="800" font-size="10.5">V = π ∫ (f(x))² dx  |  y'' + ω²y = 0</text>
-        <text x="105" y="170" text-anchor="middle" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">a</text>
-        <text x="215" y="170" text-anchor="middle" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="700" font-size="10">b</text>
-        <text x="160" y="188" text-anchor="middle" fill="#fbbf24" font-family="JetBrains Mono, monospace" font-weight="800" font-size="12">∫_a^b f(x)dx &amp; EDO | (79..90)</text>
-      </svg>
-    `;
-  }
-
-  if (game.id === 'vector-odyssey') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <rect width="320" height="200" fill="#040817" />
-        <g stroke="#38bdf8" stroke-opacity="0.16" stroke-width="1">
-          <line x1="20" y1="150" x2="300" y2="150" /><line x1="20" y1="120" x2="300" y2="120" />
-          <line x1="65" y1="25" x2="65" y2="180" /><line x1="255" y1="25" x2="255" y2="180" />
-        </g>
-        <!-- 3D Coordinate Axes O, i, j, k -->
-        <g stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="3 3">
-          <line x1="78" y1="138" x2="78" y2="48" />
-          <line x1="78" y1="138" x2="220" y2="138" />
-          <line x1="78" y1="138" x2="42" y2="168" />
-        </g>
-        <!-- Tilted Plane (P) and Wireframe Sphere (S) -->
-        <polygon points="82,118 242,118 212,150 52,150" fill="#38bdf8" fill-opacity="0.14" stroke="#7dd3fc" stroke-width="1.5" />
-        <circle cx="164" cy="96" r="46" fill="#818cf8" fill-opacity="0.14" stroke="#a78bfa" stroke-width="2.2" />
-        <ellipse cx="164" cy="96" rx="46" ry="15" fill="none" stroke="#c4b5fd" stroke-opacity="0.55" stroke-width="1.2" stroke-dasharray="4 3" />
-        <!-- Section Circle (C) = (S) ∩ (P) -->
-        <ellipse cx="164" cy="126" rx="34" ry="11" fill="#4ade80" fill-opacity="0.18" stroke="#4ade80" stroke-width="2" />
-        <!-- Cross-Product Normal Vector u ∧ v -->
-        <line x1="164" y1="126" x2="164" y2="30" stroke="#fbbf24" stroke-width="2.4" />
-        <polygon points="164,22 159,34 169,34" fill="#fbbf24" />
-        <line x1="164" y1="96" x2="198" y2="126" stroke="#f472b6" stroke-width="1.6" stroke-dasharray="3 2" />
-        <!-- Markers Omega, H, Starfighter silhouette -->
-        <circle cx="164" cy="96" r="3.4" fill="#fbbf24" />
-        <circle cx="164" cy="126" r="3.2" fill="#4ade80" />
-        <polygon points="274,64 252,54 258,64 252,74" fill="#38bdf8" stroke="#e0f2fe" stroke-width="1.2" />
-        <text x="176" y="42" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">u ∧ v</text>
-        <text x="150" y="92" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11">Ω</text>
-        <text x="206" y="138" fill="#4ade80" font-family="JetBrains Mono, monospace" font-weight="800" font-size="10">H | r²=R²-d²</text>
-        <text x="160" y="188" text-anchor="middle" fill="#7dd3fc" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11.5">(S) ∩ (P) &amp; d(Ω,(P)) | ℝ³ (91..102)</text>
-      </svg>
-    `;
-  }
-
-  if (game.id === 'quantum-casino') {
-    return `
-      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <defs>
-          <radialGradient id="qcGlow" cx="50%" cy="48%" r="58%">
-            <stop offset="0%" stop-color="#10b981" stop-opacity="0.34" />
-            <stop offset="55%" stop-color="#fbbf24" stop-opacity="0.14" />
-            <stop offset="100%" stop-color="#030907" stop-opacity="0" />
-          </radialGradient>
-        </defs>
-        <rect width="320" height="200" fill="#030907" />
-        <circle cx="160" cy="96" r="90" fill="url(#qcGlow)" />
-        <!-- Roulette Ring -->
-        <circle cx="160" cy="94" r="64" fill="none" stroke="#fbbf24" stroke-opacity="0.32" stroke-dasharray="6 5" stroke-width="1.6" />
-        <circle cx="160" cy="94" r="46" fill="none" stroke="#34d399" stroke-opacity="0.45" stroke-width="1.6" />
-        <!-- Weighted Probability Tree -->
-        <g stroke="#34d399" stroke-width="1.8">
-          <line x1="50" y1="94" x2="112" y2="58" />
-          <line x1="50" y1="94" x2="112" y2="130" />
-          <line x1="112" y1="58" x2="162" y2="42" />
-          <line x1="112" y1="58" x2="162" y2="74" />
-        </g>
-        <circle cx="50" cy="94" r="4" fill="#fbbf24" />
-        <circle cx="112" cy="58" r="3.5" fill="#34d399" />
-        <circle cx="112" cy="130" r="3.5" fill="#f43f5e" />
-        <!-- Binomial Distribution B(n,p) Bars -->
-        <rect x="192" y="106" width="14" height="32" rx="2" fill="#a855f7" fill-opacity="0.82" />
-        <rect x="212" y="78" width="14" height="60" rx="2" fill="#fbbf24" fill-opacity="0.92" />
-        <rect x="232" y="64" width="14" height="74" rx="2" fill="#34d399" fill-opacity="0.92" />
-        <rect x="252" y="92" width="14" height="46" rx="2" fill="#22d3ee" fill-opacity="0.82" />
-        <rect x="272" y="118" width="14" height="20" rx="2" fill="#a855f7" fill-opacity="0.72" />
-        <!-- Card & Dice Accents -->
-        <text x="90" y="112" fill="#34d399" font-family="JetBrains Mono, monospace" font-weight="900" font-size="16">♠</text>
-        <text x="164" y="104" fill="#fde047" font-family="JetBrains Mono, monospace" font-weight="900" font-size="11">P_A(B)</text>
-        <text x="239" y="52" text-anchor="middle" fill="#fde68a" font-family="JetBrains Mono, monospace" font-weight="800" font-size="10.5">B(n,p) | E=np</text>
-        <text x="160" y="185" text-anchor="middle" fill="#a7f3d0" font-family="JetBrains Mono, monospace" font-weight="800" font-size="11.5">Cₙᵖ, Aₙᵖ &amp; P(X=k) | (103..114)</text>
       </svg>
     `;
   }
@@ -1021,10 +745,15 @@ class ArcadeConsoleHub {
   renderCategories() {
     if (!this.categoryTabs) return;
     const domainOrder = [
+      'التحليل',
+      'الهندسة والجبر',
+      'الأعداد العقدية',
+      'الهندسة الفضائية',
+      'حساب الاحتمالات',
+      'الأساسيات والتقويم',
       'التحليل والدوال',
       'الأعداد العقدية والفضاء',
       'التعداد والاحتمالات',
-      'الأساسيات والتقويم',
       'الفيزياء 2BAC PC',
       'الكيمياء 2BAC PC'
     ];
@@ -1078,10 +807,10 @@ class ArcadeConsoleHub {
   }
 
   renderTelemetrySummary() {
-    const total = this.games.length || 10;
+    const total = this.games.length || 1;
     const summary = window.ArcadeCore?.Progress?.getSummary
       ? window.ArcadeCore.Progress.getSummary(total)
-      : { bossesDefeated: 0, totalSeals: 0, questionsAnswered: 0, accuracyPct: 0 };
+      : { bossesDefeated: 0, totalSeals: 0, totalStagesMax: total * 4, questionsAnswered: 0, accuracyPct: 0 };
 
     if (this.topbarMasteryText) {
       this.topbarMasteryText.textContent = `${summary.bossesDefeated}/${total} • ${summary.accuracyPct}%`;
@@ -1156,7 +885,7 @@ class ArcadeConsoleHub {
       : this.searchQuery
       ? `تصفية البحث: "${this.searchQuery}"`
       : this.activeCategory === 'All'
-      ? 'المقرر الكامل 2BAC PC (1–114) • جاهز للتشغيل'
+      ? 'المقرر الرسمي المحدث 2BAC PC (11 درساً • 137 مهارة) • جاهز للتشغيل'
       : `المجال: ${this.activeCategory}`;
 
     if (this.railStatusText) this.railStatusText.textContent = filterLabel;
@@ -1206,18 +935,20 @@ class ArcadeConsoleHub {
         const ringLabel = m.bestRank ? m.bestRank : (m.played ? `${m.masteryPct}%` : '0%');
 
         let progClass = '';
-        let progText = '0/4 أختام';
+        const stagesMax = m.totalStages || 4;
+        const stagesDone = typeof m.stagesCleared === 'number' ? m.stagesCleared : m.sealsCleared;
+        let progText = `0/${stagesMax} مراحل`;
         if (m.bossDefeated) {
           progClass = 'is-mastered';
           progText = m.questionsAnswered > 0
-            ? `🏆 ✓ ${m.sealsCleared}/4 • ${m.accuracyPct}%`
-            : `🏆 ✓ ${m.sealsCleared}/4`;
+            ? `🏆 ✓ ${stagesDone}/${stagesMax} • ${m.accuracyPct}%`
+            : `🏆 ✓ ${stagesDone}/${stagesMax}`;
         } else if (m.played) {
           progClass = rev && rev.priority >= 3 ? 'is-priority' : '';
           const prefix = rev && rev.priority >= 3 ? '🎯 ' : '✓ ';
           progText = m.questionsAnswered > 0
-            ? `${prefix}${m.sealsCleared}/4 • ${m.accuracyPct}%`
-            : `${prefix}${m.sealsCleared}/4 أختام`;
+            ? `${prefix}${stagesDone}/${stagesMax} • ${m.accuracyPct}%`
+            : `${prefix}${stagesDone}/${stagesMax} مراحل`;
         } else if (this.smartReviewOnly && rev) {
           progClass = 'is-priority';
           progText = `🎯 ${rev.tag}`;
@@ -1354,11 +1085,13 @@ class ArcadeConsoleHub {
       this.showcaseTelemetryRank.textContent = m.bestRank ? `الرتبة ${m.bestRank}` : (m.played ? 'قيد التقدّم' : 'جديد');
     }
     if (this.showcaseTelemetrySeals) {
-      this.showcaseTelemetrySeals.textContent = `✓ ${m.sealsCleared}/4 أختام`;
-      this.showcaseTelemetrySeals.classList.toggle('is-cleared', m.sealsCleared >= 4);
+      const sMax = m.totalStages || 4;
+      const sDone = typeof m.stagesCleared === 'number' ? m.stagesCleared : m.sealsCleared;
+      this.showcaseTelemetrySeals.textContent = `✓ ${sDone}/${sMax} مراحل`;
+      this.showcaseTelemetrySeals.classList.toggle('is-cleared', sDone >= sMax);
     }
     if (this.showcaseTelemetryBoss) {
-      this.showcaseTelemetryBoss.textContent = m.bossDefeated ? '🏆 الزعيم مهزوم' : '⚔ الزعيم صامد';
+      this.showcaseTelemetryBoss.textContent = m.bossDefeated ? '🏆 مكتمل بنجاح' : '⚡ قيد التحدي';
       this.showcaseTelemetryBoss.classList.toggle('is-cleared', m.bossDefeated);
     }
     if (this.showcaseTelemetryAcc) {
@@ -1510,17 +1243,17 @@ class ArcadeConsoleHub {
   }
 
   renderProgressModal() {
-    const total = this.games.length || 10;
+    const total = this.games.length || 1;
     const summary = window.ArcadeCore?.Progress?.getSummary
       ? window.ArcadeCore.Progress.getSummary(total)
-      : { bossesDefeated: 0, totalSeals: 0, questionsAnswered: 0, accuracyPct: 0 };
+      : { bossesDefeated: 0, totalSeals: 0, totalStagesMax: total * 4, questionsAnswered: 0, accuracyPct: 0 };
 
     const elBosses = document.getElementById('prog-sum-bosses');
     const elSeals = document.getElementById('prog-sum-seals');
     const elAcc = document.getElementById('prog-sum-acc');
     const elQs = document.getElementById('prog-sum-questions');
     if (elBosses) elBosses.textContent = `${summary.bossesDefeated} / ${total}`;
-    if (elSeals) elSeals.textContent = `${summary.totalSeals} / ${total * 4}`;
+    if (elSeals) elSeals.textContent = `${summary.totalSeals} / ${summary.totalStagesMax || total * 4}`;
     if (elAcc) elAcc.textContent = `${summary.accuracyPct}%`;
     if (elQs) elQs.textContent = String(summary.questionsAnswered || 0);
 

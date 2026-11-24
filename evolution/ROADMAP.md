@@ -1,65 +1,35 @@
-# Math-Arcid-V2: Autonomous Grand Roadmap (Unleashed Monster Edition)
+# Math-Arcid-V2: خريطة الطريق الإبداعية الشاملة (Reboot V3 — 11 درساً / 137 مهارة)
 
-## 1. Core Engineering & Creative Charter
-* **Repository**: `https://github.com/Ayoubvvch/Math-Arcid-V2`
-* **Live Deployment**: `https://ayoubvvch.github.io/Math-Arcid-V2/`
-* **Zero-Garbage Gold Standard (`evolution/GOLD_STANDARD.md`)**:
-  - Every game is a **Full-Screen 100vw × 100dvh 60FPS** experience (`<html lang="ar" dir="rtl">`) with `setBidiSafeMath` bidirectional formula isolation.
-  - Mandatory 6-Module Architecture (`js/curriculum.js`, `js/world.js`, `js/renderer.js`, `js/controls.js`, `js/audio.js`, `js/game.js`) with **≥ 2,800 lines of code** per game.
-  - Complete Moroccan 2BAC PC curriculum coverage with **≥ 24 National Exam questions**, interactive HTML5 Canvas graphs (`graphSpec`), 4 Sector Gates/Seals, Stagger/Execute mechanics, and a Sector Boss Core.
-  - 100% PlayStation DualSense / DualShock support (`✕`, `◯`, `▢`, `△`, `L1/R1`, `L2/R2`, `Options`, D-Pad, Twin Sticks) across gameplay and all modals.
-  - Bespoke SVG tile artwork in `js/hub.js` (`buildTileArtwork`).
-
----
-
-## 2. The Complete Moroccan 2BAC PC Masterpiece Catalog (10 Games)
-
-| # | Game ID | Title (Arabic / English) | Genre | 2BAC PC Topics | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| 1 | `mathcore-survivor` | **MathCore: PlayStation Survivor** | Tactical 2D Parity Arena | Algebra & Divisibility | **LIVE (Genesis)** |
-| 2 | `math-battle` | **Math Battle: Calculus Showdown** | Differential Operator Boss Arena | Power/Trig/Exp Derivatives | **LIVE (Genesis)** |
-| 3 | `asymptote-asylum` | **Asymptote Asylum — مصحّة المشتقة** | 2D Survival Horror & Chainsaw Action | **Topics 23–38** (الاشتقاق ودراسة الدوال) | **LIVE (Gold Standard)** |
-| 4 | `sequence-strider` | **Sequence Strider — عدّاء المتتاليات** | 2D Cyber Momentum Platformer | **Topics 39–50** (المتتاليات العددية) | **LIVE (Gold Standard)** |
-| 5 | `complex-plane-duel` | **Argand Citadel — قلعة أرغاند العقدية** | 2D Orbital Sector Raid & Geometry | **Topics 51–64** (الأعداد العقدية ℂ) | **LIVE (Gold Standard v2.0)** |
-| 6 | `limit-abyss` | **Limit Abyss — هاوية النهايات والاتصال** | 2D Deep-Trench Subnautic Survival | **Topics 1–22** (النهايات والاتصال و TVI و $f^{-1}$) | **LIVE (Gold Standard)** |
-| 7 | `logarithm-reactor` | **Logarithm Reactor — مفاعل اللوغاريتم والأسي** | 2D Bio-Cyber Metroidvania Lab | **Topics 65–78** ($\ln x$ و $e^x$ والمعادلات) | **LIVE (Gold Standard)** |
-| 8 | `integral-forge` | **Integral Forge — محرقة التكامل والمعادلات** | 2D Heavy Mech Siege & Area Slicer | **Topics 79–90** (الأصلية، التكامل والمعادلات التفاضلية) | **LIVE (Gold Standard)** |
-| 9 | `vector-odyssey` | **Vector Odyssey — أوديسا الفضاء المتجهي** | 2.5D Starfighter Trench & Sphere Raid | **Topics 91–102** (الهندسة الفضائية والفلكة $\mathbb{R}^3$) | **LIVE (Gold Standard)** |
-| 10 | `quantum-casino` | **Quantum Casino — كازينو الاحتمالات الكمومي** | 2D Tactical Heist & Bullet-Time Roguelite | **Topics 103–114** (التعداد والاحتمالات وقانون برنولي) | **LIVE (Gold Standard)** |
+## 1. الرؤية والميثاق الجديد (`evolution/GOLD_STANDARD.md` v3.0)
+* **المستودع**: `https://github.com/Ayoubvvch/Math-Arcid-V2`
+* **البوابة الحية**: `https://ayoubvvch.github.io/Math-Arcid-V2/`
+* **المرجع المنهجي الوحيد**: `evolution/CURRICULUM.md` (المقرر الرسمي المحدّث — **11 درساً / 137 مهارة** لـ 2BAC PC/SVT مع حدود `Hors-programme`).
+* **عقيدة الوحش المجدَّد**:
+  1. **الرياضيات هي أسلوب اللعب (`Math-IS-The-Mechanic`)** — لا لألعاب «الأختام والـ QCM المنبثقة».
+  2. **تفرّد تام في كل درس (`creativeProfile`)** — ممنوع تكرار النوع أو أسلوب التحكم أو الكاميرا أو الشكل البصري.
+  3. **خفيفة، ممتعة، وبلا حشو** — كود رشيق وذكي، مع حرية البحث على الويب (`search_web`) عن أفكار وميكانيكيات لعب مستقلة قبل التصميم.
+  4. **الاحتفاظ بـ `math-battle` فقط** من الحقبة السابقة والانطلاق فوراً من **الدرس 3: المتتاليات العددية**.
 
 ---
 
-## 3. SPRINT_03 Roadmap — Organization, Clean Architecture & UX Masterclass (Cycles 016–022)
+## 2. خريطة الدروس الـ 11 المستهدفة (137 مهارة)
 
-Designed by **Phase `ARCHITECT` (Cycle 015 — `2026-11-21 05:00 UTC`)** after a full repository-wide codebase & UX audit (`~52.5K LOC` across 10 games, `js/hub.js`, `shared/`, `css/`, and `evolution/`):
-
-| Cycle | Window (UTC) | Phase | Milestone | Scope & Architectural Deliverable | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **016** | 2026-11-21 17:00 | **OMEGA** | **3.1 — Unified `shared/arcade-core.js` & Hotfixes** | Ship `shared/arcade-core.js` (`window.ArcadeCore` UMD/classic script): universal `setBidiSafeMath` (full 2BAC PC glyphs + `\u0304` + sub/superscripts), DualSense radial stick deadzone + `axes[9]` D-pad hat + dual-rumble adapter, `CanvasAxisKit`, and unified `localStorage['math_arcid_v2_progress']` Progress API. Fix `vector-odyssey` missing `?from=game` exit links & pilot `ArcadeCore` in Games 9–10. | **COMPLETED (Cycle 016)** |
-| **017** | 2026-11-22 05:00 | **ALPHA** | **3.2 — PS5 Hub Arabic RTL & Syllabus Reorganization** | Overhaul `index.html`, `js/hub.js`, `css/hub.css` into cohesive Arabic/Bilingual RTL console chrome (`dir="rtl"`), localize search tags & guide, and reorganize `games.json` from 10 1-game tabs into **4 Syllabus Domains** sorted strictly by **2BAC PC Order (Topics 1–114)**. | **COMPLETED (Cycle 017)** |
-| **018** | 2026-11-22 17:00 | **OMEGA** | **3.3 — `ArcadeCore` Migration Batch A (Games 3–6)** | Deduplicate `setBidiSafeMath` + DualSense helpers across `limit-abyss`, `asymptote-asylum`, `sequence-strider`, and `complex-plane-duel`, and wire `ArcadeCore.Progress` topic/seal/run telemetry. | **COMPLETED (Cycle 018)** |
-| **019** | 2026-11-23 05:00 | **ALPHA** | **3.4 — `ArcadeCore` Migration Batch B & `math-battle` RTL** | Deduplicate `logarithm-reactor` & `integral-forge` onto `ArcadeCore`, integrate `mathcore-survivor` legacy high-score key, and localize `games/math-battle/` (`<html lang="ar" dir="rtl">`) with telemetry & modal DualSense parity. | **COMPLETED (Cycle 019)** |
-| **020** | 2026-11-23 17:00 | **OMEGA** | **3.5 — PS5 Hub Mastery Telemetry & Smart Review HUD** | Wire live `localStorage` mastery telemetry into PS5 Hub rail/showcase cards (`✓ 4/4 Seals`, `🏆 Boss Cleared`, accuracy %, rank badge, Smart Review recommender, and safe JSON Export/Reset modal). | **COMPLETED (Cycle 020)** |
-| **021** | 2026-11-24 05:00 | **ALPHA** | **3.6 — Repo Pruning, Dead-Code Audit & Mobile/DualSense UX** | Remove redundant `standalone.html` artifacts in Games 1–2, retire unused `shared/canvas-kit.js` & `shared/math-engine.js`, verify uniform mobile touch-controls / `safe-area-inset` ergonomics / ESC & Options parity across all 10 games. | **PLANNED (Cycle 021)** |
-| **022** | 2026-11-24 17:00 | **OMEGA** | **3.7 — Legacy Gate Hardening & `SPRINT_03` Closure** | Enforce zero `standalone.html`/dead-file clutter & `ArcadeCore` integration in `verify.sh`, run full 9-stage + Chromium audit, and arm Cycle 023 (`ARCHITECT`) for `SPRINT_04` (Exam Boss-Rush/PWA) & `SPRINT_05+` (Physics & Chemistry 2BAC PC). | **PLANNED (Cycle 022)** |
+| ترتيب البناء | الدرس في `CURRICULUM.md` | المهارات | المجال | الاتجاه الإبداعي المقترح (غير مقيِّد — للوحش حرية الابتكار!) |
+| :--- | :--- | :--- | :--- | :--- |
+| **1 (البداية)** | **الدرس 3: المتتاليات العددية** (`Suites Numériques`) | **41–52** | التحليل | لعبة تفاعلية أصيلة حول النقطة الصامدة $u_{n+1}=f(u_n)$، التوازن بين المحدودية والرتابة، المتتالية المساعدة، والدركيين (بدون QCM). |
+| **2** | **الدرس 1: النهايات والاتصال** (`Limites et Continuité`) | **1–22** | التحليل | لعبة/لغز جريء في التفكيك، المقاربات، دالة الجزء الصحيح $E(x)$، التفرع الثنائي `Dichotomie`، $TVI$، وانعكاس $f^{-1}$ عبر $y=x$. |
+| **3** | **الدرس 2: الاشتقاق ودراسة الدوال** (`Dérivation & Étude`) | **23–40** | التحليل | تجربة نحت/فيزياء/مماسات وإشارة الدالة المساعدة والتقعر والفروع اللانهائية والإنشاء المبياني (مختلفة كلياً عن `math-battle` وعن كل ما سبق). |
+| **4** | **الدرس 4: الدوال اللوغاريتمية** (`ln`, `log_a`, `log`) | **53–62** | التحليل | ميكانيكا مقياس لوغاريتمي/ضغط/تضخيم عكسي وتزايد مقارن وحل $10^x=a$ ومشتقة $u'/u$. |
+| **5** | **الدرس 5: الأعداد العقدية — ج1** (`Nombres Complexes 1`) | **63–74** | الهندسة والجبر | ميكانيكا هندسية/مدارية في المستوى العقدي: المعيار والعمدة وموافر والمعادلات الحقيقية المميزة. |
+| **6** | **الدرس 6: الدوال الأسية** (`Fonctions Exponentielles`) | **75–83** | التحليل | نمو أسي متسارع، توازن $e^x$ و $a^x$، والتزايد المقارن وتقريب $e^a$. |
+| **7** | **الدرس 7: الأعداد العقدية — ج2** (`Nombres Complexes 2`) | **84–94** | الهندسة والجبر | تحكم مباشر بالتحويلات (إزاحة، تحاكي، دوران)، تداور 4 نقط، وإخطاط أولير (بدون $z^n=a$ خارج المقرر). |
+| **8** | **الدرس 8: الدوال الأصلية وحساب التكامل** (`Primitives & Intégral`) | **95–103** | التحليل | تشكيل المساحات الموجبة/السالبة، القيمة المتوسطة، مجسمات الدوران $\pi\int f^2$، شال وتأطير $I_n$. |
+| **9** | **الدرس 9: المعادلات التفاضلية** (`Équations Différentielles`) | **104–110** | التحليل | محاكاة حقول الميول والاهتزازات ($\Delta>0, \Delta=0, \Delta<0$) وضبط الشروط البدئية $y(x_0), y'(x_0)$. |
+| **10** | **الدرس 10: الهندسة الفضائية** (`Géométrie dans l'Espace`) | **111–125** | الهندسة والجبر | فضاء 3D/إيزومتري حقيقي: مسافة نقطة عن مستوى/مستقيم، تقاطع الفلكة والمستوى، الجداء المتجهي والتمثيل البارامتري. |
+| **11** | **الدرس 11: حساب الاحتمالات** (`Calcul des Probabilités`) | **126–137** | الهندسة والجبر | محاكاة مونتي كارلو `Simulation`، التعداد ($C_n^p, A_n^p, n^p$)، الأشجار الموزونة، المتغير العشوائي والقانون الحداني $B(n,p)$. |
 
 ---
 
-## 4. Perpetual Autonomous Evolution Protocol (Alpha / Omega / Auto-Architect)
-
-1. **Morning Run (05:00 UTC) — Phase `ALPHA`**:
-   - Reads `evolution/GOLD_STANDARD.md`, `evolution/STATE.json`, and `evolution/SPRINT.md`.
-   - Executes `nextAlphaMilestone` (either constructing a new Gold-Standard 6-module game `≥ 2,800 LOC`, or executing a major Organization/UX/Platform milestone in `SPRINT_03+`).
-   - Passes `bash evolution/scripts/verify.sh`, commits, and pushes to `origin main`.
-
-2. **Evening Run (17:00 UTC) — Phase `OMEGA`**:
-   - Audits the active target game/subsystem in `Math-Arcid-V2`.
-   - Executes `nextOmegaMilestone` (expands question banks, adds interactive `graphSpec` plots, refines shared infrastructure / DualSense / UX polish, and audits locked 60FPS).
-   - If the just-completed milestone finishes the active Sprint, marks `currentSprint.status = "COMPLETED_NEEDS_ROADMAP"` in `STATE.json`.
-
-3. **Automatic Sprint Transition — Phase `ARCHITECT` (Infinite Self-Planning Loop)**:
-   - Whenever an active Sprint finishes, `evolution/scripts/trigger.sh` automatically enters **Phase `ARCHITECT`** on the next cycle:
-     - **Full Project Audit**: Scans all games, `js/hub.js`, `css/`, `shared/`, `games.json`, and `evolution/` logs to diagnose structural clutter, UX friction, and missing capabilities.
-     - **`SPRINT_03` Mandate (Post-Game-10)**: Strictly prioritizes **التنظيم والترتيب وتجربة المستخدم** (Clean folder/module architecture, Hub curriculum grouping & progress persistence, unified UX/DualSense ergonomics, visual consistency, and refactoring).
-     - **`SPRINT_04` Mandate (Post-Organization)**: National Exam readiness (Timed Boss-Rush Mock Mode, step-by-step Moroccan proof feedback, `weakTopics` Adaptive Review, Offline PWA).
-   - **`SPRINT_05+` Endless Expansion**: Expand from Math-only into full **2BAC PC Physics & Chemistry (`الفيزياء والكيمياء`)** (Waves, Nuclear, Electricity RC/RL/RLC, Mechanics, Kinetics, Acid-Base, Cells/Electrolysis, Esterification) under `GOLD_STANDARD.md`, with bi-weekly (`<= 14 days`) forced `Phase ARCHITECT` audits continuing indefinitely until paused by Owner (`autoEvolutionPaused: true`).
+## 3. خطة الـ Sprints المتجددة (Alpha `CREATE` / Omega `POLISH` / `ARCHITECT`)
+* **`REBOOT_SPRINT_01` (Cycles 001–008)**: بناء وتلميع أول 4 ألعاب فريدة (**الدرس 3 المتتاليات** ← **الدرس 1 النهايات والاتصال** ← **الدرس 2 الاشتقاق ودراسة الدوال** ← **الدرس 4 اللوغاريتم**).
+* **Phase `ARCHITECT` (تلقائياً عند انتهاء كل Sprint أو كل ≤ 14 يوماً)**: تدقيق حقيقي لكل الألعاب في Chromium، التأكد من عدم وجود تشابه، قياس متعة اللعب ومطابقة `CURRICULUM.md`، ثم جدولة الـ Sprint التالي (`REBOOT_SPRINT_02`: الدروس 5، 6، 7، 8 ← `REBOOT_SPRINT_03`: الدروس 9، 10، 11 ← وما بعده: وضعيات تحدي وطني إضافية أو فيزياء وكيمياء 2BAC PC بإبداع مماثل).

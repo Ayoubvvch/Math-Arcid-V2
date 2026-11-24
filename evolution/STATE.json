@@ -1,166 +1,76 @@
 {
   "project": "Math-Arcid-V2",
-  "version": "2.20.0",
+  "version": "3.0.0",
   "repository": "https://github.com/Ayoubvvch/Math-Arcid-V2",
   "deployment": "https://ayoubvvch.github.io/Math-Arcid-V2/",
   "owner": "Ayoub (eulerx0)",
   "chatId": "8959256425",
   "autoEvolutionPaused": false,
-  "evolutionMode": "Perpetual Autonomous Twice-Daily Self-Healing Monster (Alpha / Omega + Bi-Weekly Auto-Architect)",
+  "evolutionMode": "Unleashed Creative Autonomous Monster (Create / Polish + Auto-Architect)",
   "goldStandardCharter": "/home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md",
+  "curriculumSpec": "/home/ubuntu/Math-Arcid-V2/evolution/CURRICULUM.md",
   "schedule": {
-    "morningPhase": "05:00 UTC - Phase Alpha (Primary Sprint Build / Feature / Structural Milestone)",
-    "eveningPhase": "17:00 UTC - Phase Omega (Deep Gameplay, Boss Patterns, Curriculum Expansion, UX & 60FPS Audit)",
-    "architectPhase": "Auto-triggered on Sprint completion OR every <= 14 days (28 cycles) -> Truthful Full Codebase/Browser Audit & Next Multi-Day Roadmap Generation"
+    "morningPhase": "05:00 UTC - Phase CREATE (Web Research, Original Genre Invention & Lightweight Game Build)",
+    "eveningPhase": "17:00 UTC - Phase POLISH (Interactive Playtest, Game Feel, Math Depth & Chromium Verification)",
+    "architectPhase": "Auto-triggered on Sprint completion OR every <= 14 days (28 cycles) -> Truthful Audit, Anti-Clone Check & Next Sprint Planning"
   },
   "architectPolicy": {
     "cadenceDays": 14,
     "maxCyclesBetweenAudits": 28,
-    "lastArchitectCycle": 15,
-    "lastArchitectTimestamp": "2026-11-21T05:00:00Z"
+    "lastArchitectCycle": 0,
+    "lastArchitectTimestamp": "2026-11-24T02:00:00Z"
   },
   "metrics": {
-    "totalCyclesCompleted": 20,
-    "lastCycleTimestamp": "2026-11-23T17:08:00Z",
-    "lastCyclePhase": "Cycle 020-OMEGA: PS5 Hub Mastery Telemetry Dashboard, Smart Review Filter & Progress Backup/Reset Modal (Milestone 3.5)",
-    "totalGamesLive": 10,
-    "verificationStatus": "PASSED_9_STAGE_IRONCLAD_GATE"
+    "totalCyclesCompleted": 0,
+    "lastCycleTimestamp": "2026-11-24T02:00:00Z",
+    "lastCyclePhase": "Reboot V3: Purged 9 games, kept math-battle only, loaded official 11-lesson 137-skill CURRICULUM.md & Unleashed Creative Charter",
+    "totalGamesLive": 1,
+    "verificationStatus": "PENDING_VERIFY"
   },
   "liveGames": [
     {
-      "id": "limit-abyss",
-      "subject": "math",
-      "order": 1,
-      "slug": "limit-abyss",
-      "title": "Limit Abyss — هاوية النهايات والاتصال",
-      "category": "التحليل والدوال (الدروس 1–22)",
-      "version": "1.2.0",
-      "linesOfCode": 4585,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "asymptote-asylum",
-      "subject": "math",
-      "order": 2,
-      "slug": "asymptote-asylum",
-      "title": "Asymptote Asylum — مصحّة المشتقة",
-      "category": "التحليل والدوال (الدروس 23–38)",
-      "version": "1.2.0",
-      "linesOfCode": 4147,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "sequence-strider",
-      "subject": "math",
-      "order": 3,
-      "slug": "sequence-strider",
-      "title": "Sequence Strider — عدّاء المتتاليات",
-      "category": "التحليل والدوال (الدروس 39–50)",
-      "version": "1.2.0",
-      "linesOfCode": 3328,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "complex-plane-duel",
-      "subject": "math",
-      "order": 4,
-      "slug": "complex-plane-duel",
-      "title": "Argand Citadel — قلعة أرغاند العقدية",
-      "category": "الأعداد العقدية والفضاء (الدروس 51–64)",
-      "version": "2.2.0",
-      "linesOfCode": 3779,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "logarithm-reactor",
-      "subject": "math",
-      "order": 5,
-      "slug": "logarithm-reactor",
-      "title": "Logarithm Reactor — مفاعل اللوغاريتم والأسي",
-      "category": "التحليل والدوال (الدروس 65–78)",
-      "version": "1.2.0",
-      "linesOfCode": 4619,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "integral-forge",
-      "subject": "math",
-      "order": 6,
-      "slug": "integral-forge",
-      "title": "Integral Forge — محرقة التكامل والمعادلات",
-      "category": "التحليل والدوال (الدروس 79–90)",
-      "version": "1.2.0",
-      "linesOfCode": 4663,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "vector-odyssey",
-      "subject": "math",
-      "order": 7,
-      "slug": "vector-odyssey",
-      "title": "Vector Odyssey — أوديسا الفضاء المتجهي",
-      "category": "الأعداد العقدية والفضاء (الدروس 91–102)",
-      "version": "1.2.0",
-      "linesOfCode": 5288,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "quantum-casino",
-      "subject": "math",
-      "order": 8,
-      "slug": "quantum-casino",
-      "title": "Quantum Casino — كازينو الاحتمالات الكمومي",
-      "category": "التعداد والاحتمالات (الدروس 103–114)",
-      "version": "1.2.0",
-      "linesOfCode": 5136,
-      "status": "GOLD_STANDARD_VERIFIED"
-    },
-    {
-      "id": "mathcore-survivor",
-      "subject": "math",
-      "order": 9,
-      "slug": "mathcore-survivor",
-      "title": "MathCore Survivor — نجاة الجبر والزوجية",
-      "category": "الأساسيات والتقويم",
-      "version": "2.1.0",
-      "status": "STABLE_PS5_OPTIMIZED"
-    },
-    {
       "id": "math-battle",
       "subject": "math",
-      "order": 10,
+      "order": 1,
       "slug": "math-battle",
       "title": "Math Battle — نزال المشتقات التفاضلي",
       "category": "الأساسيات والتقويم",
       "version": "2.1.0",
-      "status": "STABLE_PS5_OPTIMIZED"
+      "genre": "bullet-hell-operator-arena",
+      "status": "GENESIS_RETAINED"
     }
   ],
   "currentSprint": {
-    "id": "SPRINT_03",
-    "name": "Organization, Absolute Syllabus Ordering & UX Masterclass (التنظيم والترتيب المطلق وتجربة المستخدم)",
+    "id": "REBOOT_SPRINT_01",
+    "name": "الولادة الإبداعية الجديدة — ألعاب خفيفة ومبتكرة للدروس 3، 1، 2، 4",
     "status": "ACTIVE",
-    "nextCycleNumber": 21,
-    "nextAlphaMilestone": "Milestone 3.6 (Cycle 021): Remove redundant standalone.html & unused shared/{canvas-kit,math-engine}.js, and execute mobile/touch & DualSense responsive sweep across all 10 games",
-    "nextOmegaMilestone": "Milestone 3.7 (Cycle 022): Enforce anti-legacy/ArcadeCore gates in verify.sh, audit all 11 Chromium pages, and close SPRINT_03 to arm Phase ARCHITECT"
+    "nextCycleNumber": 1,
+    "nextAlphaMilestone": "Milestone 1.1 (Cycle 001-CREATE): Research & invent an original, lightweight, non-QCM game for Lesson 3: المتتاليات العددية (Skills 41–52)",
+    "nextOmegaMilestone": "Milestone 1.2 (Cycle 002-POLISH): Playtest, deepen math mechanics & polish Lesson 3 (Sequences) game"
   },
   "perpetualRoadmapPolicy": {
     "enabled": true,
     "stopCondition": "Manual Owner stop only (autoEvolutionPaused: true or crontab disable)",
-    "sprint03Focus": "التنظيم والترتيب المطلق وتجربة المستخدم (Absolute 1–114 syllabus sorting, ArcadeCore shared engine deduplication, PS5 Hub progress telemetry & Smart Review, dead-code/standalone.html pruning)",
-    "sprint04Focus": "تعزيز الجاهزية للامتحان الوطني المغربي (2BAC PC National Exam Timed Boss-Rush Mode, Weak-Topics Adaptive Drill using ArcadeCore.Progress, Step-by-Step rigorous correction hints, and Offline PWA manifest + Service Worker)",
-    "sprint05PlusPolicy": "Expand platform from Math-only into complete 2BAC PC Science Arcade adding Physics & Chemistry (الفيزياء والكيمياء: الموجات، النووي، الكهرباء RC/RL/RLC، الميكانيك، الكيمياء الحركية والحمض-القاعدة والأعمدة والأسترة) under GOLD_STANDARD.md with multi-subject Hub tabs, then run bi-weekly Phase ARCHITECT macro audits indefinitely."
+    "lessonBuildOrder": [
+      "Lesson 3: المتتاليات العددية (41–52) [FIRST]",
+      "Lesson 1: النهايات والاتصال (1–22)",
+      "Lesson 2: الاشتقاق ودراسة الدوال وتطبيقاتها (23–40)",
+      "Lesson 4: الدوال اللوغاريتمية (53–62)",
+      "Lesson 5: الأعداد العقدية — الجزء الأول (63–74)",
+      "Lesson 6: الدوال الأسية (75–83)",
+      "Lesson 7: الأعداد العقدية — الجزء الثاني (84–94)",
+      "Lesson 8: الدوال الأصلية وحساب التكامل (95–103)",
+      "Lesson 9: المعادلات التفاضلية (104–110)",
+      "Lesson 10: الهندسة الفضائية (111–125)",
+      "Lesson 11: حساب الاحتمالات (126–137)"
+    ],
+    "creativeMandate": "Every lesson becomes a lightweight, genuinely fun, unique game where math IS the gameplay mechanic. Never clone genres, button layouts, or QCM-door popups. Use search_web for fresh inspiration before designing."
   },
   "sprintHistory": [
     {
-      "id": "SPRINT_01",
-      "name": "Genesis & Gold Standard Foundations (Games 1–4)",
-      "status": "COMPLETED"
-    },
-    {
-      "id": "SPRINT_02",
-      "name": "Math-Arcid-V2 Gold Standard Unleashed (Games 5–10)",
-      "status": "COMPLETED"
+      "id": "PRE_REBOOT_V1_V2",
+      "name": "Legacy V1/V2 Sprints 01–03 (Replaced by Creative Reboot V3)",
+      "status": "ARCHIVED_RESET"
     }
   ]
 }

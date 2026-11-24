@@ -1,69 +1,47 @@
-# Active Sprint: SPRINT_03 — Organization, Clean Architecture & UX Masterclass
+# Active Sprint: REBOOT_SPRINT_01 — الولادة الإبداعية الجديدة (الدروس 3، 1، 2، 4)
 
-## 1. Sprint Charter & Architectural Mandate
-* **Target Repository**: `/home/ubuntu/Math-Arcid-V2` (`https://github.com/Ayoubvvch/Math-Arcid-V2`)
-* **Strict Boundary**: NEVER touch `/home/ubuntu/math-arcade` (V1 remains untouched for Owner Ayoub).
-* **Sprint Priority (`perpetualRoadmapPolicy.sprint03Focus`)**: **التنظيم والترتيب وتجربة المستخدم** — Zero redundant game clones in this sprint; 100% focus on deduplicating ~4,300+ LOC of repeated Bidi/DualSense/Graph boilerplate across `games/*`, elevating the PS5 Console Hub to Arabic/Bilingual RTL organized by Moroccan 2BAC PC curriculum order (`Topics 1–114`), adding cross-game `localStorage` mastery telemetry, eliminating dead files & navigation bugs, and preserving the locked 60FPS Gold Standard (`zero backdrop-filter`, `zero shadowBlur`, 6-module structure).
-* **Audit Snapshot Entering Cycle 016**:
-  - `shared/canvas-kit.js` (149 LOC) & `shared/math-engine.js` (161 LOC) have `0` active imports; all 8 Gold Standard games duplicate custom IIFE implementations of `setBidiSafeMath` (with divergent symbol sets), `controls.js` (missing radial deadzones in 4/8 curriculum games), and HUD state caches.
-  - `games.json` splits 10 titles across 10 single-game category tabs (`renderCategories()` creates 11 pills), ordered by build chronology rather than Topics `1–114`; root `index.html` chrome & search tags remain English-only (`<html lang="en">`).
-  - `0 of 8` curriculum games persist progress/seals/accuracy; PS5 Hub shows no completion or mastery telemetry.
-  - `games/vector-odyssey/js/game.js` (L708, L713) overrides `?from=game` exit links with raw `../../index.html`; `mathcore-survivor` and `math-battle` retain unused `standalone.html` duplicates and `<html lang="en">` UI on `math-battle`.
+## 1. ميثاق الـ Sprint
+* **المستودع**: `/home/ubuntu/Math-Arcid-V2` (`https://github.com/Ayoubvvch/Math-Arcid-V2`)
+* **المرجع الرسمي للمحتوى**: `/home/ubuntu/Math-Arcid-V2/evolution/CURRICULUM.md`
+* **المبدأ الحاكم (`evolution/GOLD_STANDARD.md` v3.0)**:
+  - ألعاب **خفيفة، ممتعة، ومبتكرة 100%**؛ كل درس بميكانيكا لعب وأسلوب تحكم وهوية بصرية مختلفة كلياً.
+  - **ممنوع تكرار قوالب QCM أو أختام أو أزرار متشابهة**.
+  - **ابحث على الويب (`search_web`)** عن أفكار وميكانيكيات ألعاب مستقلة وتصورات رياضية ذكية قبل كتابة الكود.
+  - الألعاب الحالية في المنصة: `math-battle` فقط (أسلوبها: `bullet-hell-operator-arena` / `fixed-square-cartesian-arena` / `twin-stick-action-dualsense`) — يجب أن تكون كل لعبة جديدة **مختلفة عنها تماماً** وعن بعضها البعض.
 
 ---
 
-## 2. Sprint Milestones (Cycles 016–022 | 3.5 Days)
+## 2. مراحل REBOOT_SPRINT_01 (Cycles 001–008)
 
-### [COMPLETED — Cycle 016 Omega (2026-11-21 17:00 UTC)] Milestone 3.1: Unified `shared/arcade-core.js` Engine & Critical Exit/Bidi Hotfixes
-* **Delivered**:
-  - Shipped `/home/ubuntu/Math-Arcid-V2/shared/arcade-core.js` (`window.ArcadeCore` v1.0.0 UMD/IIFE classic script):
-    1. **`ArcadeCore.setBidiSafeMath`**: Unified Moroccan 2BAC PC `<bdi dir="ltr" class="math-ltr">` isolation supporting `\u0304`, vector arrows (`u⃗`), `σμλπ`, full sub/superscripts, and signed/logic/calculus operators cleanly.
-    2. **`ArcadeCore.Gamepad`**: Shared `applyRadialDeadzone`, `decodeDpadHat` (`axes[9]`), `justPressed`, `snapshotButtons`, edge-triggered `sampleDirectionalNav`, `resolveActiveGamepad`, `updateBanner`, `applyFocusRing`, and DualSense dual-rumble `triggerHaptic`.
-    3. **`ArcadeCore.Progress`**: Versioned `localStorage['math_arcid_v2_progress']` store tracking `bestScore`, `bestRank`, `sealsCleared`, `bossDefeated`, per-topic mastery (`recordAnswer` + `recordSealProgress` + `recordRun` with double-count guard), plus `exportJSON`/`importJSON`/`resetAll`.
-    4. **`ArcadeCore.CanvasAxisKit`**: Shared `clearWithGrid`, `drawCartesianAxes`, `drawDashedLine`, and `drawMathLabel`.
-  - **Pilot Migrations & Exit Bugfix (`vector-odyssey` v1.2.0 & `quantum-casino` v1.2.0)**:
-    - Fixed `games/vector-odyssey/js/game.js` (`btnExitHubPause` / `btnHubEnd` -> `../../index.html?from=game`) eliminating boot-screen replays on Hub return.
-    - Wired `<script src="../../shared/arcade-core.js"></script>` across Games 9–10 (`game.js`, `controls.js`, `renderer.js`), deduplicating ~250 LOC cleanly (`vector-odyssey` 5,288 LOC, `quantum-casino` 5,136 LOC) and persisting live runs/seals/questions.
-    - Updated `games/README.md` & root `index.html` contributor modal cleanly to document `shared/arcade-core.js`.
+### [NEXT — Cycle 001 CREATE] Milestone 1.1: بناء لعبة الدرس 3 — المتتاليات العددية (`Suites Numériques` | المهارات 41–52)
+* **الهدف المنهجي (`CURRICULUM.md` §§ 41–52)**:
+  - البرهان بالترجع (التحقق/الافتراض/الإتمام)، المكبورة/المصغورة/المحدودة، الرتابة، الحسابية والهندسية، المتتالية المساعدة ($u_{n+1}=au_n+b$ والمتخاطة $\frac{au_n+b}{cu_n+d}$)، النهايات المرجعية ونهاية $a^n$، مبرهنة التقارب الرتيب، الدركيين والمقارنة، $v_n=f(u_n)$، والنقطة الصامدة $u_{n+1}=f(u_n)$ وتطبيقات التأطير والتقريب.
+  - **تنبيه Hors-programme**: يمنع إدراج التعريف النظري للنهاية بـ $\varepsilon$ و $N$.
+* **المتطلب الإبداعي**:
+  - نفّذ بحثاً سريعاً عبر `search_web` لاستلهام ميكانيكيات مبتكرة لألعاب المتتاليات والتكرار والنقطة الصامدة والتوازن الحدي.
+  - ابتكر لعبة **خفيفة وممتعة ومدهشة** (مثلاً لعبة ألغاز/توازن عنكبوتي، أو هندسة جسور/موجات متقطعة، أو بناء سلاسل تقارب تفاعلية، أو فيزياء ارتداد ترجعي — بأي تحكم وأسلوب بصري جديد كلياً!).
+  - ادمج `shared/arcade-core.js` (`setBidiSafeMath` + `Progress`)، أضف أيقونة SVG مخصّصة في `js/hub.js`، وسجّل اللعبة مع `creativeProfile` فريد في `games.json`.
 
-### [COMPLETED — Cycle 017 Alpha (2026-11-22 05:00 UTC)] Milestone 3.2: PS5 Console Hub Arabic RTL & 2BAC PC Syllabus Reorganization
-* **Target**: `index.html`, `js/hub.js`, `css/hub.css`, `css/common.css`, `games.json`
-* **Delivered**:
-  - Transformed root [index.html](file:///home/ubuntu/Math-Arcid-V2/index.html) into cohesive Arabic RTL PS5 console chrome (`<html lang="ar" dir="rtl">`, loaded `Cairo` font in `css/common.css`, localized boot screen, topbar, showcase, DualSense footer legend, Quick Search modal with 9 Moroccan 2BAC PC topic pills, Game Details modal, and Contributor Guide, plus `<script src="shared/arcade-core.js"></script>`).
-  - Reorganized [games.json](file:///home/ubuntu/Math-Arcid-V2/games.json) from 10 fragmented 1-game category strings into **4 clean 2BAC PC Syllabus Domains** (`التحليل والدوال`, `الأعداد العقدية والفضاء`, `التعداد والاحتمالات`, `الأساسيات والتقويم`) ordered strictly monotonically by curriculum syllabus **`Topics 1 → 114`** (`limit-abyss` -> `asymptote-asylum` -> `sequence-strider` -> `complex-plane-duel` -> `logarithm-reactor` -> `integral-forge` -> `vector-odyssey` -> `quantum-casino`) followed by Foundations (`mathcore-survivor`, `math-battle`), with bilingual `keywords` & `topicRange`.
-  - Upgraded [js/hub.js](file:///home/ubuntu/Math-Arcid-V2/js/hub.js) & [css/hub.css](file:///home/ubuntu/Math-Arcid-V2/css/hub.css) with RTL-aware `ArrowLeft`/`ArrowRight` + DualSense directional navigation, ordered Arabic category tabs (`L1/R1`), `<bdi dir="ltr">` `ArcadeCore.setBidiSafeMath` rendering in Showcase/Modals, logical CSS properties (`inset-inline-*`, `margin-inline-start`, `padding-inline-start`), zero `backdrop-filter`, and all 10 custom SVG tiles preserved 100%.
+### [UPCOMING — Cycle 002 POLISH] Milestone 1.2: مراجعة وتلميع لعبة المتتاليات العددية (Playtest & Depth)
+* **الهدف**: اختبار تفاعلي حقيقي للعبة في Chromium، صقل المتعة (`game feel` / الصوتيات / البصريات / سلاسة الموبايل والكيبورد)، والتأكد من تغطية كل مهارات الدرس 3 (`41–52`) بأسلوب لعب حي دون ثقل أو حشو.
 
-### [COMPLETED — Cycle 018 Omega (2026-11-22 17:08 UTC)] Milestone 3.3: `ArcadeCore` Migration Batch A (Games 3–6)
-* **Target**: `games/limit-abyss/`, `games/asymptote-asylum/`, `games/sequence-strider/`, `games/complex-plane-duel/`, `shared/arcade-core.js`
-* **Delivered**:
-  - Wired `<script src="../../shared/arcade-core.js"></script>` across all 4 Batch A titles (`limit-abyss` v1.2.0 `4,585` LOC, `asymptote-asylum` v1.2.0 `4,147` LOC, `sequence-strider` v1.2.0 `3,328` LOC, `complex-plane-duel` v2.2.0 `3,779` LOC).
-  - Deduplicated local `setBidiSafeMath` / `setSeqBidiSafeMath` and DualSense Gamepad boilerplate onto `ArcadeCore.setBidiSafeMath` & `ArcadeCore.Gamepad` (`applyRadialDeadzone`, `decodeDpadHat`, `justPressed`, `snapshotButtons`, `sampleDirectionalNav`, `resolveActiveGamepad`, `updateBanner`, `applyFocusRing`, `triggerHaptic`), plus `ArcadeCore.CanvasAxisKit.clearWithGrid` in `limit-abyss/js/renderer.js`.
-  - Wired `ArcadeCore.Progress` (`recordAnswer` with `topic` for `weakTopics`/`masteredTopics`, `recordSealProgress`, and double-call-guarded `recordRun` with rank badge feedback) into all 4 games.
-  - **Omega Core & UX Fixes**: Hardened `shared/arcade-core.js` with `∛∜`, `τ`, `ᵃᵉʰᵐᵗᵘ`, `↦⇐⟹⟺` math glyphs, balanced-parenthesis trimming in `setBidiSafeMath`, 8-way W3C D-Pad hat decoding, and clean gamepad disconnect reset; fixed `limit-abyss` HUD mousedown torpedo bleed, square stick deadzone -> radial deadzone, and pause/override modal overlap.
+### [UPCOMING — Cycle 003 CREATE] Milestone 1.3: بناء لعبة الدرس 1 — النهايات والاتصال (`Limites et Continuité` | المهارات 1–22)
+* **الهدف المنهجي (`CURRICULUM.md` §§ 1–22)**: مجموعه التعريف، النهايات المرجعية والمثلثية وإزالة الأشكال غير المحددة (تعميل، مرافق مربع وتكعيبي)، الحصر والمقاربات، الاتصال يمين/يسار وعلى مجال + **دالة الجزء الصحيح $E(x)$**، صورة مجال، **TVI وطريقة التفرع الثنائي `Dichotomie`**، التقابل والدالة العكسية $f^{-1}$، و$\sqrt[n]{x}$ و $x^r$. (بدون $\arcsin/\arccos/\arctan$ وبدون دراسة $\sqrt[n]{u}$ لـ $n\ge 3$ وبدون رول/TAF).
+* **المتطلب الإبداعي**: نوع لعب ومنظور وتحكم جديد كلياً لا يشبه `math-battle` ولا لعبة المتتاليات!
 
-### [COMPLETED — Cycle 019 Alpha (2026-11-23 05:12 UTC)] Milestone 3.4: `ArcadeCore` Migration Batch B & `math-battle` Arabic RTL Upgrade
-* **Target**: `games/logarithm-reactor/` (v1.2.0), `games/integral-forge/` (v1.2.0), `games/mathcore-survivor/` (v2.1.0), `games/math-battle/` (v2.1.0), `games.json`
-* **Delivered**:
-  - Wired `<script src="../../shared/arcade-core.js"></script>` across `logarithm-reactor` (`4,619` LOC) and `integral-forge` (`4,663` LOC), deduplicating `setBidiSafeMath` and DualSense polling/deadzones/hat/haptics/focus onto `ArcadeCore.setBidiSafeMath` & `ArcadeCore.Gamepad` (`justPressed`, `sampleDirectionalNav`, `snapshotButtons`), and wired `ArcadeCore.Progress` (`recordAnswer`, `recordSealProgress`, double-call-guarded `recordRun` with rank display).
-  - Connected `mathcore-survivor` (`4,352` core LOC) onto `shared/arcade-core.js` with bidirectional legacy `localStorage['mathcore_high_score']` bridging, per-solve `recordAnswer` + wave/boss telemetry, and unified `ArcadeCore.Gamepad` polling while preserving custom PlayStation badge & Modder Drawer ergonomics.
-  - Overhauled `games/math-battle/` (`3,678` core LOC) into full Arabic RTL (`<html lang="ar" dir="rtl">`, Cairo font, logical CSS offsets, `.math-ltr` formula isolation, LTR canvas orientation guard with Arabic popups/countdown/HUD/overlays), connected `ArcadeCore.Progress` across `d/dx` strikes and Boss victories (`x3`, `x4`, `sin`, `exp`), and unified DualSense polling onto `ArcadeCore.Gamepad`.
+### [UPCOMING — Cycle 004 POLISH] Milestone 1.4: مراجعة وتلميع لعبة النهايات والاتصال
+* **الهدف**: صقل الفيزياء واللعب وتغطية مهارات التفرع الثنائي و $E(x)$ و $f^{-1}$ والاختبار في Chromium.
 
-### [COMPLETED — Cycle 020 Omega (2026-11-23 17:08 UTC)] Milestone 3.5: PS5 Hub Mastery Telemetry Dashboard & Smart Review UX
-* **Target**: `shared/arcade-core.js` (`v1.1.0`), `index.html`, `js/hub.js`, `css/hub.css`
-* **Delivered**:
-  - Extended `shared/arcade-core.js` (`ArcadeCore.Progress`) with `computeGameMetrics(gameId)` (weighted 0–100% seal/boss/accuracy mastery & legacy `mathcore_high_score` fallback), `getSmartReviewQueue(games)` (4-tier priority queue: weak topics/low accuracy → partial seals → unplayed curriculum units → low rank), and hardened `importJSON` schema sanitization.
-  - Upgraded PS5 Hub ([index.html](file:///home/ubuntu/Math-Arcid-V2/index.html), [js/hub.js](file:///home/ubuntu/Math-Arcid-V2/js/hub.js), [css/hub.css](file:///home/ubuntu/Math-Arcid-V2/css/hub.css)) with zero-blur GPU-safe telemetry: SVG circular Mastery Rings + rank badges (`S/A/B/C`) and seal/trophy chips on every Rail Tile, Showcase telemetry strip (`%` ring, rank, `✓ X/4 أختام`, boss status, accuracy, best score, weak topics), Topbar Mastery Summary Pill (`X/10 • X%`), one-click **Smart Review Filter (`🎯 المراجعة الذكية` via button / `R` / `L2`)**, `pageshow` bfcache refresh, and DualSense-navigable `#progress-modal` (`P` / `R2` trigger, 4 KPIs, top-5 jump-to-unit recommendations, JSON Export/Import, and double-confirm Reset).
+### [UPCOMING — Cycle 005 CREATE] Milestone 1.5: بناء لعبة الدرس 2 — الاشتقاق ودراسة الدوال وتطبيقاتها (`Dérivation & Étude` | المهارات 23–40)
+* **الهدف المنهجي (`CURRICULUM.md` §§ 23–40)**: قابلية الاشتقاق، المماس ونصفي المماس والنقطة المزواة، الكتابة التفاضلية $dy=f'(x)\,dx$، مشتقة المركب و$(f^{-1})'$، الدالة المساعدة وإشارة التغيرات، الحل المبياني لـ $f(x)=g(x)$ و $f(x)\le g(x)$، الاستمثال والمطاريف والمتفاوتات، التقعر ونقط الانعطاف، شجرة الفروع اللانهائية، الوضع النسبي، التماثل والدورية، والدوال اللاجذرية والمثلثية.
+* **المتطلب الإبداعي**: نوع لعب فريد ومختلف تماماً عن `math-battle` (ومختلف عن أي لعبة أخرى)!
 
-### [NEXT — Cycle 021 Alpha (2026-11-24 05:00 UTC)] Milestone 3.6: Legacy Pruning, Dead-Code Consolidation & Mobile/DualSense UX Polish
-* **Target**: Repository root, `shared/`, `games/mathcore-survivor/`, `games/math-battle/`, and responsive/touch CSS across all 10 games
-* **Deliverables**:
-  - Remove duplicate/unlinked `games/mathcore-survivor/standalone.html` and `games/math-battle/standalone.html`; consolidate inner README notes cleanly into root `README.md` and `games/README.md`.
-  - Audit `shared/` to remove unused `shared/canvas-kit.js` & `shared/math-engine.js` (0 references) and migrate `js/hub.js` onto `ArcadeCore.Gamepad` cleanly if appropriate.
-  - Execute a responsive & ergonomics sweep across all 10 games (`390×844` mobile touch buttons, `safe-area-inset-*`, `1280×720` & `1920×1080` desktop HUD non-overlap, Escape/Options pause parity, and instant `?from=game` return).
+### [UPCOMING — Cycle 006 POLISH] Milestone 1.6: مراجعة وتلميع لعبة الاشتقاق ودراسة الدوال
+* **الهدف**: اختبار اللعب والصقل البصري/الصوتي وتدقيق جميع المهارات `23–40`.
 
-### [UPCOMING — Cycle 022 Omega (2026-11-24 17:00 UTC)] Milestone 3.7: Final `SPRINT_03` Audit, Legacy Clutter Gate & `SPRINT_04` Arming
-* **Target**: `evolution/scripts/verify.sh`, `evolution/GOLD_STANDARD.md`, `STATE.json`, `SPRINT.md`
-* **Deliverables**:
-  - Add anti-legacy checks to `evolution/scripts/verify.sh` (fail on leftover `standalone.html` or dead unimported `shared/*.js` modules, enforce `ArcadeCore` script inclusion across all games).
-  - Run full 9-stage gate + Headless Chromium sweep across all 11 pages.
-  - Close `SPRINT_03` (`currentSprint.status = "COMPLETED_NEEDS_ROADMAP"`, `nextCycleNumber: 23`) to arm **Phase `ARCHITECT`** for `SPRINT_04` (National Exam Boss-Rush & PWA) followed by `SPRINT_05+` (Physics & Chemistry 2BAC PC).
+### [UPCOMING — Cycle 007 CREATE] Milestone 1.7: بناء لعبة الدرس 4 — الدوال اللوغاريتمية (`ln`, `log_a`, `log` | المهارات 53–62)
+* **الهدف المنهجي (`CURRICULUM.md` §§ 53–62)**: تعريف $\ln x$ كأصلية لـ $1/x$ تنعدم في $1$، الخواص الجبرية، المعادلات/المتراجحات/النظمات، $(\ln|u|)'=u'/u$، النهايات الأساسية والتزايد المقارن المعمم، لوغاريتم الأساس $a$ واللوغاريتم العشري $\log(10^x=a)$، ودراسة دوال $\ln$.
+* **المتطلب الإبداعي**: ميكانيكا لعب وتجربة بصرية جديدة بالكامل!
+
+### [UPCOMING — Cycle 008 POLISH] Milestone 1.8: مراجعة وتلميع لعبة اللوغاريتم وإغلاق REBOOT_SPRINT_01
+* **الهدف**: صقل اللعبة، التحقق الشامل من `verify.sh`، وإقفال `REBOOT_SPRINT_01` (`status: "COMPLETED_NEEDS_ROADMAP"`) لإطلاق **Phase `ARCHITECT`** والتخطيط لـ `REBOOT_SPRINT_02` (الدروس 5، 6، 7، 8).

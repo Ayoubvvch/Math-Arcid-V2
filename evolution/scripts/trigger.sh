@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Math-Arcid-V2: Autonomous Self-Healing Monster ("المستقل الأعظم")
+# Math-Arcid-V2: Unleashed Creative Autonomous Monster (Reboot V3)
 # Runs Twice Daily (05:00 & 17:00 UTC):
-#   - Phase ALPHA (05:00 UTC): Primary Sprint build / structure / game milestone
-#   - Phase OMEGA (17:00 UTC): Deep gameplay, curriculum, UX & 60FPS polish
-#   - Phase ARCHITECT (Auto-triggered on Sprint end OR every <= 14 days / 28 cycles):
-#       Truthful full codebase/browser audit -> archive finished Sprint ->
-#       draft next Roadmap (SPRINT_03 Organization -> SPRINT_04 Math Exam/PWA ->
-#       SPRINT_05+ Physics & Chemistry 2BAC PC Expansion -> Endless Self-Evolution)
+#   - Phase CREATE (05:00 UTC): Research (search_web), invent a truly original
+#     lightweight Math-as-Gameplay experience & build it cleanly
+#   - Phase POLISH (17:00 UTC): Real playtest, game-feel juice, curriculum depth
+#     & mobile/desktop/Chromium polish
+#   - Phase ARCHITECT (Auto-triggered on Sprint end OR <= 14 days / 28 cycles):
+#     Honest browser/code audit, anti-clone review & next multi-day Sprint plan
 # Strictly operates ONLY on /home/ubuntu/Math-Arcid-V2 (NEVER touch /home/ubuntu/math-arcade)
 # ==============================================================================
 set -u
@@ -82,24 +82,25 @@ if [ -n "$DIRTY_FILES" ]; then
 fi
 
 # ------------------------------------------------------------------------------
-# 2. Decide Cycle Phase (PAUSED / ARCHITECT / ALPHA / OMEGA)
+# 2. Decide Cycle Phase (PAUSED / ARCHITECT / CREATE / POLISH)
 # ------------------------------------------------------------------------------
+PHASE_OVERRIDE="${1:-}"
 DECISION=$(node -e '
   const fs = require("fs");
   const state = JSON.parse(fs.readFileSync(process.argv[1], "utf8"));
   const sprintMd = fs.existsSync(process.argv[2]) ? fs.readFileSync(process.argv[2], "utf8") : "";
   const roadmapMd = fs.existsSync(process.argv[3]) ? fs.readFileSync(process.argv[3], "utf8") : "";
+  const override = process.argv[4] || "";
 
-  if (state.autoEvolutionPaused === true) {
+  if (state.autoEvolutionPaused === true && override !== "FORCE") {
     console.log("PAUSED");
     process.exit(0);
   }
 
   const status = state.currentSprint && state.currentSprint.status;
   const hasSprintPending = /###\s*\[(?:NEXT|UPCOMING)\b/i.test(sprintMd);
-  const hasRoadmapPlanned = /\bPLANNED\b/i.test(roadmapMd);
+  const hasRoadmapPlanned = /\bPLANNED\b|\bUPCOMING\b/i.test(roadmapMd);
 
-  // Weekly / Bi-weekly forced Architect macro audit cadence (default 14 days / 28 cycles)
   const archPolicy = state.architectPolicy || {};
   const maxDays = Number(archPolicy.cadenceDays || 14);
   const maxCycles = Number(archPolicy.maxCyclesBetweenAudits || 28);
@@ -112,9 +113,15 @@ DECISION=$(node -e '
   if (status === "COMPLETED_NEEDS_ROADMAP" || (!hasSprintPending && !hasRoadmapPlanned) || dueBiWeeklyAudit) {
     console.log("ARCHITECT");
   } else {
-    console.log("CONTINUE");
+    // Check explicit [NEXT] phase in SPRINT.md so first launch or out-of-window triggers match the exact next milestone
+    const nextMatch = sprintMd.match(/###\s*\[NEXT[^\]]*\b(CREATE|POLISH)\b/i);
+    if (nextMatch) {
+      console.log(nextMatch[1].toUpperCase());
+    } else {
+      console.log("AUTO");
+    }
   }
-' "$STATE_FILE" "$SPRINT_FILE" "$ROADMAP_FILE" 2>/dev/null || echo "CONTINUE")
+' "$STATE_FILE" "$SPRINT_FILE" "$ROADMAP_FILE" "$PHASE_OVERRIDE" 2>/dev/null || echo "AUTO")
 
 if [ "$DECISION" = "PAUSED" ]; then
   echo "[$TIMESTAMP] Auto-evolution paused (autoEvolutionPaused=true in STATE.json). Skipping." >> "$LOG_FILE"
@@ -123,16 +130,22 @@ fi
 
 if [ "$DECISION" = "ARCHITECT" ]; then
   PHASE="ARCHITECT"
-  PHASE_DESC="Phase Architect (Truthful Code/Browser Audit & Multi-Day Roadmap Generation)"
+  PHASE_DESC="Phase ARCHITECT (Truthful Code/Browser Audit, Anti-Clone Check & Next Creative Sprint)"
+elif [ "$DECISION" = "CREATE" ]; then
+  PHASE="CREATE"
+  PHASE_DESC="Phase CREATE (Web Research, Original Genre Invention & Lightweight Math-as-Gameplay Build)"
+elif [ "$DECISION" = "POLISH" ]; then
+  PHASE="POLISH"
+  PHASE_DESC="Phase POLISH (Live Playtest, Game Feel Juice, Curriculum Coverage & UX Polish)"
 elif [ "$((10#$CURRENT_HOUR))" -lt 12 ]; then
-  PHASE="ALPHA"
-  PHASE_DESC="Phase Alpha (Primary Sprint Build / Feature / Structural Milestone)"
+  PHASE="CREATE"
+  PHASE_DESC="Phase CREATE (Web Research, Original Genre Invention & Lightweight Math-as-Gameplay Build)"
 else
-  PHASE="OMEGA"
-  PHASE_DESC="Phase Omega (Deep Gameplay, Curriculum, UX & 60FPS Audit)"
+  PHASE="POLISH"
+  PHASE_DESC="Phase POLISH (Live Playtest, Game Feel Juice, Curriculum Coverage & UX Polish)"
 fi
 
-echo "[$TIMESTAMP] Awakening Math-Arcid-V2 Evolution Cycle - Phase: $PHASE" >> "$LOG_FILE"
+echo "[$TIMESTAMP] Awakening Math-Arcid-V2 Creative Monster - Phase: $PHASE" >> "$LOG_FILE"
 
 # ------------------------------------------------------------------------------
 # 3. Compose Autonomous Prompt (single-quoted heredoc prevents backtick execution!)
@@ -140,67 +153,89 @@ echo "[$TIMESTAMP] Awakening Math-Arcid-V2 Evolution Cycle - Phase: $PHASE" >> "
 if [ "$PHASE" = "ARCHITECT" ]; then
   read -r -d '' PROMPT_TEMPLATE <<'EOF_ARCH_PROMPT' || true
 [AUTONOMOUS EVOLUTION TRIGGER: MATH-ARCID-V2 | ARCHITECT - __TIMESTAMP__]
-You are "My Homie" (@eulerx0bot). This is your autonomous **Phase ARCHITECT (Comprehensive Codebase Audit & Next Multi-Day Roadmap Planning)** cycle in **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
+You are "My Homie" (@eulerx0bot) running **Phase ARCHITECT** for **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
 __RECOVERY_NOTE__
 
-⚠️ CRITICAL BOUNDARY RULE:
+CRITICAL BOUNDARY RULE:
 - Operate EXCLUSIVELY inside /home/ubuntu/Math-Arcid-V2 (GitHub: https://github.com/Ayoubvvch/Math-Arcid-V2 | Live: https://ayoubvvch.github.io/Math-Arcid-V2/).
-- NEVER touch or modify /home/ubuntu/math-arcade (V1 is reserved exclusively for Owner Ayoub).
+- NEVER touch /home/ubuntu/math-arcade.
 
-🧭 MANDATORY TRUTHFUL ARCHITECT PROTOCOL:
+MANDATORY TRUTHFUL ARCHITECT PROTOCOL:
 1. Read:
-   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md
+   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md (Creative Charter v3.0)
+   - /home/ubuntu/Math-Arcid-V2/evolution/CURRICULUM.md (Official 11-lesson, 137-skill 2BAC PC curriculum & Hors-programme limits)
    - /home/ubuntu/Math-Arcid-V2/evolution/STATE.json
    - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md
    - /home/ubuntu/Math-Arcid-V2/evolution/ROADMAP.md
-   - /home/ubuntu/Math-Arcid-V2/evolution/EVOLUTION_LOG.md
-2. Perform a **TRUTHFUL, EVIDENCE-BASED** codebase, runtime, and pedagogical audit across `/home/ubuntu/Math-Arcid-V2`:
-   - Inspect real files before claiming any gap or bug (run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` and inspect `games.json`, `js/hub.js`, `shared/`, `css/`, and `games/*` directly). NEVER guess or invent missing features.
-   - Evaluate: (a) absolute syllabus ordering (`subject`, `order`, `topicStart`, `topicEnd`), (b) code deduplication & dead-code cleanliness, (c) pedagogical depth for Moroccan 2BAC PC National Exams (step-by-step rigor, weak-topic drills, timed mock modes), (d) Mobile/DualSense UX & Offline PWA readiness, and (e) multi-subject expansion readiness (`الفيزياء والكيمياء 2BAC PC`).
-3. Archive the finished Sprint summary into `/home/ubuntu/Math-Arcid-V2/evolution/ARCHIVE_MILESTONES.md`.
-4. Design the NEXT multi-day Sprint & Roadmap (typically **8 to 14 concrete Alpha/Omega cycles** spanning 4–7 days, or up to 1–2 weeks before next ARCHITECT audit):
-   - **Follow the Macro Evolution Horizon in `STATE.json` (`perpetualRoadmapPolicy`)**:
-     * If `SPRINT_03` just completed -> design **`SPRINT_04`**: Deep 2BAC PC Math National Exam & UX Excellence (Timed National Exam Boss-Rush Mode, step-by-step Moroccan solution breakdown on errors, Weak-Topics Adaptive Review powered by `ArcadeCore.Progress`, Offline PWA support `manifest.json` + `sw.js`).
-     * Once Math platform UX & Boss-Rush/PWA are rock-solid (`SPRINT_05+`) -> expand the platform into **2BAC PC Physics & Chemistry (`الفيزياء والكيمياء`)** under the same 6-module RTL DualSense Gold Standard (`subject: "physics"` / `"chemistry"` in `games.json`, strict Moroccan syllabus ordering: الموجات، النووي، الكهرباء RC/RL/RLC، الميكانيك، ثم التحولات الكيميائية، الحمض-القاعدة، الأعمدة والتحليل الكهربائي، الأسترة والحلمأة), with subject tabs in the PS5 Hub!
-     * For every subsequent Sprint (`SPRINT_06+`), diagnose what the platform genuinely lacks most next and plan concrete Alpha/Omega milestones indefinitely.
-5. Update:
-   - `/home/ubuntu/Math-Arcid-V2/evolution/ROADMAP.md`
-   - `/home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md`
-   - `/home/ubuntu/Math-Arcid-V2/evolution/STATE.json`: increment `totalCyclesCompleted`, update `lastCycleTimestamp`, set `architectPolicy.lastArchitectCycle` to the new `totalCyclesCompleted` and `architectPolicy.lastArchitectTimestamp` to `__TIMESTAMP__`, update `currentSprint` (`status: "ACTIVE"`, `nextCycleNumber`, `nextAlphaMilestone`, `nextOmegaMilestone`), and update `sprintHistory`.
-   - `/home/ubuntu/Math-Arcid-V2/evolution/EVOLUTION_LOG.md` (sliding window <= 10 recent entries).
-6. Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` (all 9 stages must pass 100%).
-7. Sync with remote cleanly (`git pull --rebase origin main || true`), commit, and push to `origin main`.
-8. Deliver a concise, sharp Arabic engineering report to Owner Ayoub detailing: (a) Truthful Audit findings, and (b) The newly generated Roadmap.
+   - /home/ubuntu/Math-Arcid-V2/games.json
+2. Perform a truthful audit across all live games in `/home/ubuntu/Math-Arcid-V2`:
+   - Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` and actually inspect each game's mechanics, fun factor, mobile/desktop playability, RTL math isolation, and `creativeProfile` diversity.
+   - Check if any two games feel too similar in loop, UI, or controls — if so, schedule a creative overhaul.
+3. Archive the completed Sprint summary into `/home/ubuntu/Math-Arcid-V2/evolution/ARCHIVE_MILESTONES.md`.
+4. Design the NEXT Creative Sprint (`REBOOT_SPRINT_02`, `03`, etc.) covering the next unbuilt lessons in `CURRICULUM.md` (with CREATE + POLISH pairs), or once all 11 Math lessons are deeply playable and distinct, evolve toward richer simulation challenges or 2BAC PC Physics & Chemistry with the exact same Math-as-Gameplay creative ethos!
+5. Update `ROADMAP.md`, `SPRINT.md`, `STATE.json` (`totalCyclesCompleted`, `architectPolicy.lastArchitectCycle`, `currentSprint`), and `EVOLUTION_LOG.md` (<= 10 entries).
+6. Pass `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` 100%, rebase/commit/push to `origin main`, and report to Owner Ayoub in crisp Arabic.
 EOF_ARCH_PROMPT
-else
-  read -r -d '' PROMPT_TEMPLATE <<'EOF_CYCLE_PROMPT' || true
-[AUTONOMOUS EVOLUTION TRIGGER: MATH-ARCID-V2 | __PHASE__ - __TIMESTAMP__]
-You are "My Homie" (@eulerx0bot). This is your scheduled autonomous evolution cycle (__PHASE_DESC__) for **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
+elif [ "$PHASE" = "CREATE" ]; then
+  read -r -d '' PROMPT_TEMPLATE <<'EOF_CREATE_PROMPT' || true
+[AUTONOMOUS EVOLUTION TRIGGER: MATH-ARCID-V2 | CREATE - __TIMESTAMP__]
+You are "My Homie" (@eulerx0bot) running **Phase CREATE** (__PHASE_DESC__) in **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
 __RECOVERY_NOTE__
 
-⚠️ CRITICAL BOUNDARY RULE:
+CRITICAL BOUNDARY RULE:
 - Operate EXCLUSIVELY inside /home/ubuntu/Math-Arcid-V2 (GitHub: https://github.com/Ayoubvvch/Math-Arcid-V2 | Live: https://ayoubvvch.github.io/Math-Arcid-V2/).
-- NEVER touch or modify /home/ubuntu/math-arcade (V1 is reserved exclusively for Owner Ayoub's manual work).
+- NEVER touch /home/ubuntu/math-arcade.
 
-🏛️ MANDATORY GOLD-STANDARD ARCHITECTURAL CHARTER (ZERO-GARBAGE RULE):
-1. First, read:
-   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md
+UNLEASHED CREATIVE MANDATE (ZERO-CLONE PHILOSOPHY):
+1. Read these files carefully before anything else:
+   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md (Creative Charter v3.0)
+   - /home/ubuntu/Math-Arcid-V2/evolution/CURRICULUM.md (Read the EXACT target lesson's skills & Hors-programme warnings!)
    - /home/ubuntu/Math-Arcid-V2/evolution/STATE.json
-   - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md
-2. Every curriculum game (Math, Physics, or Chemistry 2BAC PC) MUST satisfy `GOLD_STANDARD.md`:
-   - Full-Screen 100vw x 100dvh 60FPS Canvas, zero `backdrop-filter`, zero `shadowBlur > 0`.
-   - Arabic RTL interface (`<html lang="ar" dir="rtl">`) using `ArcadeCore.setBidiSafeMath` + `../../index.html?from=game`.
-   - Complete 6-Module Architecture (`curriculum.js`, `world.js`, `renderer.js`, `controls.js`, `audio.js`, `game.js` >= 2,800 LOC, >= 24 National Exam Qs, >= 6 interactive `graphSpec` plots, Fisher-Yates option shuffling, DualSense across gameplay + modals, bespoke SVG in `js/hub.js`, and strict `subject`/`order`/`topicStart`/`topicEnd` in `games.json`).
-3. Execute the scheduled milestone for this cycle (__PHASE__) from `SPRINT.md` (`[NEXT]` / `[UPCOMING]`) and `STATE.json`. Always verify real file state before editing so you never duplicate existing code or chase false assumptions.
-4. **PERPETUAL SPRINT TRANSITION RULE**:
-   - If you just completed the **FINAL** milestone of the active Sprint (zero `[UPCOMING]` / `PLANNED` milestones remain), set `"status": "COMPLETED_NEEDS_ROADMAP"` inside `currentSprint` in `STATE.json` and leave zero `[NEXT` / `[UPCOMING` entries in `SPRINT.md` so **Phase ARCHITECT** triggers automatically on the next cycle.
-5. Run the 9-Stage Ironclad Quality Gate:
-   `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh`
-   Do NOT commit or push until ALL 9 stages (including VM graph render & Headless Chromium browser test) pass 100%!
-6. Update `STATE.json`, `SPRINT.md`, `ROADMAP.md` (if changed), and `EVOLUTION_LOG.md` (keep <= 10 entries).
-7. Pull/rebase safely (`git pull --rebase origin main || true`), commit, and push to `origin main` (retry push once if transient network error).
-8. Deliver a concise, sharp Arabic engineering report to Owner Ayoub detailing the achievements of this cycle.
-EOF_CYCLE_PROMPT
+   - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md (Execute the `[NEXT]` milestone!)
+   - /home/ubuntu/Math-Arcid-V2/games.json (Inspect existing `creativeProfile` entries so you NEVER repeat them!)
+2. **MANDATORY RESEARCH & IDEATION STEP (`search_web`)**:
+   - Use `search_web` with the lesson's Arabic/French/English concepts from `CURRICULUM.md` plus indie math/physics game design ideas (`interactive visualization`, `math game mechanics`, `canvas/webgl puzzle`) to gather fresh inspiration.
+   - Brainstorm 3 radically different game concepts for this lesson, reject anything resembling a QCM quiz or existing game (`math-battle` or others), and pick the **most joyful, lightweight, genuinely clever** concept where **the lesson's mathematical laws ARE the gameplay mechanic**!
+   - Remember Owner Ayoub's bar: `math-battle` and `stickman-cartesian-game` show what happens when math becomes physical/interactive play — draw inspiration from that spirit of creativity, NEVER copy them as a template!
+3. **BUILD LIGHTWEIGHT & DISTINCT**:
+   - Choose whatever file structure (`1+` clean JS files), visual style, camera, and control scheme (mouse drag/aim, keyboard timing, touch, sliders, or DualSense where natural) best fits YOUR invention.
+   - Keep code crisp, light, and bug-free (NO bloated boilerplate, NO `backdrop-filter`, NO `shadowBlur > 0` in draw loops, NO `overrideModal` / 4-door QCM clones).
+   - Respect `<html lang="ar" dir="rtl">`, `../../shared/arcade-core.js` (`ArcadeCore.setBidiSafeMath` & `ArcadeCore.Progress.recordRun`), and `../../index.html?from=game`.
+   - Strictly obey all `Hors-programme` limits in `CURRICULUM.md`!
+4. **REGISTER & VERIFY**:
+   - Add bespoke SVG tile artwork in `js/hub.js` and register the game in `games.json` with a unique `creativeProfile { genre, camera, coreMechanic, controlScheme, visualStyle }`.
+   - Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` AND verify interactively in Chromium that the game loads cleanly, renders its stage, and plays smoothly!
+5. Update `SPRINT.md` (mark current `[NEXT]` as `[COMPLETED]` and promote next milestone to `[NEXT]`), `STATE.json`, and `EVOLUTION_LOG.md` (<= 10 entries).
+6. Pull/rebase safely (`git pull --rebase origin main || true`), commit, and push to `origin main`.
+7. Send Owner Ayoub a sharp Arabic summary explaining: the creative game concept invented, why it's unique, how the math IS the gameplay, the controls, and the exact `CURRICULUM.md` skills covered.
+EOF_CREATE_PROMPT
+else
+  read -r -d '' PROMPT_TEMPLATE <<'EOF_POLISH_PROMPT' || true
+[AUTONOMOUS EVOLUTION TRIGGER: MATH-ARCID-V2 | POLISH - __TIMESTAMP__]
+You are "My Homie" (@eulerx0bot) running **Phase POLISH** (__PHASE_DESC__) in **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
+__RECOVERY_NOTE__
+
+CRITICAL BOUNDARY RULE:
+- Operate EXCLUSIVELY inside /home/ubuntu/Math-Arcid-V2 (GitHub: https://github.com/Ayoubvvch/Math-Arcid-V2 | Live: https://ayoubvvch.github.io/Math-Arcid-V2/).
+- NEVER touch /home/ubuntu/math-arcade.
+
+PLAYTEST & POLISH PROTOCOL:
+1. Read:
+   - /home/ubuntu/Math-Arcid-V2/evolution/GOLD_STANDARD.md
+   - /home/ubuntu/Math-Arcid-V2/evolution/CURRICULUM.md
+   - /home/ubuntu/Math-Arcid-V2/evolution/STATE.json
+   - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md (Execute the `[NEXT]` POLISH milestone!)
+   - /home/ubuntu/Math-Arcid-V2/games.json
+2. **TRUE INTERACTIVE AUDIT & RESEARCH**:
+   - Read the target game's actual code end-to-end and run real simulations / Headless Chromium checks (desktop & mobile viewports) to find genuine physics bugs, confusing onboarding, missing `CURRICULUM.md` skills, `Hors-programme` leaks, or flat game feel.
+   - Deepen the fun and pedagogical mastery *through gameplay itself* (better visual feedback, Web Audio synth cues, smooth animations, more clever levels/challenges covering every sub-skill of the lesson, responsive touch & desktop polish — NEVER adding QCM filler or bloat!).
+3. Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` (all 7 stages must pass 100%).
+4. **SPRINT TRANSITION CHECK**:
+   - Update `SPRINT.md`, `STATE.json`, and `EVOLUTION_LOG.md` (<= 10 entries).
+   - If zero `[NEXT]` / `[UPCOMING]` milestones remain in `SPRINT.md`, set `"status": "COMPLETED_NEEDS_ROADMAP"` in `STATE.json` so Phase ARCHITECT runs automatically next cycle.
+5. Pull/rebase safely (`git pull --rebase origin main || true`), commit, and push to `origin main`.
+6. Send Owner Ayoub a sharp, truthful Arabic report detailing the real bugs fixed, fun/juice upgrades added, and curriculum coverage verified.
+EOF_POLISH_PROMPT
 fi
 
 PROMPT=$(node -e '
@@ -215,14 +250,12 @@ PROMPT=$(node -e '
 
 PRE_HEAD=$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo "")
 
-# Isolated dedicated session ('auto_math_arcid_v2') so Owner DM context & queue are never polluted,
-# with automatic multi-model Quota Fallback!
 PAYLOAD=$(node -e '
   const prompt = process.argv[1];
   console.log(JSON.stringify({
     chatId: "8959256425",
     chatKey: "auto_math_arcid_v2",
-    chatTitle: "Math-Arcid-V2 Autonomous Monster",
+    chatTitle: "Math-Arcid-V2 Creative Monster",
     promptText: prompt,
     fallbackModels: [
       "gemini-4-hydrogen-xhigh",
