@@ -56,6 +56,30 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'continuity-rider') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="crGlow" cx="48%" cy="46%" r="58%">
+            <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.34" />
+            <stop offset="100%" stop-color="#050816" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#050816" />
+        <circle cx="155" cy="96" r="90" fill="url(#crGlow)" />
+        <line x1="36" y1="158" x2="284" y2="158" stroke="#94a3b8" stroke-opacity="0.25" stroke-width="1.2" />
+        <line x1="162" y1="24" x2="162" y2="174" stroke="#ff4d6d" stroke-opacity="0.65" stroke-dasharray="5 4" stroke-width="1.6" />
+        <path d="M 38 140 Q 95 112, 148 84" fill="none" stroke="#38bdf8" stroke-width="3" />
+        <path d="M 176 72 Q 225 54, 282 46" fill="none" stroke="#38bdf8" stroke-width="3" />
+        <circle cx="162" cy="78" r="8" fill="#050816" stroke="#ff4d6d" stroke-width="2.6" />
+        <circle cx="114" cy="96" r="7" fill="#fbbf24" stroke="#ffffff" stroke-width="1.8" />
+        <line x1="102" y1="104" x2="126" y2="94" stroke="#38bdf8" stroke-width="2.8" />
+        <polyline points="200,148 228,148 228,132 256,132 256,116 284,116" fill="none" stroke="#4ade80" stroke-width="2" />
+        <text x="86" y="54" text-anchor="middle" fill="#bae6fd" font-family="KaTeX_Main, Georgia, serif" font-weight="700" font-size="14">lim f(x) = L</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />

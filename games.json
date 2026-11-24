@@ -87,5 +87,49 @@
     "accentColor": "#10b981",
     "status": "ready",
     "featured": true
+  },
+  {
+    "id": "continuity-rider",
+    "subject": "math",
+    "order": 3,
+    "unitLabel": "الدرس 1 • النهايات والاتصال",
+    "topicStart": 1,
+    "topicEnd": 22,
+    "title": "متزلّج الاتصال — مسار النهايات و TVI",
+    "slug": "continuity-rider",
+    "category": "التحليل",
+    "topicRange": "النهايات والاتصال (1–22)",
+    "difficulty": "حركي • تفاعلي",
+    "difficultyLevel": 3,
+    "version": "1.0.0",
+    "description": "أركيد فيزيائي عربي للدرس 1 (2BAC PC): قُد المتزلّج على منحنى $\\mathcal{C}_f$، أصلح ثقوب $\\frac{0}{0}$ بالتعميل والمرافق والمثلثية، اقفز فوق انقطاعات الجزء الصحيح $E(x)$، اشطر المجال بالتفرع الثنائي (TVI)، واعكس المسار حول $y = x$ لتشكيل $f^{-1}$.",
+    "mathConcepts": [
+      "إزالة $\\frac{0}{0}$ بالتعميل والمرافق المربع والتكعيبي و$\\frac{\\sin(3x)}{x}$",
+      "الاتصال يمين/يسار ودالة الجزء الصحيح $E(x)$ والمقاربات",
+      "صورة مجال، مبرهنة القيم الوسيطية TVI، والتفرع الثنائي",
+      "الدالة العكسية $f^{-1}$ حول $y = x$ والجذر النوني $\\sqrt[n]{x}$ و$x^r$"
+    ],
+    "keywords": ["النهايات", "الاتصال", "المرافق", "التعميل", "الجزء الصحيح", "المقاربات", "TVI", "التفرع الثنائي", "العكسية", "الجذر النوني", "limits", "continuity"],
+    "controls": [
+      "الماوس / اللمس: سحب السدادات والمقاربات وبوابات المجال مباشرة على المسار",
+      "Space / Enter / ✕: إطلاق المتزلّج أو القفز فوق انقطاعات $E(x)$",
+      "الأسهم ◀ ▶: شطر التفرع الثنائي (أيسر/أيمن) وضبط المعاملات",
+      "1 / 2 / 3 أو النقر: تبديل مسارات القطاع النشط",
+      "L1 / R1 أو [ / ]: التنقل بين القطاعات الـ 6",
+      "H / R: إظهار منهجية البرهان الوطني / إعادة المسار"
+    ],
+    "creativeProfile": {
+      "genre": "physics-curve-rider-and-bisection-arcade",
+      "camera": "dynamic-zoom-side-scrolling-track-camera",
+      "coreMechanic": "قيادة متزلّج فيزيائي على المنحنى لإصلاح ثقوب الأشكال غير المحددة، القفز فوق انقطاعات الجزء الصحيح E(x)، شطر المجال بالتفرع الثنائي TVI، وعكس المسار لتشكيل f⁻¹",
+      "controlScheme": "click-cut-track-tools-and-jump-timing",
+      "visualStyle": "blueprint-cobalt-coral-glass-track"
+    },
+    "path": "games/continuity-rider/index.html",
+    "badge": "الدرس 1 • 1–22",
+    "icon": "$\\lim$",
+    "accentColor": "#38bdf8",
+    "status": "ready",
+    "featured": true
   }
 ]
