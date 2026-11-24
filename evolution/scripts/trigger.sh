@@ -200,7 +200,7 @@ UNLEASHED CREATIVE MANDATE (ZERO-CLONE PHILOSOPHY):
 3. **BUILD LIGHTWEIGHT & DISTINCT**:
    - Choose whatever file structure (`1+` clean JS files), visual style, camera, and control scheme (mouse drag/aim, keyboard timing, touch, sliders, or DualSense where natural) best fits YOUR invention.
    - Keep code crisp, light, and bug-free (NO bloated boilerplate, NO `backdrop-filter`, NO `shadowBlur > 0` in draw loops, NO `overrideModal` / 4-door QCM clones).
-   - Respect `<html lang="ar" dir="rtl">`, `../../shared/arcade-core.js` (`ArcadeCore.setBidiSafeMath` & `ArcadeCore.Progress.recordRun`), and `../../index.html?from=game`.
+   - Respect `<html lang="ar" dir="rtl">`, include `../../shared/vendor/katex/katex.min.{css,js}` + `../../shared/arcade-core.js`, format ALL DOM math in LaTeX (`$...$` / `data-tex`) via `ArcadeCore.renderMath` (NEVER naked ASCII/Unicode math!), draw `<canvas>` math via `ArcadeCore.CanvasAxisKit.drawMathRich` (`KaTeX_Math`/`KaTeX_Main`), record progress with `ArcadeCore.Progress.recordRun`, and route exit links to `../../index.html?from=game`.
    - Strictly obey all `Hors-programme` limits in `CURRICULUM.md`!
 4. **REGISTER & VERIFY**:
    - Add bespoke SVG tile artwork in `js/hub.js` and register the game in `games.json` with a unique `creativeProfile { genre, camera, coreMechanic, controlScheme, visualStyle }`.
@@ -228,7 +228,7 @@ PLAYTEST & POLISH PROTOCOL:
    - /home/ubuntu/Math-Arcid-V2/games.json
 2. **TRUE INTERACTIVE AUDIT & RESEARCH**:
    - Read the target game's actual code end-to-end and run real simulations / Headless Chromium checks (desktop & mobile viewports) to find genuine physics bugs, confusing onboarding, missing `CURRICULUM.md` skills, `Hors-programme` leaks, or flat game feel.
-   - Deepen the fun and pedagogical mastery *through gameplay itself* (better visual feedback, Web Audio synth cues, smooth animations, more clever levels/challenges covering every sub-skill of the lesson, responsive touch & desktop polish — NEVER adding QCM filler or bloat!).
+   - Deepen the fun and pedagogical mastery *through gameplay itself* (better visual feedback, Web Audio synth cues, smooth animations, more clever levels/challenges covering every sub-skill of the lesson, 100% universal KaTeX math rendering in DOM & `drawMathRich` on `<canvas>` with zero `.katex-error` or naked ASCII math, and responsive touch & desktop polish — NEVER adding QCM filler or bloat!).
 3. Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` (all 7 stages must pass 100%).
 4. **SPRINT TRANSITION CHECK**:
    - Update `SPRINT.md`, `STATE.json`, and `EVOLUTION_LOG.md` (<= 10 entries).

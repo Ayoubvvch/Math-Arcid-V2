@@ -232,9 +232,9 @@ class SequenceWeaverGame {
       this.btnLaunchLabel.textContent = this.clearedRounds.has(round.id) ? 'إعادة المحاكاة ⚡' : 'أطلق النبضة وتحقق';
     }
 
-    if (this.stageTagEl) this.stageTagEl.textContent = `${stage.tabTitle} • ${stage.skillLabel}`;
+    if (this.stageTagEl) bidi(this.stageTagEl, `${stage.tabTitle} • ${stage.skillLabel}`);
     if (this.roundTagEl) this.roundTagEl.textContent = `${this.roundIdx + 1} / ${stage.rounds.length}`;
-    if (this.formulaTagEl) this.formulaTagEl.textContent = round.formula;
+    if (this.formulaTagEl) bidi(this.formulaTagEl, round.formula);
     bidi(this.roundTitleEl, round.title);
     bidi(this.missionTextEl, round.mission);
     bidi(this.proofTextEl, round.proof);
@@ -479,7 +479,7 @@ class SequenceWeaverGame {
       ? window.ArcadeCore.Progress.computeRank({ victory: true, accuracy: acc, sealsCleared: 4, bypasses: 0 })
       : 'S';
     const descEl = document.getElementById('victoryDesc');
-    bidi(descEl, 'أتممت بنجاح جميع مهارات الدرس 3: الترجع، المحدودية، الرتابة، الهندسية والحسابية، المساعدة المتخاطة، الدركيين، والنقطة الصامدة!');
+    bidi(descEl, 'أتممت بنجاح جميع مهارات الدرس 3: الترجع، المحدودية، الرتابة، الهندسية والحسابية، المساعدة المتخاطة، الدركيين، والنقطة الصامدة ($u_{n+1}=f(u_n)$)!');
     const vs = document.getElementById('vScore');
     const va = document.getElementById('vAcc');
     const vr = document.getElementById('vRank');
@@ -697,13 +697,27 @@ class SequenceWeaverGame {
 
   drawLabel(text, x, y, opts = {}) {
     const ctx = this.ctx;
+    const str = String(text ?? '');
+    const rich = window.ArcadeCore?.CanvasAxisKit?.drawMathRich;
+    const hasArabic = /[\u0600-\u06FF]/.test(str);
+    const hasRichMath = !hasArabic && /[₀-₉⁰-⁹ₙˣ√=_^{}\\]/.test(str);
+    if (hasRichMath && rich) {
+      const sz = opts.fontSize || (opts.font && /(\d+)px/.test(opts.font) ? Number(RegExp.$1) + 1 : 12);
+      rich(ctx, str, x, y, {
+        fontSize: sz,
+        color: opts.color || '#e2e8f0',
+        align: opts.align || 'center',
+        baseline: opts.baseline || 'middle'
+      });
+      return;
+    }
     ctx.save();
-    ctx.direction = 'ltr';
-    ctx.font = opts.font || '700 11px "JetBrains Mono", monospace';
+    ctx.direction = hasArabic ? 'rtl' : 'ltr';
+    ctx.font = opts.font || '700 11px "Cairo", "KaTeX_Main", sans-serif';
     ctx.textAlign = opts.align || 'center';
     ctx.textBaseline = opts.baseline || 'middle';
     ctx.fillStyle = opts.color || '#e2e8f0';
-    ctx.fillText(String(text), x, y);
+    ctx.fillText(str, x, y);
     ctx.restore();
   }
 
@@ -980,7 +994,7 @@ class SequenceWeaverGame {
     if (u0Spec) {
       const hx = clamp(toPxX(u0), cobRect.x + 8, cobRect.x + cobRect.w - 8);
       const hy = clamp(toPxY(0), cobRect.y + 12, cobRect.y + cobRect.h - 12);
-      this.drawDragHandle('u0', hx, hy, `u0=${u0.toFixed(2)}`, '#10b981');
+      this.drawDragHandle('u0', hx, hy, `u_0=${u0.toFixed(2)}`, '#10b981');
       this.handles.push({
         id: 'u0', x: hx, y: hy,
         onDrag: (px) => this.setParam('u0', fromPxX(px))
@@ -1233,7 +1247,7 @@ class SequenceWeaverGame {
     ctx.beginPath();
     ctx.arc(gx, gy, 11, 0, Math.PI * 2);
     ctx.stroke();
-    this.drawLabel('بوابة u₂=1', gx, gy - 18, { color: '#fcd34d' });
+    this.drawLabel('u_2 = 1', gx, gy - 18, { color: '#fcd34d' });
 
     const lim = this.anim.active ? Math.min(nMax, Math.floor(this.anim.progress * 1.2)) : nMax;
     for (let n = 0; n <= lim; n += 1) {
@@ -1352,7 +1366,7 @@ class SequenceWeaverGame {
     ctx.roundRect(botRect.x, botRect.y, botRect.w, botRect.h, 10);
     ctx.fill();
     ctx.stroke();
-    this.drawLabel(`wₙ = n^(${p.toFixed(1)}) → ${p < 0 ? '0 (متقاربة)' : p === 0 ? '1' : '+∞ (متباعدة)'}`, botRect.x + botRect.w / 2, botRect.y + 14, { color: p < 0 ? '#6ee7b7' : '#fda4af' });
+    this.drawLabel(`w_n = n^{${p.toFixed(1)}} → ${p < 0 ? '0' : p === 0 ? '1' : '+∞'}`, botRect.x + botRect.w / 2, botRect.y + 14, { color: p < 0 ? '#6ee7b7' : '#fda4af' });
 
     const toRX = (n) => botRect.x + 28 + ((n - 1) / 13) * (botRect.w - 56);
     const toRY = (v) => botRect.y + botRect.h - 18 - (clamp(v, 0, 6) / 6) * (botRect.h - 42);
@@ -1499,7 +1513,7 @@ class SequenceWeaverGame {
       const barW = Number.isFinite(m) ? clamp(Math.abs(m) * 45, 6, auxRect.w - 135) : 10;
       ctx.fillStyle = uniform ? '#10b981' : '#fb7185';
       ctx.fillRect(auxRect.x + 90, y, barW, Math.max(10, rowH - 12));
-      const tag = round.auxType === 'ratio' ? `v${i + 1}/v${i}` : `v${i + 1}-v${i}`;
+      const tag = round.auxType === 'ratio' ? `v_{${i + 1}}/v_{${i}}` : `v_{${i + 1}}-v_{${i}}`;
       this.drawLabel(tag, auxRect.x + 48, y + (rowH - 12) / 2, { color: '#cbd5e1', font: '700 10px "JetBrains Mono", monospace' });
       this.drawLabel(Number.isFinite(m) ? m.toFixed(3) : '∞', auxRect.x + 98 + barW + 24, y + (rowH - 12) / 2, {
         color: uniform ? '#6ee7b7' : '#fda4af',

@@ -132,10 +132,15 @@ for (const htmlPath of ['index.html', ...games.map(g => g.path)]) {
 console.log(`  ✓ All ${games.length} game(s) verified: valid HTML, local assets, ?from=game links, bespoke SVG & zero clutter.`);
 EOF
 
-# 4. RTL Arabic, GPU 60FPS Hygiene, ArcadeCore Integration & Anti-QCM-Clone Guard
-echo "[4/7] Auditing RTL Arabic, ArcadeCore wiring, 60FPS hygiene & anti-QCM-clone guard..."
+# 4. RTL Arabic, Universal KaTeX, GPU 60FPS Hygiene, ArcadeCore Integration & Anti-QCM-Clone Guard
+echo "[4/7] Auditing RTL Arabic, universal KaTeX wiring, 60FPS hygiene & anti-QCM-clone guard..."
 if grep -qiE 'backdrop-filter\s*:\s*[^n;]' css/hub.css css/common.css; then
   echo "  ✗ ERROR: Hub CSS uses forbidden backdrop-filter!"
+  exit 1
+fi
+
+if ! grep -q 'katex\.min\.css' index.html || ! grep -q 'katex\.min\.js' index.html; then
+  echo "  ✗ ERROR: Hub index.html must include shared/vendor/katex/katex.min.{css,js}!"
   exit 1
 fi
 
@@ -153,6 +158,10 @@ for game_dir in games/*; do
   fi
   if grep -q 'width="540"' "$game_dir/index.html"; then
     echo "  ✗ ERROR: Game '$slug' uses forbidden 540x960 narrow portrait box!"
+    exit 1
+  fi
+  if ! grep -q 'katex\.min\.css' "$game_dir/index.html" || ! grep -q 'katex\.min\.js' "$game_dir/index.html"; then
+    echo "  ✗ ERROR: Game '$slug' must include ../../shared/vendor/katex/katex.min.{css,js} (universal KaTeX rule)!"
     exit 1
   fi
   if ! grep -q 'arcade-core\.js' "$game_dir/index.html"; then
@@ -181,27 +190,28 @@ for game_dir in games/*; do
     fi
   fi
 done
-echo "  ✓ All games satisfy RTL, 60FPS GPU discipline, ArcadeCore integration & anti-clone rules."
+echo "  ✓ All games satisfy RTL, universal KaTeX, 60FPS GPU discipline, ArcadeCore & anti-clone rules."
 
-# 5. Verify ArcadeCore.setBidiSafeMath Lossless Behavior
-echo "[5/7] Verifying ArcadeCore.setBidiSafeMath & Progress unit contract..."
+# 5. Verify ArcadeCore.renderMath (KaTeX + Lossless Fallback) & Progress Unit Contract
+echo "[5/7] Verifying ArcadeCore KaTeX renderMath & Progress unit contract..."
 node - <<'EOF'
+const katex = require('./shared/vendor/katex/katex.min.js');
 const ArcadeCore = require('./shared/arcade-core.js');
 const mk = (tag) => ({
-  tagName: tag, className: '', dir: '', children: [],
-  set textContent(v) { this._txt = v; this.children = []; },
+  tagName: tag, className: '', dir: '', children: [], innerHTML: '',
+  set textContent(v) { this._txt = v; this.children = []; this.innerHTML = ''; },
   get textContent() { return this._txt !== undefined ? this._txt : this.children.map(c => c.textContent).join(''); },
   appendChild(c) { this._txt = undefined; this.children.push(c); },
   get ownerDocument() { return doc; }
 });
 const doc = { createElement: mk, createTextNode: (t) => ({ nodeType: 3, textContent: String(t) }) };
 
-const samples = [
+const plainSamples = [
   'احسب نهاية المتتالية uₙ₊₁ = (2uₙ + 1)/(uₙ + 2) عند +∞',
   'مبرهنة القيم الوسيطية f(a)×f(b) < 0 و E(x) = ⌊x⌋',
   'التعبير العقدي للدوران z\' - ω = e^{iθ}(z - ω) و u⃗ ∧ v⃗'
 ];
-for (const s of samples) {
+for (const s of plainSamples) {
   const el = doc.createElement('div');
   ArcadeCore.setBidiSafeMath(el, s);
   const out = el.children.map(c => c.textContent).join('');
@@ -210,6 +220,12 @@ for (const s of samples) {
     throw new Error(`Arabic glyph trapped in <bdi> on: ${s}`);
   }
 }
+
+const htmlOut = katex.renderToString('u_{n+1} = \\frac{1}{2}u_n + 2', { throwOnError: true, strict: 'ignore' });
+if (!htmlOut.includes('class="katex"') || htmlOut.includes('katex-error')) {
+  throw new Error('KaTeX live render sanity failed!');
+}
+
 const res = ArcadeCore.Progress.recordRun('__verify_probe__', {
   score: 1200, stagesCleared: 3, totalStages: 5, victory: false, accuracy: 88
 });
@@ -217,11 +233,11 @@ const metrics = ArcadeCore.Progress.computeGameMetrics('__verify_probe__');
 if (!res || metrics.stagesCleared !== 3 || metrics.totalStages !== 5 || metrics.masteryPct <= 0) {
   throw new Error('ArcadeCore.Progress generic stages telemetry check failed!');
 }
-console.log('  ✓ ArcadeCore Bidi & Progress contracts verified.');
+console.log('  ✓ ArcadeCore KaTeX + Bidi & Progress contracts verified.');
 EOF
 
-# 6. Headless Chromium Real-Browser Smoke & Visual-Stage Audit
-echo "[6/7] Running Headless Chromium live check on Hub + all games..."
+# 6. Headless Chromium Real-Browser Smoke & Universal KaTeX Audit
+echo "[6/7] Running Headless Chromium live check on Hub + all games (including KaTeX audit)..."
 node - <<'EOF'
 const fs = require('fs');
 const path = require('path');
@@ -239,7 +255,8 @@ if (!fs.existsSync('/snap/bin/chromium')) {
 const mime = {
   '.html': 'text/html', '.js': 'application/javascript', '.mjs': 'application/javascript',
   '.css': 'text/css', '.json': 'application/json', '.svg': 'image/svg+xml',
-  '.png': 'image/png', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2'
+  '.png': 'image/png', '.webp': 'image/webp', '.mp3': 'audio/mpeg', '.woff2': 'font/woff2',
+  '.woff': 'font/woff', '.ttf': 'font/ttf'
 };
 
 const srv = http.createServer((req, res) => {
@@ -264,6 +281,12 @@ srv.listen(0, '127.0.0.1', async () => {
       );
       if (errs.length > 0) {
         return reject(new Error(`Browser console errors on ${pagePath}: ${errs.join(' | ')}`));
+      }
+      if (/class="[^"]*katex-error/.test(stdout || '')) {
+        return reject(new Error(`KaTeX parse error (.katex-error) rendered on ${pagePath}!`));
+      }
+      if (!/class="katex"/.test(stdout || '')) {
+        return reject(new Error(`No KaTeX-rendered math (.katex) detected on ${pagePath}!`));
       }
       if (pagePath.startsWith('index.html')) {
         const tileMatches = [...stdout.matchAll(/class="tile-title">([^<]+)</g)].map(m => m[1].trim());
@@ -292,7 +315,7 @@ srv.listen(0, '127.0.0.1', async () => {
       await Promise.all(gamePages.slice(i, i + 2).map(p => runPage(p, 2800)));
     }
     srv.close();
-    console.log(`  ✓ Headless Chromium passed all ${pages.length} page(s) (0 console errors, 0 404s, Hub order verified).`);
+    console.log(`  ✓ Headless Chromium passed all ${pages.length} page(s) (0 console errors, 0 404s, KaTeX rendered with 0 errors).`);
   } catch (e) {
     srv.close();
     console.error('  ✗ ERROR:', e.message);

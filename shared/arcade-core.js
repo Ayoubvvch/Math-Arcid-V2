@@ -38,57 +38,132 @@
     'g'
   );
 
-  /**
-   * Format mixed Arabic RTL + math notation safely inside isolated <bdi dir="ltr" class="math-ltr"> elements
-   * so equations, vectors, overbars, probabilities, and signed numbers never fracture in RTL layouts.
-   * @param {HTMLElement|null} el - Target DOM container.
-   * @param {string} text - Mixed Arabic & mathematical formula string.
-   * @param {Object} [opts] - Optional rendering overrides.
-   * @param {string} [opts.tag='bdi'] - Element tag name ('bdi' or 'span').
-   * @param {string} [opts.className='math-ltr'] - CSS class applied to math runs.
-   */
-  function setBidiSafeMath(el, text, opts) {
-    if (!el) return;
-    const doc = el.ownerDocument || (typeof document !== 'undefined' ? document : null);
-    const raw = String(text ?? '');
-    el.textContent = '';
-    if (!doc) return;
+  const SUB_MAP = {
+    '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4',
+    '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9',
+    '₊': '+', '₋': '-', '₌': '=', '₍': '(', '₎': ')',
+    'ₐ': 'a', 'ₑ': 'e', 'ₒ': 'o', 'ₓ': 'x', 'ₙ': 'n', 'ₚ': 'p', 'ₖ': 'k', 'ᵢ': 'i'
+  };
+  const SUP_MAP = {
+    '⁰': '0', '¹': '1', '²': '2', '³': '3', '⁴': '4',
+    '⁵': '5', '⁶': '6', '⁷': '7', '⁸': '8', '⁹': '9',
+    '⁺': '+', '⁻': '-', '⁼': '=', '⁽': '(', '⁾': ')',
+    'ᵃ': 'a', 'ᵉ': 'e', 'ʰ': 'h', 'ⁱ': 'i', 'ᵏ': 'k', 'ᵐ': 'm',
+    'ⁿ': 'n', 'ᵒ': 'o', 'ᵖ': 'p', 'ʳ': 'r', 'ˢ': 's', 'ᵗ': 't',
+    'ᵘ': 'u', 'ᵛ': 'v', 'ʷ': 'w', 'ˣ': 'x', 'ʸ': 'y', 'ᶻ': 'z'
+  };
 
-    const tag = (opts && opts.tag) || 'bdi';
-    const className = (opts && opts.className) || 'math-ltr';
+  function isPlainNonMathToken(tok) {
+    if (!tok) return true;
+    const t = tok.trim();
+    if (/^(WASD|PS5|Hub|DualSense|RTL|LTR|JSON|HTML|CSS|SVG|FPS|CPU|GPU|URL|ID|AI|PC|2BAC|Space|Enter|Esc|Escape|Shift|Options|Select|Start|Cross|Circle|Square|Triangle|LMB|RMB|L1|R1|L2|R2|D-Pad|Arrow|Mouse|Touch|MCT|TVI|ODE|ALPES|IPP|v\d+(?:\.\d+)*|\d+(?:\.\d+)?[x%]?)$/i.test(t)) {
+      return true;
+    }
+    // Multi-word shortcut pairs like "Space / RMB", "L1 / R1", "Options / Esc"
+    if (/^[A-Za-z0-9\-+\s]+(?:\s*\/\s*[A-Za-z0-9\-+\s]+)+$/.test(t) && !/d\s*\/\s*dx|\d+\s*\/\s*\d+/.test(t)) {
+      return true;
+    }
+    return false;
+  }
 
+  function isTrueMathFormula(tok) {
+    if (!tok || isPlainNonMathToken(tok)) return false;
+    const t = tok.trim();
+    if (/^[0-9]+(?:[.,][0-9]+)?$/.test(t)) return false;
+    // Any explicit math operator, script, Greek, set symbol, function call, or fraction
+    return /[=<>≤≥≠≈≡±×·÷→⇒⇔←↔∀∃∈∉⊂⊃∪∩∞√∛∜∫∑∏∂∇∧∨⊥∥∠⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻ⁿˣ₀₁₂₃₄₅₆₇₈₉ₙ₊₋\^_ℝℂℕℤℚα-ωΔΣΠΦΩ]|\\(?:frac|sqrt|lim|sin|cos|tan|ln|log|exp|mathbb)|\b(?:sin|cos|tan|ln|log|exp|lim)\b|\b[A-Za-z]'?\([A-Za-z0-9, +\-*/]+\)|[A-Za-z0-9)\]]\s*\/\s*[A-Za-z0-9(\[]/.test(t);
+  }
+
+  function convertUnicodeScripts(str) {
+    let out = '';
+    let i = 0;
+    while (i < str.length) {
+      if (SUB_MAP[str[i]]) {
+        let run = '';
+        while (i < str.length && SUB_MAP[str[i]]) {
+          run += SUB_MAP[str[i]];
+          i += 1;
+        }
+        out += `_{${run}}`;
+      } else if (SUP_MAP[str[i]]) {
+        let run = '';
+        while (i < str.length && SUP_MAP[str[i]]) {
+          run += SUP_MAP[str[i]];
+          i += 1;
+        }
+        out += `^{${run}}`;
+      } else {
+        out += str[i];
+        i += 1;
+      }
+    }
+    return out;
+  }
+
+  function plainMathToLatex(tok) {
+    let s = convertUnicodeScripts(String(tok || '').trim());
+    // Normalize combining macron / vector arrows
+    s = s.replace(/([A-Za-z0-9])\u0304/g, '\\overline{$1}');
+    s = s.replace(/([A-Za-z0-9])\u20D7/g, '\\vec{$1}');
+    // Roots: √(expr) or √2 or ∛(expr)
+    s = s.replace(/∛\(([^)]+)\)/g, '\\sqrt[3]{$1}');
+    s = s.replace(/∛([A-Za-z0-9_{}^]+)/g, '\\sqrt[3]{$1}');
+    s = s.replace(/√\(([^)]+)\)/g, '\\sqrt{$1}');
+    s = s.replace(/√([A-Za-z0-9_{}^]+)/g, '\\sqrt{$1}');
+    // Simple fractions like d/dx, 1/2, (u_n^2+3)/4, 3/(4-u_n)
+    s = s.replace(/\bd\/dx\b/g, '\\frac{d}{dx}');
+    s = s.replace(/\(([^()]+)\)\s*\/\s*\(([^()]+)\)/g, '\\frac{$1}{$2}');
+    s = s.replace(/\(([^()]+)\)\s*\/\s*([A-Za-z0-9_{}^]+)/g, '\\frac{$1}{$2}');
+    s = s.replace(/([A-Za-z0-9_{}^]+)\s*\/\s*\(([^()]+)\)/g, '\\frac{$1}{$2}');
+    s = s.replace(/(^|[\s=+\-(])(\d+|[a-zA-Z](?:_\{[^}]+\}|_[a-zA-Z0-9])?)\s*\/\s*(\d+|[a-zA-Z](?:_\{[^}]+\}|_[a-zA-Z0-9])?)(?=$|[\s=+\-).,;])/g, '$1\\frac{$2}{$3}');
+    // Functions & sets
+    s = s.replace(/\b(lim|sin|cos|tan|ln|log|exp)\b/g, '\\$1');
+    s = s.replace(/ℝ/g, '\\mathbb{R}').replace(/ℂ/g, '\\mathbb{C}')
+         .replace(/ℕ/g, '\\mathbb{N}').replace(/ℤ/g, '\\mathbb{Z}')
+         .replace(/ℚ/g, '\\mathbb{Q}');
+    const symMap = {
+      '×': '\\times ', '·': '\\cdot ', '÷': '\\div ', '±': '\\pm ', '−': '-',
+      '≤': '\\le ', '≥': '\\ge ', '≠': '\\neq ', '≈': '\\approx ', '≡': '\\equiv ',
+      '∈': '\\in ', '∉': '\\notin ', '⊂': '\\subset ', '⊃': '\\supset ',
+      '∪': '\\cup ', '∩': '\\cap ', '∅': '\\emptyset ', '∞': '\\infty ',
+      '∀': '\\forall ', '∃': '\\exists ', '→': '\\to ', '←': '\\leftarrow ',
+      '↔': '\\leftrightarrow ', '⇒': '\\Rightarrow ', '⇔': '\\Leftrightarrow ',
+      '⇐': '\\Leftarrow ', '↦': '\\mapsto ', '⟹': '\\implies ', '⟺': '\\iff ',
+      '∧': '\\wedge ', '∨': '\\vee ', '⊥': '\\perp ', '∥': '\\parallel ',
+      '∠': '\\angle ', '∫': '\\int ', '∑': '\\sum ', '∏': '\\prod ', '∂': '\\partial ',
+      'α': '\\alpha ', 'β': '\\beta ', 'γ': '\\gamma ', 'δ': '\\delta ',
+      'ε': '\\varepsilon ', 'θ': '\\theta ', 'λ': '\\lambda ', 'μ': '\\mu ',
+      'π': '\\pi ', 'ρ': '\\rho ', 'σ': '\\sigma ', 'τ': '\\tau ',
+      'φ': '\\varphi ', 'ω': '\\omega ', 'Δ': '\\Delta ', 'Ω': '\\Omega ',
+      'Σ': '\\Sigma ', 'Π': '\\Pi ', 'Φ': '\\Phi '
+    };
+    s = s.replace(/[×·÷±−≤≥≠≈≡∈∉⊂⊃∪∩∅∞∀∃→←↔⇒⇔⇐↦⟹⟺∧∨⊥∥∠∫∑∏∂αβγδεθλμπρστφωΔΩΣΠΦ]/g, (ch) => symMap[ch] || ch);
+    return s;
+  }
+
+  function appendPlainBidiSegments(el, doc, rawChunk, tag, className) {
+    if (!rawChunk) return;
     MATH_SEGMENT_REGEX.lastIndex = 0;
     let lastIdx = 0;
-    let match = MATH_SEGMENT_REGEX.exec(raw);
+    let match = MATH_SEGMENT_REGEX.exec(rawChunk);
 
     while (match !== null) {
       let sIdx = match.index;
       let eIdx = sIdx + match[0].length;
 
-      // Trim trailing whitespace, sentence colons/semicolons, or unbalanced parentheses
       while (eIdx > sIdx) {
-        const sub = raw.slice(sIdx, eIdx);
+        const sub = rawChunk.slice(sIdx, eIdx);
         const ch = sub[sub.length - 1];
-        if (ch === ' ' || ch === '\t') {
-          eIdx -= 1;
-          continue;
-        }
-        if ((ch === ':' || ch === ';') && eIdx === match.index + match[0].length) {
-          eIdx -= 1;
-          continue;
-        }
+        if (ch === ' ' || ch === '\t') { eIdx -= 1; continue; }
+        if ((ch === ':' || ch === ';') && eIdx === match.index + match[0].length) { eIdx -= 1; continue; }
         const op = (sub.match(/\(/g) || []).length;
         const cl = (sub.match(/\)/g) || []).length;
-        if ((ch === '(' && op > cl) || (ch === ')' && cl > op)) {
-          eIdx -= 1;
-          continue;
-        }
+        if ((ch === '(' && op > cl) || (ch === ')' && cl > op)) { eIdx -= 1; continue; }
         break;
       }
 
-      // Trim leading whitespace or unbalanced parentheses
       while (sIdx < eIdx) {
-        const sub = raw.slice(sIdx, eIdx);
+        const sub = rawChunk.slice(sIdx, eIdx);
         const ch = sub[0];
         const op = (sub.match(/\(/g) || []).length;
         const cl = (sub.match(/\)/g) || []).length;
@@ -99,24 +174,120 @@
         break;
       }
 
-      const tok = raw.slice(sIdx, eIdx);
+      const tok = rawChunk.slice(sIdx, eIdx);
       if (tok && !/^[()\[\]\s]+$/.test(tok)) {
         if (sIdx > lastIdx) {
-          el.appendChild(doc.createTextNode(raw.slice(lastIdx, sIdx)));
+          el.appendChild(doc.createTextNode(rawChunk.slice(lastIdx, sIdx)));
         }
         const node = doc.createElement(tag);
-        node.className = className;
         node.dir = 'ltr';
-        node.textContent = tok;
+        if (root && root.katex && typeof root.katex.render === 'function' && isTrueMathFormula(tok)) {
+          node.className = `${className} katex-bdi`;
+          try {
+            root.katex.render(plainMathToLatex(tok), node, { throwOnError: false, displayMode: false, strict: 'ignore' });
+          } catch (_) {
+            node.textContent = tok;
+          }
+        } else {
+          node.className = className;
+          node.textContent = tok;
+        }
         el.appendChild(node);
         lastIdx = eIdx;
       }
-      match = MATH_SEGMENT_REGEX.exec(raw);
+      match = MATH_SEGMENT_REGEX.exec(rawChunk);
+    }
+
+    if (lastIdx < rawChunk.length) {
+      el.appendChild(doc.createTextNode(rawChunk.slice(lastIdx)));
+    }
+  }
+
+  /**
+   * Render mixed Arabic RTL + LaTeX ($...$ / $$...$$) + Unicode math via KaTeX inside <bdi dir="ltr">.
+   */
+  function renderMath(el, text, opts) {
+    if (!el) return;
+    const doc = el.ownerDocument || (typeof document !== 'undefined' ? document : null);
+    const raw = String(text ?? '');
+    el.textContent = '';
+    if (!doc) return;
+
+    const tag = (opts && opts.tag) || 'bdi';
+    const className = (opts && opts.className) || 'math-ltr';
+    const latexRegex = /\$\$([\s\S]+?)\$\$|\$([^$\n]+?)\$/g;
+    let lastIdx = 0;
+    let m = latexRegex.exec(raw);
+
+    while (m !== null) {
+      if (m.index > lastIdx) {
+        appendPlainBidiSegments(el, doc, raw.slice(lastIdx, m.index), tag, className);
+      }
+      const isDisplay = m[1] !== undefined;
+      const tex = (isDisplay ? m[1] : m[2]).trim();
+      const node = doc.createElement(isDisplay ? 'div' : tag);
+      node.dir = 'ltr';
+      node.className = isDisplay ? `${className} katex-display-wrap` : `${className} katex-bdi`;
+      if (root && root.katex && typeof root.katex.render === 'function') {
+        try {
+          root.katex.render(tex, node, { throwOnError: false, displayMode: isDisplay, strict: 'ignore' });
+        } catch (_) {
+          node.textContent = tex;
+        }
+      } else {
+        node.textContent = m[0];
+      }
+      el.appendChild(node);
+      lastIdx = m.index + m[0].length;
+      m = latexRegex.exec(raw);
     }
 
     if (lastIdx < raw.length) {
-      el.appendChild(doc.createTextNode(raw.slice(lastIdx)));
+      appendPlainBidiSegments(el, doc, raw.slice(lastIdx), tag, className);
     }
+  }
+
+  function setBidiSafeMath(el, text, opts) {
+    return renderMath(el, text, opts);
+  }
+
+  function renderAllMath(container) {
+    const scope = container || (typeof document !== 'undefined' ? document : null);
+    if (!scope || !scope.querySelectorAll) return;
+    const texEls = scope.querySelectorAll('[data-tex]');
+    for (let i = 0; i < texEls.length; i += 1) {
+      const node = texEls[i];
+      if (node.dataset && node.dataset.katexDone === '1') continue;
+      const tex = node.getAttribute('data-tex');
+      const disp = node.getAttribute('data-display') === 'true';
+      node.dir = 'ltr';
+      if (node.dataset) node.dataset.katexDone = '1';
+      if (root && root.katex && typeof root.katex.render === 'function') {
+        try {
+          root.katex.render(tex, node, { throwOnError: false, displayMode: disp, strict: 'ignore' });
+        } catch (_) {
+          node.textContent = tex;
+        }
+      }
+    }
+    const autoEls = scope.querySelectorAll('.math-auto');
+    for (let i = 0; i < autoEls.length; i += 1) {
+      const node = autoEls[i];
+      if (node.hasAttribute('data-tex') || (node.dataset && node.dataset.katexDone === '1')) continue;
+      if (node.querySelector && node.querySelector('.katex')) continue;
+      const src = (node.dataset && node.dataset.rawMath) || node.textContent;
+      if (node.dataset) {
+        node.dataset.rawMath = src;
+        node.dataset.katexDone = '1';
+      }
+      renderMath(node, src);
+    }
+  }
+
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAllMath(document);
+    });
   }
 
   /**
@@ -750,19 +921,189 @@
     drawMathLabel(ctx, text, x, y, opts) {
       if (!ctx) return;
       const o = opts || {};
+      if (o.rich !== false && /[₀₁₂₃₄₅₆₇₈₉ₙ⁰¹²³⁴⁵⁶⁷⁸⁹ˣⁿ√]|_\{|\^\{|\b(?:d\/dx)\b|\\frac|\\sqrt/.test(String(text ?? ''))) {
+        CanvasAxisKit.drawMathRich(ctx, text, x, y, o);
+        return;
+      }
       ctx.save();
       ctx.direction = 'ltr';
-      ctx.font = o.font || '800 11px "JetBrains Mono", monospace';
+      ctx.font = o.font || '800 11px "KaTeX_Main", "JetBrains Mono", monospace';
       ctx.textAlign = o.align || 'center';
       ctx.textBaseline = o.baseline || 'alphabetic';
       ctx.fillStyle = o.color || '#f8fafc';
       ctx.fillText(String(text ?? ''), x, y);
       ctx.restore();
+    },
+
+    /**
+     * Draw crisp textbook math on Canvas 2D using KaTeX_Math / KaTeX_Main fonts:
+     * supports stacked fractions (d/dx, \frac{a}{b}), roots (√2, \sqrt{...}), subscripts & superscripts.
+     */
+    drawMathRich(ctx, expr, x, y, opts) {
+      if (!ctx) return;
+      const o = opts || {};
+      const size = Number(o.fontSize || 13);
+      const color = o.color || '#f8fafc';
+      const bold = o.bold !== false;
+      const align = o.align || 'center';
+      const baseline = o.baseline || 'middle';
+      const norm = convertUnicodeScripts(String(expr ?? ''));
+
+      const mainFont = (sz) => `${bold ? '700 ' : ''}${sz}px "KaTeX_Main", "Cambria Math", Georgia, serif`;
+      const mathFont = (sz) => `italic ${bold ? '700 ' : ''}${sz}px "KaTeX_Math", "Cambria Math", Georgia, serif`;
+
+      // Fast parse tokens: \frac{a}{b}, d/dx, \sqrt{a}, √a, base_{sub}, base^{sup}, words/operators
+      function tokenizeRich(s) {
+        const parts = [];
+        let i = 0;
+        const readBrace = () => {
+          if (s[i] !== '{') { const ch = s[i] || ''; i += 1; return ch; }
+          let depth = 1; i += 1;
+          const start = i;
+          while (i < s.length && depth > 0) {
+            if (s[i] === '{') depth += 1;
+            else if (s[i] === '}') depth -= 1;
+            i += 1;
+          }
+          return s.slice(start, i - 1);
+        };
+        while (i < s.length) {
+          if (s.startsWith('\\frac', i)) {
+            i += 5;
+            const num = readBrace();
+            const den = readBrace();
+            parts.push({ type: 'frac', num, den });
+          } else if (s.startsWith('d/dx', i)) {
+            i += 4;
+            parts.push({ type: 'frac', num: 'd', den: 'dx' });
+          } else if (s.startsWith('\\sqrt', i)) {
+            i += 5;
+            const arg = readBrace();
+            parts.push({ type: 'sqrt', arg });
+          } else if (s[i] === '√') {
+            i += 1;
+            let arg = '';
+            if (s[i] === '(') {
+              let d = 1; i += 1; const st = i;
+              while (i < s.length && d > 0) {
+                if (s[i] === '(') d += 1; else if (s[i] === ')') d -= 1;
+                i += 1;
+              }
+              arg = s.slice(st, i - 1);
+            } else {
+              while (i < s.length && /[A-Za-z0-9.]/.test(s[i])) { arg += s[i]; i += 1; }
+            }
+            parts.push({ type: 'sqrt', arg });
+          } else if (s[i] === '_' || s[i] === '^') {
+            const kind = s[i] === '_' ? 'sub' : 'sup';
+            i += 1;
+            const val = s[i] === '{' ? readBrace() : (s[i++] || '');
+            parts.push({ type: kind, val });
+          } else if (/[A-Za-z]/.test(s[i])) {
+            let word = '';
+            while (i < s.length && /[A-Za-z]/.test(s[i])) { word += s[i]; i += 1; }
+            const isFn = /^(sin|cos|tan|ln|log|exp|lim|dx)$/.test(word);
+            parts.push({ type: 'text', val: word, italic: !isFn });
+          } else {
+            let chunk = '';
+            while (i < s.length && !/[A-Za-z_^√\\]/.test(s[i]) && !s.startsWith('d/dx', i)) {
+              chunk += s[i];
+              i += 1;
+            }
+            if (chunk) parts.push({ type: 'text', val: chunk, italic: false });
+          }
+        }
+        return parts;
+      }
+
+      function measureRich(tokens, sz) {
+        let w = 0;
+        const subSz = Math.max(8, Math.round(sz * 0.7));
+        for (let k = 0; k < tokens.length; k += 1) {
+          const t = tokens[k];
+          if (t.type === 'frac') {
+            const fSz = Math.max(8, Math.round(sz * 0.72));
+            const wN = measureRich(tokenizeRich(t.num), fSz);
+            const wD = measureRich(tokenizeRich(t.den), fSz);
+            w += Math.max(wN, wD) + 4;
+          } else if (t.type === 'sqrt') {
+            w += sz * 0.65 + measureRich(tokenizeRich(t.arg), sz) + 3;
+          } else if (t.type === 'sub' || t.type === 'sup') {
+            ctx.font = mathFont(subSz);
+            w += ctx.measureText(t.val).width + 1;
+          } else {
+            ctx.font = t.italic ? mathFont(sz) : mainFont(sz);
+            w += ctx.measureText(t.val).width;
+          }
+        }
+        return w;
+      }
+
+      function paintRich(tokens, startX, baseY, sz) {
+        let cx = startX;
+        const subSz = Math.max(8, Math.round(sz * 0.7));
+        for (let k = 0; k < tokens.length; k += 1) {
+          const t = tokens[k];
+          if (t.type === 'frac') {
+            const fSz = Math.max(8, Math.round(sz * 0.72));
+            const nTok = tokenizeRich(t.num);
+            const dTok = tokenizeRich(t.den);
+            const wN = measureRich(nTok, fSz);
+            const wD = measureRich(dTok, fSz);
+            const fw = Math.max(wN, wD) + 4;
+            paintRich(nTok, cx + (fw - wN) * 0.5, baseY - sz * 0.44, fSz);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = Math.max(1, sz * 0.085);
+            ctx.beginPath();
+            ctx.moveTo(cx + 1, baseY);
+            ctx.lineTo(cx + fw - 1, baseY);
+            ctx.stroke();
+            paintRich(dTok, cx + (fw - wD) * 0.5, baseY + sz * 0.48, fSz);
+            cx += fw + 1;
+          } else if (t.type === 'sqrt') {
+            const aTok = tokenizeRich(t.arg);
+            const aW = measureRich(aTok, sz);
+            const radW = sz * 0.62;
+            ctx.strokeStyle = color;
+            ctx.lineWidth = Math.max(1.1, sz * 0.09);
+            ctx.beginPath();
+            ctx.moveTo(cx + 1, baseY + sz * 0.08);
+            ctx.lineTo(cx + radW * 0.35, baseY + sz * 0.38);
+            ctx.lineTo(cx + radW * 0.78, baseY - sz * 0.45);
+            ctx.lineTo(cx + radW + aW + 2, baseY - sz * 0.45);
+            ctx.stroke();
+            paintRich(aTok, cx + radW, baseY + sz * 0.04, sz);
+            cx += radW + aW + 4;
+          } else if (t.type === 'sub' || t.type === 'sup') {
+            ctx.font = /^[0-9+\-=()]+$/.test(t.val) ? mainFont(subSz) : mathFont(subSz);
+            ctx.fillText(t.val, cx, baseY + (t.type === 'sub' ? sz * 0.28 : -sz * 0.34));
+            cx += ctx.measureText(t.val).width + 1;
+          } else {
+            ctx.font = t.italic ? mathFont(sz) : mainFont(sz);
+            ctx.fillText(t.val, cx, baseY);
+            cx += ctx.measureText(t.val).width;
+          }
+        }
+      }
+
+      const tokens = tokenizeRich(norm);
+      ctx.save();
+      ctx.direction = 'ltr';
+      ctx.fillStyle = color;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const totalW = measureRich(tokens, size);
+      const sx = align === 'center' ? x - totalW * 0.5 : (align === 'right' ? x - totalW : x);
+      const sy = baseline === 'alphabetic' ? y - size * 0.3 : y;
+      paintRich(tokens, sx, sy, size);
+      ctx.restore();
     }
   };
 
   return {
-    version: '1.1.0',
+    version: '1.2.0',
+    renderMath,
+    renderAllMath,
     setBidiSafeMath,
     Gamepad,
     Progress,

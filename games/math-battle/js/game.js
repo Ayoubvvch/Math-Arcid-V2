@@ -970,7 +970,9 @@ export class MathBattleGame {
       const bossBadge = document.getElementById('hudBossBadge');
       const bossTitle = document.getElementById('hudBossTitle');
       if (bossBadge) {
-        bossBadge.textContent = config.chain[0]?.label || config.id;
+        const badgeTxt = config.chain[0]?.label || config.id;
+        if (window.ArcadeCore?.renderMath) window.ArcadeCore.renderMath(bossBadge, `$${badgeTxt}$`);
+        else bossBadge.textContent = badgeTxt;
         bossBadge.style.borderColor = config.color;
         bossBadge.style.color = config.color;
       }
@@ -1025,13 +1027,31 @@ export class MathBattleGame {
       this._lastLadderKey = ladderKey;
       const ladderEl = document.getElementById('hudLifecycleLadder');
       if (ladderEl) {
-        ladderEl.innerHTML = config.chain
-          .map((node) => {
-            const cnt = counts[node.id] || 0;
-            const active = cnt > 0;
-            return `<span class="ladder-node ${active ? 'active' : ''}" style="--node-col:${node.color}"><bdi dir="ltr" class="math-ltr">${node.label}</bdi>${cnt > 1 ? ` (${cnt})` : ''}</span>`;
-          })
-          .join('<span class="ladder-arrow">‹</span>');
+        ladderEl.textContent = '';
+        config.chain.forEach((node, idx) => {
+          if (idx > 0) {
+            const arrow = document.createElement('span');
+            arrow.className = 'ladder-arrow';
+            arrow.textContent = '‹';
+            ladderEl.appendChild(arrow);
+          }
+          const cnt = counts[node.id] || 0;
+          const active = cnt > 0;
+          const span = document.createElement('span');
+          span.className = `ladder-node ${active ? 'active' : ''}`;
+          span.style.setProperty('--node-col', node.color);
+          const lblSpan = document.createElement('span');
+          if (window.ArcadeCore?.renderMath) {
+            window.ArcadeCore.renderMath(lblSpan, node.label);
+          } else {
+            lblSpan.textContent = node.label;
+          }
+          span.appendChild(lblSpan);
+          if (cnt > 1) {
+            span.appendChild(document.createTextNode(` (${cnt})`));
+          }
+          ladderEl.appendChild(span);
+        });
       }
     }
 

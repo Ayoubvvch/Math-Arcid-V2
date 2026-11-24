@@ -1047,7 +1047,9 @@ class ArcadeConsoleHub {
 
   setSafeText(el, text) {
     if (!el) return;
-    if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
+    if (window.ArcadeCore && typeof window.ArcadeCore.renderMath === 'function') {
+      window.ArcadeCore.renderMath(el, text);
+    } else if (window.ArcadeCore && typeof window.ArcadeCore.setBidiSafeMath === 'function') {
       window.ArcadeCore.setBidiSafeMath(el, text);
     } else {
       el.textContent = String(text ?? '');
@@ -1079,9 +1081,10 @@ class ArcadeConsoleHub {
 
     if (this.showcaseCategory) this.showcaseCategory.textContent = game.category || 'الرياضيات';
     if (this.showcaseDiff) {
-      this.showcaseDiff.textContent = game.topicRange
+      const diffTxt = game.topicRange
         ? `${game.topicRange} • ${game.difficulty || '2BAC PC'}`
         : `المستوى ${game.difficultyLevel || 3} • ${game.difficulty || 'قياسي'}`;
+      this.setSafeText(this.showcaseDiff, diffTxt);
     }
     if (this.showcaseVersion) this.showcaseVersion.textContent = `v${game.version || '1.0'}`;
     if (this.showcaseStatus) {
@@ -1089,7 +1092,7 @@ class ArcadeConsoleHub {
     }
     if (this.showcaseTitle) this.showcaseTitle.textContent = game.title;
     this.setSafeText(this.showcaseDesc, game.description);
-    if (this.blueprintArtBadge) this.blueprintArtBadge.textContent = game.icon || '∫';
+    if (this.blueprintArtBadge) this.setSafeText(this.blueprintArtBadge, game.icon || '$\\int$');
 
     // Update live Showcase Mastery Telemetry Strip
     const m = this.getGameMetrics(game.id);
@@ -1178,7 +1181,7 @@ class ArcadeConsoleHub {
     sound.playLaunch();
     gamepad.triggerHaptic(110, 0.7, 0.7);
 
-    if (this.launchIcon) this.launchIcon.textContent = game.icon || '∫';
+    if (this.launchIcon) this.setSafeText(this.launchIcon, game.icon || '$\\int$');
     if (this.launchLabel) this.launchLabel.textContent = `جارٍ تشغيل ${game.title}...`;
     this.launchCurtain?.classList.add('active');
 

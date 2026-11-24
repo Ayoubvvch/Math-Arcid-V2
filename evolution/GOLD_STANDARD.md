@@ -47,11 +47,14 @@
   - تغيير المتغير أو `∫_a^x f(t)dt` في التكامل.
   - فرض التوظيف الفيزيائي في المعادلات التفاضلية أو الحالات العامة المجردة للوضع النسبي في الفضاء.
 
-### 6. التكامل مع المنصة، العربية RTL، والأداء الخفيف 60FPS
-* كل لعبة تُفتح بـ `<html lang="ar" dir="rtl">` وملاءمة كاملة للشاشة بدون تمرير قسري أو صناديق `540x960` ضيقة.
-* عزل الصيغ الرياضية المختلطة عبر `ArcadeCore.setBidiSafeMath` (من `../../shared/arcade-core.js`) ورابط عودة واضح إلى `../../index.html?from=game`.
+### 6. التعميم الإلزامي لمكتبة KaTeX + التكامل مع المنصة + الأداء 60FPS
+* **صفر رياضيات عارية في كل مكان (Universal KaTeX Rule)**:
+  - يجب أن تضم كل صفحة (`index.html` وكل `games/<slug>/index.html`) مكتبة KaTeX المحلية (`shared/vendor/katex/katex.min.css` و`shared/vendor/katex/katex.min.js`) قبل `shared/arcade-core.js`.
+  - جميع المعادلات والرموز الرياضية في الواجهة (الألقاب، الأوصاف، التلميحات، الشروط، البراهين، الأزرار، و`games.json`) تُكتب بصيغة LaTeX (`$...$` / `$$...$$` / `data-tex`) وتُعرض عبر `ArcadeCore.renderMath` / `ArcadeCore.setBidiSafeMath` داخل `<bdi dir="ltr">` حتى لا تظهر كسور أو جذور أو أسس كنص عاري أبداً.
+  - داخل `<canvas>` تُرسم المعادلات عبر `ArcadeCore.CanvasAxisKit.drawMathRich` بخطوط `KaTeX_Math` و`KaTeX_Main` (أو طبقات KaTeX DOM متموضعة).
+* واجهة عربية `<html lang="ar" dir="rtl">` بملاءمة كاملة للشاشة بدون تمرير قسري أو صناديق `540x960` ضيقة، ورابط عودة واضح إلى `../../index.html?from=game`.
 * ربط التقدم في `ArcadeCore.Progress.recordRun(gameId, { score, stagesCleared, totalStages, victory, accuracy })` ليعرض الـ Hub التقدّم الحقيقي لكل لعبة مهما كان نوعها.
-* **انضباط الأداء**: صفر CSS `backdrop-filter`، صفر `ctx.shadowBlur > 0` داخل حلقات الرسم السريعة، وصفر أخطاء Console أو 404.
+* **انضباط الأداء**: صفر CSS `backdrop-filter`، صفر `ctx.shadowBlur > 0` داخل حلقات الرسم السريعة، صفر أخطاء Console أو 404، وصفر `.katex-error`.
 
 ### 7. بوابة التحقق الحديدية (`evolution/scripts/verify.sh`)
 * يُمنع أي `commit` أو `push` قبل نجاح جميع مراحل `verify.sh` بما فيها:

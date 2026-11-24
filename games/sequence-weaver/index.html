@@ -6,6 +6,7 @@
   <title>نسّاج التقارب — المتتاليات العددية | Math-Arcid-V2</title>
   <meta name="description" content="لعبة تفاعلية مبتكرة للدرس 3 (المتتاليات العددية 2BAC PC): وجّه المسارات العنكبوتية uₙ₊₁=f(uₙ)، اضبط حواجز الترجع، حوّل المتخاطة بالعدسة المساعدة، واحصر التذبذب بممر الدركيين." />
   <link rel="stylesheet" href="../../css/common.css" />
+  <link rel="stylesheet" href="../../shared/vendor/katex/katex.min.css" />
   <link rel="stylesheet" href="css/style.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,7 +22,7 @@
           <span>بوابة الألعاب</span>
         </a>
         <div class="brand-title-wrap">
-          <span class="brand-emblem" dir="ltr">uₙ</span>
+          <span class="brand-emblem" data-tex="u_n" dir="ltr">uₙ</span>
           <div>
             <h1 class="brand-title">نسّاج التقارب</h1>
             <div class="brand-sub">المتتاليات العددية • <bdi dir="ltr" class="math-ltr">2BAC PC (41–52)</bdi></div>
@@ -131,6 +132,7 @@
     </div>
   </div>
 
+  <script src="../../shared/vendor/katex/katex.min.js"></script>
   <script src="../../shared/arcade-core.js"></script>
   <script type="module" src="js/game.js"></script>
 </body>

@@ -6,6 +6,7 @@
   <title>حلبة التفاضل والاشتقاق [إصدار PlayStation] - Math Arcade</title>
   <meta name="description" content="حلبة قتال رياضي حصرية على PlayStation: فاضِل كثيرات الحدود والدوال المثلثية والأسية لتدمير الزعماء نحو الصفر.">
   <link rel="stylesheet" href="../../css/common.css">
+  <link rel="stylesheet" href="../../shared/vendor/katex/katex.min.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -14,16 +15,16 @@
     <header class="top-nav">
       <div class="top-nav-left">
         <a href="../../index.html?from=game" class="hub-back-btn">‹ بوابة الألعاب</a>
-        <span class="game-brand-label">حلبة التفاضل: معركة <bdi dir="ltr" class="math-ltr">d/dx</bdi></span>
+        <span class="game-brand-label">حلبة التفاضل: معركة <bdi dir="ltr" class="math-ltr" data-tex="\frac{d}{dx}">d/dx</bdi></span>
       </div>
 
       <!-- Match Roster Tabs -->
       <nav class="roster-tabs" aria-label="اختيار زعيم الاشتقاق">
         <span class="l1r1-hint">[L1]</span>
-        <button class="roster-btn active" data-match="x3" type="button"><bdi dir="ltr" class="math-ltr">x³</bdi> التكعيبية</button>
-        <button class="roster-btn" data-match="x4" type="button"><bdi dir="ltr" class="math-ltr">x⁴</bdi> السرب الرباعي</button>
-        <button class="roster-btn" data-match="sin" type="button"><bdi dir="ltr" class="math-ltr">sin(x)</bdi> المثلثية</button>
-        <button class="roster-btn" data-match="exp" type="button"><bdi dir="ltr" class="math-ltr">eˣ</bdi> الخالدة</button>
+        <button class="roster-btn active" data-match="x3" type="button"><bdi dir="ltr" class="math-ltr" data-tex="x^3">x³</bdi> التكعيبية</button>
+        <button class="roster-btn" data-match="x4" type="button"><bdi dir="ltr" class="math-ltr" data-tex="x^4">x⁴</bdi> السرب الرباعي</button>
+        <button class="roster-btn" data-match="sin" type="button"><bdi dir="ltr" class="math-ltr" data-tex="\sin(x)">sin(x)</bdi> المثلثية</button>
+        <button class="roster-btn" data-match="exp" type="button"><bdi dir="ltr" class="math-ltr" data-tex="e^x">eˣ</bdi> الخالدة</button>
         <span class="l1r1-hint">[R1]</span>
       </nav>
 
@@ -58,11 +59,7 @@
       <aside class="side-panel left-panel">
         <div class="panel-card">
           <div class="card-top-row">
-            <div class="pilot-avatar">
-              <span>d</span>
-              <span class="frac-line"></span>
-              <span>dx</span>
-            </div>
+            <div class="pilot-avatar" data-tex="\frac{d}{dx}">d/dx</div>
             <div>
               <div class="panel-eyebrow">مركبة المؤثر التفاضلي</div>
               <div class="panel-heading">الطيار (أنت)</div>
@@ -188,10 +185,10 @@
       <aside class="side-panel right-panel">
         <div class="panel-card">
           <div class="card-top-row">
-            <div id="hudBossBadge" class="boss-avatar">x³</div>
+            <div id="hudBossBadge" class="boss-avatar" data-tex="x^3">x³</div>
             <div>
               <div class="panel-eyebrow">الدالة المستهدفة</div>
-              <div id="hudBossTitle" class="panel-heading"><bdi dir="ltr" class="math-ltr">x³</bdi> الزعيمة التكعيبية</div>
+              <div id="hudBossTitle" class="panel-heading"><bdi dir="ltr" class="math-ltr" data-tex="x^3">x³</bdi> الزعيمة التكعيبية</div>
             </div>
           </div>
 
@@ -240,6 +237,7 @@
     </div>
   </div>
 
+  <script src="../../shared/vendor/katex/katex.min.js"></script>
   <script src="../../shared/arcade-core.js"></script>
   <script type="module" src="js/game.js"></script>
 </body>

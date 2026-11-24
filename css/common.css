@@ -71,3 +71,33 @@ html, body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 229, 255, 0.45);
 }
+
+/* Universal RTL-Safe KaTeX Math Rendering */
+.math-ltr {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-block;
+}
+
+.katex-bdi {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: inline-flex;
+  align-items: center;
+  vertical-align: middle;
+  margin-inline: 0.14em;
+}
+
+.katex-display-wrap {
+  direction: ltr;
+  unicode-bidi: isolate;
+  display: block;
+  margin: 0.35rem auto;
+  text-align: center;
+}
+
+.katex {
+  font-size: 1.06em;
+  line-height: 1.25;
+  color: inherit;
+}

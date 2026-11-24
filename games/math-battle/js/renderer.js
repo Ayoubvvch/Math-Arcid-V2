@@ -98,15 +98,15 @@ export class GameRenderer {
     ctx.lineTo(ox, ARENA.y);
     ctx.stroke();
 
-    // Axis labels & Origin
+    // Axis labels & Origin (KaTeX_Math)
     ctx.fillStyle = '#64748b';
-    ctx.font = 'italic 13px "Cambria Math", Georgia, serif';
+    ctx.font = 'italic 13px "KaTeX_Math", "Cambria Math", Georgia, serif';
     ctx.textAlign = 'right';
     ctx.fillText('O', ox - 7, oy + 14);
     ctx.fillText('x', ARENA.x + ARENA.width - 10, oy + 16);
     ctx.fillText('y', ox - 9, ARENA.y + 16);
 
-    ctx.font = '600 11px "JetBrains Mono", monospace';
+    ctx.font = '600 11px "KaTeX_Main", "JetBrains Mono", monospace';
     ctx.textAlign = 'center';
     [-4, -2, 2, 4].forEach(val => {
       ctx.fillText(`${val}`, toScreenX(val), oy + 14);
@@ -218,11 +218,17 @@ export class GameRenderer {
       ctx.strokeStyle = b.color;
       ctx.stroke();
 
-      ctx.fillStyle = b.color;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = `italic bold ${Math.max(13, Math.round(b.radius * 0.85))}px "Cambria Math", Georgia, serif`;
-      ctx.fillText(b.label, sx, sy + 1);
+      const rich = window.ArcadeCore?.CanvasAxisKit?.drawMathRich;
+      const fSize = Math.max(13, Math.round(b.radius * 0.72));
+      if (rich) {
+        rich(ctx, b.label, sx, sy + 1, { fontSize: fSize, color: b.color, align: 'center', baseline: 'middle' });
+      } else {
+        ctx.fillStyle = b.color;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `italic bold ${fSize}px "KaTeX_Math", "Cambria Math", Georgia, serif`;
+        ctx.fillText(b.label, sx, sy + 1);
+      }
     });
   }
 
@@ -276,18 +282,23 @@ export class GameRenderer {
     ctx.strokeStyle = '#00f0ff';
     ctx.stroke();
 
-    ctx.fillStyle = '#00f0ff';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.font = 'italic bold 12px "Cambria Math", Georgia, serif';
-    ctx.fillText('d', sx, sy - 6);
-    ctx.lineWidth = 1.4;
-    ctx.beginPath();
-    ctx.moveTo(sx - 8, sy);
-    ctx.lineTo(sx + 8, sy);
-    ctx.strokeStyle = '#00f0ff';
-    ctx.stroke();
-    ctx.fillText('dx', sx, sy + 7);
+    const rich = window.ArcadeCore?.CanvasAxisKit?.drawMathRich;
+    if (rich) {
+      rich(ctx, '\\frac{d}{dx}', sx, sy, { fontSize: 12, color: '#00f0ff', align: 'center', baseline: 'middle' });
+    } else {
+      ctx.fillStyle = '#00f0ff';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = 'italic bold 12px "KaTeX_Math", "Cambria Math", Georgia, serif';
+      ctx.fillText('d', sx, sy - 6);
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(sx - 8, sy);
+      ctx.lineTo(sx + 8, sy);
+      ctx.strokeStyle = '#00f0ff';
+      ctx.stroke();
+      ctx.fillText('dx', sx, sy + 7);
+    }
     ctx.restore();
   }
 
@@ -328,17 +339,23 @@ export class GameRenderer {
 
   drawPopups(popups) {
     const ctx = this.ctx;
+    const rich = window.ArcadeCore?.CanvasAxisKit?.drawMathRich;
     popups.forEach(p => {
       if (!p.active) return;
       ctx.save();
       ctx.globalAlpha = p.alpha;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = p.isDmg
-        ? '900 22px -apple-system, BlinkMacSystemFont, sans-serif'
-        : 'italic bold 19px "Cambria Math", Georgia, serif';
-      ctx.fillStyle = p.color;
-      ctx.fillText(p.text, p.x, p.y);
+      const isMathPopup = !p.isDmg && /[₀-₉⁰-⁹ⁿˣ\/=]|sin|cos|d\/dx/.test(p.text || '') && !/[\u0600-\u06FF]/.test(p.text || '');
+      if (isMathPopup && rich) {
+        rich(ctx, p.text, p.x, p.y, { fontSize: 15, color: p.color, align: 'center', baseline: 'middle' });
+      } else {
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = p.isDmg
+          ? '900 22px -apple-system, BlinkMacSystemFont, sans-serif'
+          : 'bold 16px "Cairo", "KaTeX_Main", sans-serif';
+        ctx.fillStyle = p.color;
+        ctx.fillText(p.text, p.x, p.y);
+      }
       ctx.restore();
     });
   }
