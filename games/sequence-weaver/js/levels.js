@@ -266,6 +266,40 @@ export const STAGES = [
             okMsg: 'جسر مضبوط! $r = 3$ يمنح $S = 75$، و $\\frac{1}{n^{-p}}$ يؤول نحو $0$.'
           };
         }
+      },
+      {
+        id: '3-3',
+        skillTopic: '45_geometric_sum',
+        mode: 'geometric-sum-tower',
+        title: 'خزان المجموع الهندسي $S_4 = u_0 \\frac{1 - q^5}{1 - q}$',
+        formula: '$S_4 = \\sum_{k=0}^{4} u_0 q^k = u_0 \\frac{1 - q^5}{1 - q} \\quad (u_0 = 1)$',
+        mission: 'اضبط الأساس $q$ لملء خزان المجموع الهندسي للحدود الخمسة الأولى ($k=0..4$) حتى المستوى الهدف $S_4 = 31$.',
+        proof: 'لـ $q \\neq 1$ لدينا $S_4 = u_0 \\frac{1 - q^{4-0+1}}{1 - q} = \\frac{1 - q^5}{1 - q}$. وبالتعويض بـ $q = 2$ نجد $S_4 = \\frac{1 - 32}{1 - 2} = 31$ (أما لـ $q = 1$ فالمجموع $5u_0 = 5$).',
+        u0: 1,
+        targetSum: 31,
+        params: [
+          { key: 'q', label: 'الأساس الهندسي $q$', min: -1.0, max: 2.5, step: 0.25, init: 1.0 }
+        ],
+        evaluate(st) {
+          const q = st.q;
+          const isOne = Math.abs(q - 1) < 1e-4;
+          const sum = isOne ? 5 : (1 - Math.pow(q, 5)) / (1 - q);
+          const hit = Math.abs(sum - 31) <= 0.15;
+          const checks = [
+            { label: isOne ? 'حالة خاصة $q = 1 \\Rightarrow S_4 = 5u_0 = 5$' : `قيمة الصيغة $S_4 = \\frac{1 - q^5}{1 - q} = ${sum.toFixed(2)}$`, ok: !isOne && hit },
+            { label: 'مطابقة خزان الطاقة الهدف $S_4 = 31$', ok: hit }
+          ];
+          let failMsg = '';
+          if (isOne) failMsg = 'عند $q = 1$ لا نطبق الكسر $\\frac{1-q^5}{1-q}$ بل $S_4 = 5u_0 = 5$! ارفع $q$ نحو $2$.';
+          else if (sum < 31) failMsg = `المجموع الحالي $S_4 = ${sum.toFixed(2)}$ أقل من $31$؛ زد الأساس $q$!`;
+          else if (sum > 31) failMsg = `المجموع الحالي $S_4 = ${sum.toFixed(2)}$ تجاوز $31$؛ خفّض $q$ إلى $2$!`;
+          return {
+            ok: hit,
+            checks,
+            failMsg,
+            okMsg: 'تعبئة هندسية دقيقة! $1 + 2 + 4 + 8 + 16 = \\frac{1 - 2^5}{1 - 2} = 31$.'
+          };
+        }
       }
     ]
   },
@@ -481,6 +515,48 @@ export const STAGES = [
             checks,
             failMsg,
             okMsg: 'تحقق الانكماش! $|v_n - 3| \\le 2k^n \\to 0$ ومنه $\\lim_{n\\to+\\infty} v_n = 3$.'
+          };
+        }
+      },
+      {
+        id: '5-3',
+        skillTopic: '49_comparison_infinity',
+        mode: 'comparison-infinity',
+        title: 'مقلاع المقارنة نحو $+\\infty$: $u_n \\ge \\alpha\\sqrt{n}$',
+        formula: '$u_n = 1.6\\sqrt{n} + 1.2\\sin(1.4n) + 1.5 \\ge \\alpha\\sqrt{n}$',
+        mission: 'اضبط معامل المصغِّر $\\alpha > 0$ بحيث يبقى المنحنى $w_n = \\alpha\\sqrt{n}$ تحت كل حدود $u_n$ فيدفعها نحو $+\\infty$.',
+        proof: 'بما أن $1.2\\sin(1.4n) + 1.5 \\ge 0.3 > 0$ فإن $u_n \\ge \\alpha\\sqrt{n}$ لكل $0 < \\alpha \\le 1.6$. وبما أن $\\lim \\alpha\\sqrt{n} = +\\infty$ فإن $\\lim u_n = +\\infty$.',
+        seqFn: (n) => 1.6 * Math.sqrt(n) + 1.2 * Math.sin(1.4 * n) + 1.5,
+        params: [
+          { key: 'alpha', label: 'معامل المقارنة $\\alpha$', min: -0.4, max: 2.3, step: 0.1, init: 2.1 }
+        ],
+        evaluate(st) {
+          const a = st.alpha;
+          let breaches = 0;
+          let firstBreach = -1;
+          for (let n = 1; n <= 20; n += 1) {
+            const u = 1.6 * Math.sqrt(n) + 1.2 * Math.sin(1.4 * n) + 1.5;
+            const w = a * Math.sqrt(n);
+            if (w > u + 1e-6) {
+              breaches += 1;
+              if (firstBreach === -1) firstBreach = n;
+            }
+          }
+          const belowOk = breaches === 0 && a <= 1.6 + 1e-6;
+          const posOk = a >= 1.0 - 1e-6;
+          const checks = [
+            { label: belowOk ? 'تحقق المقارنة $\\forall n \\ge 1, \\; u_n \\ge \\alpha\\sqrt{n}$' : `تجاوز المصغّر $u_n$ عند $n = ${firstBreach}$`, ok: belowOk },
+            { label: `شرط التباعد القوي نحو $+\\infty$: $\\alpha \\ge 1.0$ ($\\alpha = ${a.toFixed(1)}$)`, ok: posOk }
+          ];
+          let failMsg = '';
+          if (a <= 0) failMsg = 'انتبه! عند $\\alpha \\le 0$ لا يؤول $\\alpha\\sqrt{n}$ نحو $+\\infty$!';
+          else if (!belowOk) failMsg = `خرق المقارنة! $w_n = ${a.toFixed(1)}\\sqrt{n}$ يتجاوز $u_n$؛ خفّض $\\alpha \\le 1.6$.`;
+          else if (!posOk) failMsg = 'اختر مصغّراً موجباً أقوى ($\\alpha \\ge 1.0$) لإثبات التباعد بوضوح!';
+          return {
+            ok: belowOk && posOk,
+            checks,
+            failMsg,
+            okMsg: 'مقارنة صارمة! بما أن $u_n \\ge \\alpha\\sqrt{n}$ و $\\lim \\alpha\\sqrt{n} = +\\infty$ فإن $\\lim u_n = +\\infty$.'
           };
         }
       }

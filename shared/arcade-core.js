@@ -999,6 +999,16 @@
             i += 1;
             const val = s[i] === '{' ? readBrace() : (s[i++] || '');
             parts.push({ type: kind, val });
+          } else if (s[i] === '\\') {
+            i += 1;
+            let cmd = '';
+            while (i < s.length && /[A-Za-z]/.test(s[i])) { cmd += s[i]; i += 1; }
+            const texSym = {
+              cdot: '·', times: '×', pm: '±', le: '≤', ge: '≥', neq: '≠',
+              approx: '≈', to: '→', infty: '∞', alpha: 'α', beta: 'β',
+              theta: 'θ', pi: 'π', lambda: 'λ', omega: 'ω', Delta: 'Δ'
+            };
+            parts.push({ type: 'text', val: texSym[cmd] || cmd || '\\', italic: false });
           } else if (/[A-Za-z]/.test(s[i])) {
             let word = '';
             while (i < s.length && /[A-Za-z]/.test(s[i])) { word += s[i]; i += 1; }

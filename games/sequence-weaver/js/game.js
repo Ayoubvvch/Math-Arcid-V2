@@ -6,6 +6,7 @@ class SequenceAudio {
   constructor() {
     this.ctx = null;
     this.muted = false;
+    this.lastTickMs = 0;
   }
 
   unlock() {
@@ -24,6 +25,25 @@ class SequenceAudio {
     }
   }
 
+  playTick() {
+    if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
+    const nowMs = performance.now();
+    if (nowMs - this.lastTickMs < 42) return;
+    this.lastTickMs = nowMs;
+    const now = this.ctx.currentTime;
+    const osc = this.ctx.createOscillator();
+    const gain = this.ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(860, now);
+    osc.frequency.exponentialRampToValueAtTime(640, now + 0.022);
+    gain.gain.setValueAtTime(0.032, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.024);
+    osc.connect(gain);
+    gain.connect(this.ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.026);
+  }
+
   playStep(val, minV = 0, maxV = 6) {
     if (this.muted || !this.ctx || this.ctx.state !== 'running') return;
     const norm = Math.max(0, Math.min(1, (val - minV) / Math.max(0.001, maxV - minV)));
@@ -34,7 +54,7 @@ class SequenceAudio {
     const gain = this.ctx.createGain();
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(freq, now);
-    gain.gain.setValueAtTime(0.075, now);
+    gain.gain.setValueAtTime(0.07, now);
     gain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
     osc.connect(gain);
     gain.connect(this.ctx.destination);
@@ -107,7 +127,7 @@ class SequenceWeaverGame {
     this.scoreEl = document.getElementById('scoreVal');
     this.clearedEl = document.getElementById('clearedVal');
     this.stageTagEl = document.getElementById('stageTag');
-    this.roundTagEl = document.getElementById('roundTag');
+    this.roundSwitcherEl = document.getElementById('roundSwitcher');
     this.formulaTagEl = document.getElementById('formulaTag');
     this.roundTitleEl = document.getElementById('roundTitle');
     this.missionTextEl = document.getElementById('missionText');
@@ -141,6 +161,8 @@ class SequenceWeaverGame {
     this.activeDrag = null;
     this.hoverHandleId = null;
     this.particles = [];
+    this.ripples = [];
+    this.flashTimer = null;
     this.anim = { active: false, progress: 0, maxSteps: 12, lastStepChime: -1, evalResult: null };
 
     this.w = 720;
@@ -211,6 +233,29 @@ class SequenceWeaverGame {
     });
   }
 
+  renderRoundSwitcher() {
+    if (!this.roundSwitcherEl) return;
+    const stage = this.getStage();
+    this.roundSwitcherEl.textContent = '';
+    stage.rounds.forEach((rd, idx) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const done = this.clearedRounds.has(rd.id);
+      const cls = ['round-btn'];
+      if (idx === this.roundIdx) cls.push('active');
+      if (done) cls.push('done');
+      btn.className = cls.join(' ');
+      btn.setAttribute('role', 'tab');
+      btn.setAttribute('aria-selected', idx === this.roundIdx ? 'true' : 'false');
+      btn.textContent = done ? `✓ جولة ${idx + 1}` : `جولة ${idx + 1}`;
+      btn.addEventListener('click', () => {
+        this.audio.unlock();
+        this.loadRound(this.stageIdx, idx);
+      });
+      this.roundSwitcherEl.appendChild(btn);
+    });
+  }
+
   loadRound(stageIdx, roundIdx) {
     this.stageIdx = clamp(stageIdx, 0, STAGES.length - 1);
     const stage = this.getStage();
@@ -226,6 +271,7 @@ class SequenceWeaverGame {
     }
 
     this.anim = { active: false, progress: 0, maxSteps: 12, lastStepChime: -1, evalResult: null };
+    this.ripples = [];
     this.hideFeedback();
     this.btnNextRound?.classList.add('hidden');
     if (this.btnLaunchLabel) {
@@ -233,13 +279,13 @@ class SequenceWeaverGame {
     }
 
     if (this.stageTagEl) bidi(this.stageTagEl, `${stage.tabTitle} • ${stage.skillLabel}`);
-    if (this.roundTagEl) this.roundTagEl.textContent = `${this.roundIdx + 1} / ${stage.rounds.length}`;
     if (this.formulaTagEl) bidi(this.formulaTagEl, round.formula);
     bidi(this.roundTitleEl, round.title);
     bidi(this.missionTextEl, round.mission);
     bidi(this.proofTextEl, round.proof);
 
     this.renderStageTabs();
+    this.renderRoundSwitcher();
     this.renderDynamicControls();
     this.updateLiveChecks();
     this.updateTopMetrics();
@@ -321,19 +367,16 @@ class SequenceWeaverGame {
 
       const cRow = document.createElement('div');
       cRow.className = 'choice-row';
+      cRow.id = `choice_${c.key}`;
       c.options.forEach((opt) => {
         const btn = document.createElement('button');
         btn.type = 'button';
+        btn.dataset.val = opt.value;
         btn.className = `choice-btn ${this.paramState[c.key] === opt.value ? 'active' : ''}`;
         bidi(btn, opt.label);
         btn.addEventListener('click', () => {
           this.audio.unlock();
-          this.paramState[c.key] = opt.value;
-          cRow.querySelectorAll('.choice-btn').forEach((b) => b.classList.remove('active'));
-          btn.classList.add('active');
-          this.anim.active = false;
-          this.hideFeedback();
-          this.updateLiveChecks();
+          this.setChoice(c.key, opt.value);
         });
         cRow.appendChild(btn);
       });
@@ -342,6 +385,30 @@ class SequenceWeaverGame {
       row.appendChild(cRow);
       this.controlsEl.appendChild(row);
     }
+  }
+
+  setChoice(key, val) {
+    if (this.paramState[key] === val) return;
+    this.paramState[key] = val;
+    this.audio.playTick();
+    const cRow = document.getElementById(`choice_${key}`);
+    if (cRow) {
+      cRow.querySelectorAll('.choice-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.val === val);
+      });
+    }
+    this.anim.active = false;
+    this.hideFeedback();
+    this.updateLiveChecks();
+  }
+
+  cycleChoice(delta) {
+    const round = this.getRound();
+    if (!round.choice) return;
+    const opts = round.choice.options;
+    const idx = Math.max(0, opts.findIndex((o) => o.value === this.paramState[round.choice.key]));
+    const next = opts[(idx + delta + opts.length) % opts.length];
+    this.setChoice(round.choice.key, next.value);
   }
 
   formatParam(key, val) {
@@ -355,11 +422,13 @@ class SequenceWeaverGame {
     const spec = (round.params || []).find((p) => p.key === key);
     if (!spec) return;
     const clamped = snap(val, spec.min, spec.max, spec.step);
+    const changed = Math.abs(clamped - this.paramState[key]) > 1e-6;
     this.paramState[key] = clamped;
     const rng = document.getElementById(`rng_${key}`);
     if (rng) rng.value = String(clamped);
     const vEl = document.getElementById(`val_${key}`);
     if (vEl) vEl.textContent = this.formatParam(key, clamped);
+    if (changed) this.audio.playTick();
     this.anim.active = false;
     this.hideFeedback();
     this.updateLiveChecks();
@@ -388,6 +457,17 @@ class SequenceWeaverGame {
   updateTopMetrics() {
     if (this.scoreEl) this.scoreEl.textContent = String(this.score);
     if (this.clearedEl) this.clearedEl.textContent = `${this.clearedStages.size}/${STAGES.length}`;
+  }
+
+  flashWrap(kind) {
+    if (!this.wrap) return;
+    this.wrap.classList.remove('flash-ok', 'flash-err');
+    void this.wrap.offsetWidth;
+    this.wrap.classList.add(kind === 'ok' ? 'flash-ok' : 'flash-err');
+    clearTimeout(this.flashTimer);
+    this.flashTimer = setTimeout(() => {
+      this.wrap?.classList.remove('flash-ok', 'flash-err');
+    }, 520);
   }
 
   showFeedback(msg, type) {
@@ -420,6 +500,7 @@ class SequenceWeaverGame {
       lastStepChime: -1,
       evalResult: res
     };
+    this.ripples = [];
 
     if (res.ok) {
       const wasCleared = this.clearedRounds.has(round.id);
@@ -431,14 +512,18 @@ class SequenceWeaverGame {
         this.clearedStages.add(stage.id);
       }
 
-      this.spawnBurst(this.w * 0.45, this.h * 0.45, '#10b981', 20);
+      this.spawnBurst(this.w * 0.45, this.h * 0.45, '#10b981', 22);
+      this.spawnRipple(this.w * 0.45, this.h * 0.45, '#f59e0b');
+      this.flashWrap('ok');
       this.audio.playSuccess();
       this.showFeedback(res.okMsg, 'ok');
       this.btnNextRound?.classList.remove('hidden');
       this.renderStageTabs();
+      this.renderRoundSwitcher();
       this.updateTopMetrics();
       this.syncProgress();
     } else {
+      this.flashWrap('err');
       this.audio.playFail();
       this.showFeedback(res.failMsg, 'err');
       this.syncProgress();
@@ -479,7 +564,7 @@ class SequenceWeaverGame {
       ? window.ArcadeCore.Progress.computeRank({ victory: true, accuracy: acc, sealsCleared: 4, bypasses: 0 })
       : 'S';
     const descEl = document.getElementById('victoryDesc');
-    bidi(descEl, 'أتممت بنجاح جميع مهارات الدرس 3: الترجع، المحدودية، الرتابة، الهندسية والحسابية، المساعدة المتخاطة، الدركيين، والنقطة الصامدة ($u_{n+1}=f(u_n)$)!');
+    bidi(descEl, 'أتممت بنجاح جميع مهارات الدرس 3 (41–52): الترجع، المحدودية، الرتابة، الهندسية والحسابية ومجاميعهما، المساعدة المتخاطة، الدركيين والمقارنة، والنقطة الصامدة ($u_{n+1}=f(u_n)$)!');
     const vs = document.getElementById('vScore');
     const va = document.getElementById('vAcc');
     const vr = document.getElementById('vRank');
@@ -503,6 +588,10 @@ class SequenceWeaverGame {
         color
       });
     }
+  }
+
+  spawnRipple(x, y, color) {
+    this.ripples.push({ x, y, r: 6, maxR: 38, life: 0.45, maxLife: 0.45, color });
   }
 
   bindEvents() {
@@ -537,7 +626,6 @@ class SequenceWeaverGame {
       this.loadRound(0, 0);
     });
 
-    // Direct pointer dragging on canvas handles
     const toLocal = (e) => {
       const r = this.canvas.getBoundingClientRect();
       return { x: e.clientX - r.left, y: e.clientY - r.top };
@@ -547,7 +635,7 @@ class SequenceWeaverGame {
       this.audio.unlock();
       const pt = toLocal(e);
       let best = null;
-      let bestDist = 28;
+      let bestDist = 30;
       for (const h of this.handles) {
         const d = Math.hypot(pt.x - h.x, pt.y - h.y);
         if (d <= bestDist) {
@@ -570,7 +658,7 @@ class SequenceWeaverGame {
         return;
       }
       let hover = null;
-      let bestDist = 24;
+      let bestDist = 26;
       for (const h of this.handles) {
         const d = Math.hypot(pt.x - h.x, pt.y - h.y);
         if (d <= bestDist) {
@@ -589,11 +677,11 @@ class SequenceWeaverGame {
     this.canvas.addEventListener('pointerup', stopDrag);
     this.canvas.addEventListener('pointercancel', stopDrag);
 
-    // Keyboard controls
     window.addEventListener('keydown', (e) => {
       if (!this.victoryModal?.classList.contains('hidden')) return;
       this.audio.unlock();
       const round = this.getRound();
+      const stage = this.getStage();
       const p0 = round.params?.[0];
       const p1 = round.params?.[1];
 
@@ -610,12 +698,17 @@ class SequenceWeaverGame {
       } else if ((e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') && p0) {
         e.preventDefault();
         this.setParam(p0.key, this.paramState[p0.key] - p0.step);
-      } else if ((e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') && p1) {
+      } else if (e.key === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
         e.preventDefault();
-        this.setParam(p1.key, this.paramState[p1.key] + p1.step);
-      } else if ((e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') && p1) {
+        if (p1) this.setParam(p1.key, this.paramState[p1.key] + p1.step);
+        else if (round.choice) this.cycleChoice(1);
+      } else if (e.key === 'ArrowDown' || e.key === 's' || e.key === 'S') {
         e.preventDefault();
-        this.setParam(p1.key, this.paramState[p1.key] - p1.step);
+        if (p1) this.setParam(p1.key, this.paramState[p1.key] - p1.step);
+        else if (round.choice) this.cycleChoice(-1);
+      } else if (e.key === '1' || e.key === '2' || e.key === '3') {
+        const idx = Number(e.key) - 1;
+        if (idx < stage.rounds.length) this.loadRound(this.stageIdx, idx);
       } else if (e.key === 'h' || e.key === 'H') {
         this.btnHint?.click();
       } else if (e.key === 'r' || e.key === 'R') {
@@ -630,7 +723,7 @@ class SequenceWeaverGame {
     });
   }
 
-  pollGamepad(dt) {
+  pollGamepad() {
     const GP = window.ArcadeCore?.Gamepad;
     if (!GP || !this.gpState) return;
     const gp = GP.resolveActiveGamepad(this.gpState);
@@ -643,8 +736,14 @@ class SequenceWeaverGame {
 
     if (p0 && nav.dRight) this.setParam(p0.key, this.paramState[p0.key] + p0.step);
     if (p0 && nav.dLeft) this.setParam(p0.key, this.paramState[p0.key] - p0.step);
-    if (p1 && nav.dUp) this.setParam(p1.key, this.paramState[p1.key] + p1.step);
-    if (p1 && nav.dDown) this.setParam(p1.key, this.paramState[p1.key] - p1.step);
+    if (nav.dUp) {
+      if (p1) this.setParam(p1.key, this.paramState[p1.key] + p1.step);
+      else if (round.choice) this.cycleChoice(1);
+    }
+    if (nav.dDown) {
+      if (p1) this.setParam(p1.key, this.paramState[p1.key] - p1.step);
+      else if (round.choice) this.cycleChoice(-1);
+    }
 
     if (GP.justPressed(gp, this.gpState, 0)) {
       if (!this.btnNextRound?.classList.contains('hidden')) this.advanceRound();
@@ -661,7 +760,7 @@ class SequenceWeaverGame {
     const dt = Math.min(0.05, this.lastTs ? (ts - this.lastTs) / 1000 : 0.016);
     this.lastTs = ts;
 
-    this.pollGamepad(dt);
+    this.pollGamepad();
     this.update(dt);
     this.render();
     requestAnimationFrame((t) => this.loop(t));
@@ -678,10 +777,18 @@ class SequenceWeaverGame {
           let u = this.paramState.u0 ?? round.u0 ?? 1;
           for (let i = 0; i < stepIdx; i += 1) u = round.f(u);
           if (Number.isFinite(u)) {
-            const dMin = round.domain?.min ?? 0;
-            const dMax = round.domain?.max ?? 6;
-            this.audio.playStep(u, dMin, dMax);
+            this.audio.playStep(u, round.domain?.min ?? 0, round.domain?.max ?? 6);
           }
+        } else if (round.mode === 'geometric-spectrum') {
+          const val = round.u0 * Math.pow(this.paramState.q, stepIdx);
+          if (Number.isFinite(val)) this.audio.playStep(val, -4, 4);
+        } else if (round.mode === 'geometric-sum-tower' && stepIdx <= 4) {
+          this.audio.playStep(stepIdx, 0, 4);
+        } else if (round.mode === 'arithmetic-and-ref' && stepIdx <= 5) {
+          this.audio.playStep(stepIdx, 0, 5);
+        } else if (round.seqFn) {
+          const val = round.seqFn(stepIdx + 1);
+          if (Number.isFinite(val)) this.audio.playStep(val, 0, 8);
         }
       }
     }
@@ -692,6 +799,13 @@ class SequenceWeaverGame {
       p.y += p.vy * dt;
       p.life -= dt;
       if (p.life <= 0) this.particles.splice(i, 1);
+    }
+
+    for (let i = this.ripples.length - 1; i >= 0; i -= 1) {
+      const rp = this.ripples[i];
+      rp.life -= dt;
+      rp.r = 6 + (1 - Math.max(0, rp.life / rp.maxLife)) * (rp.maxR - 6);
+      if (rp.life <= 0) this.ripples.splice(i, 1);
     }
   }
 
@@ -721,6 +835,53 @@ class SequenceWeaverGame {
     ctx.restore();
   }
 
+  drawAxisTicks(rect, dMin, dMax, toPxX, toPxY) {
+    const ctx = this.ctx;
+    const span = dMax - dMin;
+    const tickStep = span <= 3.5 ? 0.5 : span <= 7 ? 1 : 2;
+    const first = Math.ceil(dMin / tickStep) * tickStep;
+    const ox = clamp(toPxX(0), rect.x + 14, rect.x + rect.w - 14);
+    const oy = clamp(toPxY(0), rect.y + 14, rect.y + rect.h - 14);
+
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
+    ctx.lineWidth = 1;
+    for (let v = first; v <= dMax - 0.05; v += tickStep) {
+      if (Math.abs(v) < 1e-4) continue;
+      const px = toPxX(v);
+      const py = toPxY(v);
+      const lbl = Number.isInteger(v) ? String(v) : v.toFixed(1);
+      if (px > rect.x + 16 && px < rect.x + rect.w - 14) {
+        ctx.beginPath();
+        ctx.moveTo(px, oy - 3);
+        ctx.lineTo(px, oy + 3);
+        ctx.stroke();
+        this.drawLabel(lbl, px, oy + 12, { color: 'rgba(148, 163, 184, 0.72)', font: '700 9px "KaTeX_Main", monospace' });
+      }
+      if (py > rect.y + 14 && py < rect.y + rect.h - 16) {
+        ctx.beginPath();
+        ctx.moveTo(ox - 3, py);
+        ctx.lineTo(ox + 3, py);
+        ctx.stroke();
+        this.drawLabel(lbl, ox - 12, py, { color: 'rgba(148, 163, 184, 0.72)', font: '700 9px "KaTeX_Main", monospace' });
+      }
+    }
+  }
+
+  drawPhotonBeacon(x, y, color) {
+    const ctx = this.ctx;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.6;
+    ctx.beginPath();
+    ctx.arc(x, y, 8, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(x, y, 3.6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+
   drawDragHandle(id, x, y, label, color) {
     const ctx = this.ctx;
     const active = this.activeDrag?.id === id || this.hoverHandleId === id;
@@ -740,15 +901,18 @@ class SequenceWeaverGame {
     ctx.stroke();
 
     if (label) {
-      const w = Math.max(46, label.length * 7 + 12);
-      ctx.fillStyle = 'rgba(4, 15, 20, 0.9)';
+      const plainLen = label.replace(/[_^{}\\]/g, '').length;
+      const w = Math.max(50, plainLen * 7.2 + 16);
+      const pillX = clamp(x - w / 2, 6, this.w - w - 6);
+      const pillY = y - r - 24 < 6 ? y + r + 6 : y - r - 24;
+      ctx.fillStyle = 'rgba(4, 15, 20, 0.92)';
       ctx.strokeStyle = color;
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.roundRect(x - w / 2, y - r - 24, w, 18, 5);
+      ctx.roundRect(pillX, pillY, w, 19, 5);
       ctx.fill();
       ctx.stroke();
-      this.drawLabel(label, x, y - r - 15, { color: '#fff', font: '800 10px "JetBrains Mono", monospace' });
+      this.drawLabel(label, pillX + w / 2, pillY + 9.5, { color: '#fff', fontSize: 11 });
     }
     ctx.restore();
   }
@@ -776,14 +940,28 @@ class SequenceWeaverGame {
 
     if (mode === 'geometric-spectrum') {
       this.renderGeometricSpectrum(round);
+    } else if (mode === 'geometric-sum-tower') {
+      this.renderGeometricSumTower(round);
     } else if (mode === 'arithmetic-and-ref') {
       this.renderArithmeticAndRef(round);
     } else if (mode === 'squeeze-corridor' || mode === 'squeeze-contraction') {
       this.renderSqueezeCorridor(round);
+    } else if (mode === 'comparison-infinity') {
+      this.renderComparisonInfinity(round);
     } else if (mode.startsWith('auxiliary-')) {
       this.renderCobwebAndAuxiliary(round);
     } else {
       this.renderCobwebAndTrajectory(round);
+    }
+
+    for (const rp of this.ripples) {
+      const alpha = Math.max(0, rp.life / rp.maxLife);
+      ctx.globalAlpha = alpha * 0.7;
+      ctx.strokeStyle = rp.color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(rp.x, rp.y, rp.r, 0, Math.PI * 2);
+      ctx.stroke();
     }
 
     for (const p of this.particles) {
@@ -801,13 +979,13 @@ class SequenceWeaverGame {
   renderCobwebAndTrajectory(round) {
     const ctx = this.ctx;
     const isWide = this.w >= 620;
-    const pad = 26;
+    const pad = 22;
     const cobRect = isWide
-      ? { x: pad, y: 20, w: Math.floor(this.w * 0.56) - pad, h: this.h - 46 }
-      : { x: pad, y: 16, w: this.w - pad * 2, h: Math.floor(this.h * 0.56) - 20 };
+      ? { x: pad, y: 18, w: Math.floor(this.w * 0.56) - pad, h: this.h - 40 }
+      : { x: pad, y: 14, w: this.w - pad * 2, h: Math.floor(this.h * 0.56) - 18 };
     const trajRect = isWide
-      ? { x: cobRect.x + cobRect.w + 26, y: 20, w: this.w - (cobRect.x + cobRect.w + 42), h: this.h - 46 }
-      : { x: pad, y: cobRect.y + cobRect.h + 24, w: this.w - pad * 2, h: this.h - (cobRect.y + cobRect.h + 40) };
+      ? { x: cobRect.x + cobRect.w + 20, y: 18, w: this.w - (cobRect.x + cobRect.w + 36), h: this.h - 40 }
+      : { x: pad, y: cobRect.y + cobRect.h + 18, w: this.w - pad * 2, h: this.h - (cobRect.y + cobRect.h + 32) };
 
     const dMin = round.domain.min;
     const dMax = round.domain.max;
@@ -816,7 +994,6 @@ class SequenceWeaverGame {
     const fromPxX = (px) => dMin + ((px - cobRect.x) / cobRect.w) * (dMax - dMin);
     const fromPxY = (py) => dMin + ((cobRect.y + cobRect.h - py) / cobRect.h) * (dMax - dMin);
 
-    // Clip to cobweb plot box
     ctx.save();
     ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
     ctx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
@@ -827,7 +1004,6 @@ class SequenceWeaverGame {
     ctx.stroke();
     ctx.clip();
 
-    // Axes
     const ox = toPxX(0);
     const oy = toPxY(0);
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.35)';
@@ -837,8 +1013,8 @@ class SequenceWeaverGame {
     ctx.moveTo(ox, cobRect.y);
     ctx.lineTo(ox, cobRect.y + cobRect.h);
     ctx.stroke();
+    this.drawAxisTicks(cobRect, dMin, dMax, toPxX, toPxY);
 
-    // Shaded f(x) - x monotonicity zones
     if (round.mode === 'monotone-balance') {
       const steps = 90;
       for (let i = 0; i < steps; i += 1) {
@@ -856,7 +1032,6 @@ class SequenceWeaverGame {
       }
     }
 
-    // Invariant box [m, M] x [m, M] for induction modes
     if (round.mode === 'cobweb-bound-ceil' || round.mode === 'cobweb-bound-floor') {
       const lo = round.mode === 'cobweb-bound-floor' ? this.paramState.boundm : 0;
       const hi = round.mode === 'cobweb-bound-ceil' ? this.paramState.boundM : 6;
@@ -873,7 +1048,6 @@ class SequenceWeaverGame {
       ctx.setLineDash([]);
     }
 
-    // y = x diagonal
     ctx.setLineDash([6, 5]);
     ctx.strokeStyle = 'rgba(245, 158, 11, 0.72)';
     ctx.lineWidth = 1.6;
@@ -883,7 +1057,6 @@ class SequenceWeaverGame {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Curve y = f(x)
     ctx.lineWidth = 2.5;
     ctx.strokeStyle = '#38bdf8';
     ctx.beginPath();
@@ -906,7 +1079,6 @@ class SequenceWeaverGame {
     }
     ctx.stroke();
 
-    // Highlight out-of-bounds curve segment in induction modes
     if (round.mode === 'cobweb-bound-ceil' || round.mode === 'cobweb-bound-floor') {
       const lo = round.mode === 'cobweb-bound-floor' ? this.paramState.boundm : 0;
       const hi = round.mode === 'cobweb-bound-ceil' ? this.paramState.boundM : 6;
@@ -934,7 +1106,6 @@ class SequenceWeaverGame {
       ctx.stroke();
     }
 
-    // Fixed-point beacons
     for (const fp of round.fixedPoints || []) {
       const fpx = toPxX(fp);
       const fpy = toPxY(fp);
@@ -943,10 +1114,9 @@ class SequenceWeaverGame {
       ctx.beginPath();
       ctx.arc(fpx, fpy, 6, 0, Math.PI * 2);
       ctx.stroke();
-      this.drawLabel(`L=${Number(fp.toFixed(2))}`, fpx + 18, fpy - 12, { color: '#fcd34d', font: '800 10px "JetBrains Mono", monospace' });
+      this.drawLabel(`L=${Number(fp.toFixed(2))}`, fpx + 20, fpy - 12, { color: '#fcd34d', fontSize: 11 });
     }
 
-    // Sequence trajectory points + Cobweb path
     const u0 = this.paramState.u0;
     const terms = [u0];
     let curr = u0;
@@ -959,18 +1129,23 @@ class SequenceWeaverGame {
     }
 
     const visibleSteps = this.anim.active ? Math.min(terms.length - 1, this.anim.progress) : Math.min(terms.length - 1, 8);
-    ctx.strokeStyle = this.anim.active && this.anim.evalResult && !this.anim.evalResult.ok ? '#fb7185' : '#10b981';
-    ctx.lineWidth = this.anim.active ? 2.2 : 1.5;
+    const beamColor = this.anim.active && this.anim.evalResult && !this.anim.evalResult.ok ? '#fb7185' : '#10b981';
+    ctx.strokeStyle = beamColor;
+    ctx.lineWidth = this.anim.active ? 2.3 : 1.5;
     ctx.beginPath();
     ctx.moveTo(toPxX(u0), toPxY(0));
     const fullSteps = Math.floor(visibleSteps);
     const frac = visibleSteps - fullSteps;
+    let tipX = toPxX(u0);
+    let tipY = toPxY(0);
 
     for (let i = 0; i < fullSteps; i += 1) {
       const u = terms[i];
       const nu = terms[i + 1];
       ctx.lineTo(toPxX(u), toPxY(nu));
       ctx.lineTo(toPxX(nu), toPxY(nu));
+      tipX = toPxX(nu);
+      tipY = toPxY(nu);
     }
     if (frac > 0 && fullSteps < terms.length - 1) {
       const u = terms[fullSteps];
@@ -978,18 +1153,29 @@ class SequenceWeaverGame {
       if (frac < 0.5) {
         const t = frac * 2;
         const startY = fullSteps === 0 ? 0 : u;
-        ctx.lineTo(toPxX(u), toPxY(startY + (nu - startY) * t));
+        tipX = toPxX(u);
+        tipY = toPxY(startY + (nu - startY) * t);
+        ctx.lineTo(tipX, tipY);
       } else {
         const t = (frac - 0.5) * 2;
         ctx.lineTo(toPxX(u), toPxY(nu));
-        ctx.lineTo(toPxX(u + (nu - u) * t), toPxY(nu));
+        tipX = toPxX(u + (nu - u) * t);
+        tipY = toPxY(nu);
+        ctx.lineTo(tipX, tipY);
       }
     }
     ctx.stroke();
 
+    if (this.anim.active) {
+      this.drawPhotonBeacon(tipX, tipY, beamColor);
+    }
+
+    // Curve legends inside top-left corner
+    this.drawLabel('y = f(x)', cobRect.x + 36, cobRect.y + 15, { color: '#38bdf8', fontSize: 11 });
+    this.drawLabel('y = x', cobRect.x + 86, cobRect.y + 15, { color: '#fcd34d', fontSize: 11 });
+
     ctx.restore();
 
-    // Drag handles (unclipped so tooltips stay visible!)
     const u0Spec = (round.params || []).find((p) => p.key === 'u0');
     if (u0Spec) {
       const hx = clamp(toPxX(u0), cobRect.x + 8, cobRect.x + cobRect.w - 8);
@@ -1023,7 +1209,6 @@ class SequenceWeaverGame {
       });
     }
 
-    // Secondary Strip: Trajectory or Heron Microscope or Composite g(u_n)
     ctx.save();
     ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
@@ -1045,14 +1230,14 @@ class SequenceWeaverGame {
   renderTermTimeline(round, rect, terms, yMin, yMax) {
     const ctx = this.ctx;
     const padX = 28;
-    const padY = 26;
+    const padY = 28;
     const innerW = rect.w - padX * 2;
-    const innerH = rect.h - padY * 2;
+    const innerH = rect.h - padY * 2 - 14;
     const count = Math.min(terms.length, 12);
     const toX = (n) => rect.x + padX + (n / Math.max(1, count - 1)) * innerW;
     const toY = (v) => rect.y + padY + innerH - ((clamp(v, yMin, yMax) - yMin) / (yMax - yMin)) * innerH;
 
-    this.drawLabel('uₙ (n = 0..11)', rect.x + rect.w / 2, rect.y + 13, { color: '#94a3b8' });
+    this.drawLabel('u_n  (n = 0..11)', rect.x + rect.w / 2, rect.y + 14, { color: '#94a3b8', fontSize: 12 });
 
     if (round.mode === 'cobweb-bound-ceil') {
       const cy = toY(this.paramState.boundM);
@@ -1063,7 +1248,7 @@ class SequenceWeaverGame {
       ctx.lineTo(rect.x + rect.w - padX, cy);
       ctx.stroke();
       ctx.setLineDash([]);
-      this.drawLabel(`M=${this.paramState.boundM.toFixed(2)}`, rect.x + padX + 26, cy - 10, { color: '#fcd34d' });
+      this.drawLabel(`M=${this.paramState.boundM.toFixed(2)}`, rect.x + padX + 26, cy - 10, { color: '#fcd34d', fontSize: 11 });
     } else if (round.mode === 'cobweb-bound-floor') {
       const fy = toY(this.paramState.boundm);
       ctx.setLineDash([5, 4]);
@@ -1073,7 +1258,7 @@ class SequenceWeaverGame {
       ctx.lineTo(rect.x + rect.w - padX, fy);
       ctx.stroke();
       ctx.setLineDash([]);
-      this.drawLabel(`m=${this.paramState.boundm.toFixed(2)}`, rect.x + padX + 26, fy + 12, { color: '#fcd34d' });
+      this.drawLabel(`m=${this.paramState.boundm.toFixed(2)}`, rect.x + padX + 26, fy + 12, { color: '#fcd34d', fontSize: 11 });
     }
 
     ctx.strokeStyle = 'rgba(16, 185, 129, 0.55)';
@@ -1099,9 +1284,13 @@ class SequenceWeaverGame {
       ctx.arc(px, py, 4.5, 0, Math.PI * 2);
       ctx.fill();
       if (i % 3 === 0 || i === count - 1) {
-        this.drawLabel(v.toFixed(2), px, py - 12, { color: out ? '#fda4af' : '#a7f3d0', font: '700 9px "JetBrains Mono", monospace' });
+        this.drawLabel(v.toFixed(2), px, py - 12, { color: out ? '#fda4af' : '#a7f3d0', font: '700 9px "KaTeX_Main", monospace' });
       }
     }
+
+    // Live first-3 terms footer readout
+    const preview = terms.slice(0, 3).map((v, idx) => `u_${idx}=${v.toFixed(2)}`).join('   ');
+    this.drawLabel(preview, rect.x + rect.w / 2, rect.y + rect.h - 11, { color: '#94a3b8', fontSize: 10 });
   }
 
   renderCompositeStrip(round, rect, terms) {
@@ -1115,7 +1304,7 @@ class SequenceWeaverGame {
     const toX = (n) => rect.x + padX + (n / 10) * innerW;
     const toY = (v) => rect.y + padY + innerH - ((clamp(v, yMin, yMax) - yMin) / (yMax - yMin)) * innerH;
 
-    this.drawLabel('vₙ = g(uₙ) → g(L)', rect.x + rect.w / 2, rect.y + 14, { color: '#bae6fd' });
+    this.drawLabel('v_n = g(u_n) → g(L)', rect.x + rect.w / 2, rect.y + 15, { color: '#bae6fd', fontSize: 12 });
 
     const gateY = toY(this.paramState.gLim);
     ctx.setLineDash([4, 4]);
@@ -1164,19 +1353,18 @@ class SequenceWeaverGame {
     const zMax = 1.46;
     const padX = 24;
     const innerW = rect.w - padX * 2;
-    const midY = rect.y + rect.h * 0.56;
+    const midY = rect.y + rect.h * 0.58;
     const toX = (v) => rect.x + padX + ((clamp(v, zMin, zMax) - zMin) / (zMax - zMin)) * innerW;
 
-    this.drawLabel('مجهر التقريب حول √2 ≈ 1.4142', rect.x + rect.w / 2, rect.y + 18, { color: '#fcd34d' });
+    this.drawLabel('مجهر التقريب التربيعي', rect.x + rect.w / 2, rect.y + 15, { color: '#fcd34d', font: '800 11px "Cairo", sans-serif' });
+    this.drawLabel('\\sqrt{2} ≈ 1.4142', rect.x + rect.w / 2, rect.y + 32, { color: '#6ee7b7', fontSize: 12 });
 
-    // Bracket around est
     const est = this.paramState.est;
     const bx0 = toX(est - 0.004);
     const bx1 = toX(est + 0.004);
     ctx.fillStyle = 'rgba(245, 158, 11, 0.18)';
     ctx.fillRect(bx0, midY - 38, Math.max(4, bx1 - bx0), 76);
 
-    // Axis line
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -1184,7 +1372,6 @@ class SequenceWeaverGame {
     ctx.lineTo(rect.x + rect.w - padX, midY);
     ctx.stroke();
 
-    // True sqrt(2) marker
     const sx = toX(Math.SQRT2);
     ctx.strokeStyle = '#10b981';
     ctx.lineWidth = 2;
@@ -1192,9 +1379,8 @@ class SequenceWeaverGame {
     ctx.moveTo(sx, midY - 45);
     ctx.lineTo(sx, midY + 45);
     ctx.stroke();
-    this.drawLabel('√2', sx, midY - 54, { color: '#6ee7b7' });
+    this.drawLabel('\\sqrt{2}', sx, midY - 54, { color: '#6ee7b7', fontSize: 12 });
 
-    // Current u_N marker
     const nIdx = Math.min(terms.length - 1, Math.round(this.paramState.steps));
     const uN = terms[nIdx];
     const ux = toX(uN);
@@ -1202,9 +1388,8 @@ class SequenceWeaverGame {
     ctx.beginPath();
     ctx.arc(ux, midY - 22, 6, 0, Math.PI * 2);
     ctx.fill();
-    this.drawLabel(`u_${nIdx}=${uN.toFixed(4)}`, ux, midY - 36, { color: '#bae6fd', font: '700 10px "JetBrains Mono", monospace' });
+    this.drawLabel(`u_${nIdx}=${uN.toFixed(4)}`, ux, midY - 36, { color: '#bae6fd', fontSize: 11 });
 
-    // Draggable est handle
     const ex = toX(est);
     this.drawDragHandle('est', ex, midY + 18, `${est.toFixed(3)}`, '#f59e0b');
     this.handles.push({
@@ -1230,16 +1415,15 @@ class SequenceWeaverGame {
     const toY = (y) => padY + h - ((clamp(y, yMin, yMax) - yMin) / (yMax - yMin)) * h;
     const y0 = toY(0);
 
-    // Zero baseline
     ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(padX, y0);
     ctx.lineTo(padX + w, y0);
     ctx.stroke();
-    this.drawLabel('y = 0 (نهاية التقارب)', padX + 75, y0 - 12, { color: '#94a3b8' });
+    this.drawLabel('y = 0', padX + 26, y0 - 12, { color: '#94a3b8', fontSize: 12 });
+    this.drawLabel('نهاية التقارب', padX + 86, y0 - 12, { color: '#94a3b8', font: '700 10px "Cairo", sans-serif' });
 
-    // Target gate at (2, 1)
     const gx = toX(2);
     const gy = toY(1);
     ctx.strokeStyle = '#f59e0b';
@@ -1247,9 +1431,9 @@ class SequenceWeaverGame {
     ctx.beginPath();
     ctx.arc(gx, gy, 11, 0, Math.PI * 2);
     ctx.stroke();
-    this.drawLabel('u_2 = 1', gx, gy - 18, { color: '#fcd34d' });
+    this.drawLabel('u_2 = 1', gx, gy - 19, { color: '#fcd34d', fontSize: 12 });
 
-    const lim = this.anim.active ? Math.min(nMax, Math.floor(this.anim.progress * 1.2)) : nMax;
+    const lim = this.anim.active ? Math.min(nMax, Math.floor(this.anim.progress * 1.25)) : nMax;
     for (let n = 0; n <= lim; n += 1) {
       const val = round.u0 * Math.pow(q, n);
       const px = toX(n);
@@ -1268,11 +1452,10 @@ class SequenceWeaverGame {
       ctx.arc(px, py, 5, 0, Math.PI * 2);
       ctx.fill();
       if (n <= 4) {
-        this.drawLabel(`u${n}`, px, y0 + (val >= 0 ? 14 : -14), { color: '#94a3b8', font: '700 10px "JetBrains Mono", monospace' });
+        this.drawLabel(`u_${n}`, px, y0 + (val >= 0 ? 15 : -15), { color: '#94a3b8', fontSize: 11 });
       }
     }
 
-    // Draggable u1 ratio puck at n = 1
     const u1 = round.u0 * q;
     const h1x = toX(1);
     const h1y = clamp(toY(u1), padY + 12, padY + h - 12);
@@ -1286,17 +1469,117 @@ class SequenceWeaverGame {
     });
   }
 
+  renderGeometricSumTower(round) {
+    const ctx = this.ctx;
+    const padX = 40;
+    const padY = 28;
+    const towerW = Math.min(200, Math.floor(this.w * 0.36));
+    const barsRect = { x: padX, y: padY, w: this.w - padX * 2 - towerW - 24, h: this.h - padY * 2 };
+    const tankRect = { x: barsRect.x + barsRect.w + 24, y: padY, w: towerW, h: this.h - padY * 2 };
+
+    const q = this.paramState.q;
+    const terms = [0, 1, 2, 3, 4].map((k) => round.u0 * Math.pow(q, k));
+    const isOne = Math.abs(q - 1) < 1e-4;
+    const totalSum = isOne ? 5 * round.u0 : round.u0 * ((1 - Math.pow(q, 5)) / (1 - q));
+
+    // Left panel: individual geometric terms u_0..u_4
+    ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
+    ctx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
+    ctx.beginPath();
+    ctx.roundRect(barsRect.x, barsRect.y, barsRect.w, barsRect.h, 10);
+    ctx.fill();
+    ctx.stroke();
+    this.drawLabel('u_k = u_0 · q^k   (k = 0..4)', barsRect.x + barsRect.w / 2, barsRect.y + 18, { color: '#bae6fd', fontSize: 12 });
+
+    const yZero = barsRect.y + barsRect.h - 46;
+    const maxScale = 26;
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.45)';
+    ctx.beginPath();
+    ctx.moveTo(barsRect.x + 20, yZero);
+    ctx.lineTo(barsRect.x + barsRect.w - 20, yZero);
+    ctx.stroke();
+
+    const stepX = (barsRect.w - 64) / 4;
+    const animLim = this.anim.active ? Math.min(5, Math.floor(this.anim.progress * 0.7) + 1) : 5;
+    for (let k = 0; k < animLim; k += 1) {
+      const val = terms[k];
+      const bx = barsRect.x + 32 + k * stepX;
+      const barH = clamp(val / maxScale, -0.35, 1.0) * (barsRect.h - 95);
+      const col = val >= 0 ? '#10b981' : '#38bdf8';
+      ctx.fillStyle = `${col}99`;
+      ctx.strokeStyle = col;
+      ctx.lineWidth = 1.5;
+      const topY = barH >= 0 ? yZero - barH : yZero;
+      ctx.fillRect(bx - 16, topY, 32, Math.abs(barH));
+      ctx.strokeRect(bx - 16, topY, 32, Math.abs(barH));
+      this.drawLabel(`u_${k}`, bx, yZero + 16, { color: '#94a3b8', fontSize: 11 });
+      this.drawLabel(val.toFixed(1), bx, barH >= 0 ? topY - 12 : yZero + Math.abs(barH) + 12, { color: '#ecfdf5', font: '700 10px "KaTeX_Main", monospace' });
+    }
+
+    // Right panel: Stacked Geometric Sum Energy Tank (target = 31)
+    const hit = Math.abs(totalSum - round.targetSum) <= 0.15;
+    ctx.fillStyle = 'rgba(6, 20, 26, 0.8)';
+    ctx.strokeStyle = hit ? '#10b981' : '#f59e0b';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.roundRect(tankRect.x, tankRect.y, tankRect.w, tankRect.h, 12);
+    ctx.fill();
+    ctx.stroke();
+
+    this.drawLabel(`S_4 = ${totalSum.toFixed(2)}`, tankRect.x + tankRect.w / 2, tankRect.y + 18, { color: hit ? '#6ee7b7' : '#fcd34d', fontSize: 13 });
+
+    const tankInnerH = tankRect.h - 68;
+    const tankBottom = tankRect.y + tankRect.h - 20;
+    const maxTank = 42;
+    const targetY = tankBottom - (round.targetSum / maxTank) * tankInnerH;
+
+    // Stacked colored layers for each positive contribution
+    const palette = ['#059669', '#10b981', '#14b8a6', '#38bdf8', '#f59e0b'];
+    let accY = tankBottom;
+    for (let k = 0; k < animLim; k += 1) {
+      const seg = Math.max(0, terms[k]);
+      const segH = Math.min(accY - (tankRect.y + 34), (seg / maxTank) * tankInnerH);
+      if (segH > 1) {
+        ctx.fillStyle = `${palette[k]}cc`;
+        ctx.fillRect(tankRect.x + 18, accY - segH, tankRect.w - 36, segH - 1);
+        accY -= segH;
+      }
+    }
+
+    // Golden target line S_4 = 31
+    ctx.setLineDash([5, 4]);
+    ctx.strokeStyle = '#f59e0b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(tankRect.x + 8, targetY);
+    ctx.lineTo(tankRect.x + tankRect.w - 8, targetY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    this.drawLabel('S_4 = 31', tankRect.x + 36, targetY - 12, { color: '#fcd34d', fontSize: 11 });
+
+    // Draggable q handle on the tank fill level
+    const handleY = clamp(tankBottom - (clamp(totalSum, 0, maxTank) / maxTank) * tankInnerH, tankRect.y + 38, tankBottom - 10);
+    const handleX = tankRect.x + tankRect.w / 2;
+    this.drawDragHandle('q', handleX, handleY, `q=${q.toFixed(2)}`, '#f59e0b');
+    this.handles.push({
+      id: 'q', x: handleX, y: handleY,
+      onDrag: (_, py) => {
+        const frac = clamp((tankBottom - py) / tankInnerH, 0, 1);
+        this.setParam('q', -1.0 + frac * 3.5);
+      }
+    });
+  }
+
   renderArithmeticAndRef(round) {
     const ctx = this.ctx;
     const padX = 44;
-    const topRect = { x: padX, y: 24, w: this.w - padX * 2 - 90, h: Math.floor(this.h * 0.48) - 24 };
-    const tankRect = { x: topRect.x + topRect.w + 18, y: 24, w: 68, h: topRect.h };
-    const botRect = { x: padX, y: topRect.y + topRect.h + 28, w: this.w - padX * 2, h: this.h - (topRect.y + topRect.h + 44) };
+    const topRect = { x: padX, y: 20, w: this.w - padX * 2 - 90, h: Math.floor(this.h * 0.48) - 20 };
+    const tankRect = { x: topRect.x + topRect.w + 18, y: 20, w: 68, h: topRect.h };
+    const botRect = { x: padX, y: topRect.y + topRect.h + 24, w: this.w - padX * 2, h: this.h - (topRect.y + topRect.h + 38) };
 
     const r = this.paramState.r;
     const p = this.paramState.p;
 
-    // Top: Arithmetic staircase n=2..7
     ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
     ctx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
     ctx.beginPath();
@@ -1307,7 +1590,6 @@ class SequenceWeaverGame {
     const toAX = (n) => topRect.x + 28 + ((n - 2) / 5) * (topRect.w - 56);
     const toAY = (y) => topRect.y + topRect.h - 22 - ((clamp(y, -5, 36) + 5) / 41) * (topRect.h - 44);
 
-    // Target ring at (7, 20)
     const tx = toAX(7);
     const ty = toAY(20);
     ctx.strokeStyle = '#f59e0b';
@@ -1315,17 +1597,18 @@ class SequenceWeaverGame {
     ctx.beginPath();
     ctx.arc(tx, ty, 10, 0, Math.PI * 2);
     ctx.stroke();
-    this.drawLabel('u₇=20', tx, ty - 16, { color: '#fcd34d' });
+    this.drawLabel('u_7 = 20', tx, ty - 17, { color: '#fcd34d', fontSize: 11 });
 
-    for (let n = 2; n <= 7; n += 1) {
+    const animN = this.anim.active ? Math.min(7, 2 + Math.floor(this.anim.progress * 0.6)) : 7;
+    for (let n = 2; n <= animN; n += 1) {
       const val = 5 + (n - 2) * r;
       const bx = toAX(n);
       const by = toAY(val);
       const base = toAY(0);
       ctx.fillStyle = 'rgba(16, 185, 129, 0.55)';
       ctx.fillRect(bx - 11, Math.min(by, base), 22, Math.abs(base - by));
-      this.drawLabel(val.toFixed(0), bx, by - 10, { color: '#d1fae5', font: '700 10px "JetBrains Mono", monospace' });
-      this.drawLabel(`n=${n}`, bx, topRect.y + topRect.h - 10, { color: '#94a3b8', font: '700 9px "JetBrains Mono", monospace' });
+      this.drawLabel(val.toFixed(0), bx, by - 10, { color: '#d1fae5', font: '700 10px "KaTeX_Main", monospace' });
+      this.drawLabel(`n=${n}`, bx, topRect.y + topRect.h - 10, { color: '#94a3b8', fontSize: 10 });
     }
 
     const u7 = 5 + 5 * r;
@@ -1340,7 +1623,6 @@ class SequenceWeaverGame {
       }
     });
 
-    // Sum tank
     ctx.fillStyle = 'rgba(6, 20, 26, 0.8)';
     ctx.strokeStyle = Math.abs(sum - 75) < 1 ? '#10b981' : '#f59e0b';
     ctx.beginPath();
@@ -1357,16 +1639,15 @@ class SequenceWeaverGame {
     ctx.moveTo(tankRect.x + 4, markY);
     ctx.lineTo(tankRect.x + tankRect.w - 4, markY);
     ctx.stroke();
-    this.drawLabel(`S=${sum.toFixed(0)}`, tankRect.x + tankRect.w / 2, tankRect.y + 13, { color: '#fcd34d' });
+    this.drawLabel(`S=${sum.toFixed(0)}`, tankRect.x + tankRect.w / 2, tankRect.y + 13, { color: '#fcd34d', fontSize: 11 });
 
-    // Bottom: w_n = n^p reference curve
     ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
     ctx.strokeStyle = 'rgba(56, 189, 248, 0.25)';
     ctx.beginPath();
     ctx.roundRect(botRect.x, botRect.y, botRect.w, botRect.h, 10);
     ctx.fill();
     ctx.stroke();
-    this.drawLabel(`w_n = n^{${p.toFixed(1)}} → ${p < 0 ? '0' : p === 0 ? '1' : '+∞'}`, botRect.x + botRect.w / 2, botRect.y + 14, { color: p < 0 ? '#6ee7b7' : '#fda4af' });
+    this.drawLabel(`w_n = n^{${p.toFixed(1)}} → ${p < 0 ? '0' : p === 0 ? '1' : '+∞'}`, botRect.x + botRect.w / 2, botRect.y + 16, { color: p < 0 ? '#6ee7b7' : '#fda4af', fontSize: 12 });
 
     const toRX = (n) => botRect.x + 28 + ((n - 1) / 13) * (botRect.w - 56);
     const toRY = (v) => botRect.y + botRect.h - 18 - (clamp(v, 0, 6) / 6) * (botRect.h - 42);
@@ -1387,13 +1668,13 @@ class SequenceWeaverGame {
 
   renderCobwebAndAuxiliary(round) {
     const ctx = this.ctx;
-    const pad = 26;
+    const pad = 22;
     const isWide = this.w >= 620;
     const cobRect = isWide
       ? { x: pad, y: 18, w: Math.floor(this.w * 0.48) - pad, h: this.h - 38 }
       : { x: pad, y: 14, w: this.w - pad * 2, h: Math.floor(this.h * 0.48) - 18 };
     const auxRect = isWide
-      ? { x: cobRect.x + cobRect.w + 22, y: 18, w: this.w - (cobRect.x + cobRect.w + 38), h: this.h - 38 }
+      ? { x: cobRect.x + cobRect.w + 20, y: 18, w: this.w - (cobRect.x + cobRect.w + 36), h: this.h - 38 }
       : { x: pad, y: cobRect.y + cobRect.h + 18, w: this.w - pad * 2, h: this.h - (cobRect.y + cobRect.h + 32) };
 
     const dMin = round.domain.min;
@@ -1402,7 +1683,6 @@ class SequenceWeaverGame {
     const toY = (y) => cobRect.y + cobRect.h - ((y - dMin) / (dMax - dMin)) * cobRect.h;
     const fromX = (px) => dMin + ((px - cobRect.x) / cobRect.w) * (dMax - dMin);
 
-    // Cobweb box
     ctx.save();
     ctx.fillStyle = 'rgba(6, 20, 26, 0.72)';
     ctx.strokeStyle = 'rgba(16, 185, 129, 0.28)';
@@ -1412,7 +1692,8 @@ class SequenceWeaverGame {
     ctx.stroke();
     ctx.clip();
 
-    // Diagonal y = x
+    this.drawAxisTicks(cobRect, dMin, dMax, toX, toY);
+
     ctx.setLineDash([5, 4]);
     ctx.strokeStyle = 'rgba(245, 158, 11, 0.75)';
     ctx.lineWidth = 1.6;
@@ -1422,7 +1703,6 @@ class SequenceWeaverGame {
     ctx.stroke();
     ctx.setLineDash([]);
 
-    // Function f(x)
     ctx.strokeStyle = '#38bdf8';
     ctx.lineWidth = 2.4;
     ctx.beginPath();
@@ -1443,7 +1723,6 @@ class SequenceWeaverGame {
     }
     ctx.stroke();
 
-    // Compute u_n trajectory
     const terms = [round.u0];
     let curr = round.u0;
     for (let i = 0; i < 8; i += 1) {
@@ -1452,18 +1731,26 @@ class SequenceWeaverGame {
       terms.push(nxt);
       curr = nxt;
     }
+    const visSteps = this.anim.active ? Math.min(terms.length - 1, Math.floor(this.anim.progress)) : terms.length - 1;
     ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 1.7;
+    ctx.lineWidth = this.anim.active ? 2.2 : 1.7;
     ctx.beginPath();
     ctx.moveTo(toX(terms[0]), toY(0));
-    for (let i = 0; i < terms.length - 1; i += 1) {
+    let tipX = toX(terms[0]);
+    let tipY = toY(0);
+    for (let i = 0; i < visSteps; i += 1) {
       ctx.lineTo(toX(terms[i]), toY(terms[i + 1]));
       ctx.lineTo(toX(terms[i + 1]), toY(terms[i + 1]));
+      tipX = toX(terms[i + 1]);
+      tipY = toY(terms[i + 1]);
     }
     ctx.stroke();
+    if (this.anim.active) this.drawPhotonBeacon(tipX, tipY, '#10b981');
+
+    this.drawLabel('y = f(x)', cobRect.x + 36, cobRect.y + 15, { color: '#38bdf8', fontSize: 11 });
+    this.drawLabel('y = x', cobRect.x + 86, cobRect.y + 15, { color: '#fcd34d', fontSize: 11 });
     ctx.restore();
 
-    // Draggable alpha (and beta) on diagonal y = x
     const a = this.paramState.alpha;
     const ax = clamp(toX(a), cobRect.x + 10, cobRect.x + cobRect.w - 10);
     const ay = clamp(toY(a), cobRect.y + 10, cobRect.y + cobRect.h - 10);
@@ -1484,7 +1771,6 @@ class SequenceWeaverGame {
       });
     }
 
-    // Auxiliary Lens Diagnostics Panel
     ctx.save();
     ctx.fillStyle = 'rgba(6, 20, 26, 0.78)';
     ctx.strokeStyle = 'rgba(245, 158, 11, 0.3)';
@@ -1494,8 +1780,8 @@ class SequenceWeaverGame {
     ctx.stroke();
 
     const vVals = terms.slice(0, 6).map((u) => round.auxFn(u, this.paramState.alpha, this.paramState.beta));
-    const metricLabel = round.auxType === 'ratio' ? 'النسب vₙ₊₁ / vₙ' : 'الفروق vₙ₊₁ − vₙ';
-    this.drawLabel(`عدسة المتتالية المساعدة vₙ | ${metricLabel}`, auxRect.x + auxRect.w / 2, auxRect.y + 16, { color: '#fcd34d' });
+    this.drawLabel(round.auxType === 'ratio' ? 'عدسة النسب الهندسية' : 'عدسة الفروق الحسابية', auxRect.x + auxRect.w * 0.65, auxRect.y + 16, { color: '#fcd34d', font: '800 11px "Cairo", sans-serif' });
+    this.drawLabel(round.auxType === 'ratio' ? '\\frac{v_{n+1}}{v_n}' : 'v_{n+1} - v_n', auxRect.x + auxRect.w * 0.24, auxRect.y + 16, { color: '#bae6fd', fontSize: 12 });
 
     const metrics = [];
     for (let i = 0; i < vVals.length - 1; i += 1) {
@@ -1507,22 +1793,24 @@ class SequenceWeaverGame {
     const valid = metrics.filter((m) => Number.isFinite(m) && Math.abs(m) < 50);
     const uniform = valid.length >= 3 && valid.every((m) => Math.abs(m - valid[0]) < 0.02);
 
-    const rowH = Math.min(34, (auxRect.h - 60) / Math.max(1, metrics.length));
-    metrics.forEach((m, i) => {
-      const y = auxRect.y + 42 + i * rowH;
+    const rowH = Math.min(40, (auxRect.h - 72) / Math.max(1, metrics.length));
+    const revealCount = this.anim.active ? Math.min(metrics.length, Math.floor(this.anim.progress * 0.8) + 1) : metrics.length;
+    for (let i = 0; i < revealCount; i += 1) {
+      const m = metrics[i];
+      const y = auxRect.y + 44 + i * rowH;
       const barW = Number.isFinite(m) ? clamp(Math.abs(m) * 45, 6, auxRect.w - 135) : 10;
       ctx.fillStyle = uniform ? '#10b981' : '#fb7185';
-      ctx.fillRect(auxRect.x + 90, y, barW, Math.max(10, rowH - 12));
-      const tag = round.auxType === 'ratio' ? `v_{${i + 1}}/v_{${i}}` : `v_{${i + 1}}-v_{${i}}`;
-      this.drawLabel(tag, auxRect.x + 48, y + (rowH - 12) / 2, { color: '#cbd5e1', font: '700 10px "JetBrains Mono", monospace' });
-      this.drawLabel(Number.isFinite(m) ? m.toFixed(3) : '∞', auxRect.x + 98 + barW + 24, y + (rowH - 12) / 2, {
+      ctx.fillRect(auxRect.x + 88, y, barW, Math.max(11, rowH - 14));
+      const tag = round.auxType === 'ratio' ? `\\frac{v_{${i + 1}}}{v_{${i}}}` : `v_{${i + 1}}-v_{${i}}`;
+      this.drawLabel(tag, auxRect.x + 44, y + (rowH - 14) / 2, { color: '#cbd5e1', fontSize: 11 });
+      this.drawLabel(Number.isFinite(m) ? m.toFixed(3) : '∞', auxRect.x + 96 + barW + 24, y + (rowH - 14) / 2, {
         color: uniform ? '#6ee7b7' : '#fda4af',
-        font: '800 10px "JetBrains Mono", monospace'
+        font: '800 10px "KaTeX_Main", monospace'
       });
-    });
+    }
 
     this.drawLabel(
-      uniform ? (round.auxType === 'ratio' ? '✓ هندسية منتظمة!' : '✓ حسابية منتظمة!') : 'غير منتظمة — عدّل α / β',
+      uniform ? (round.auxType === 'ratio' ? '✓ هندسية منتظمة!' : '✓ حسابية منتظمة!') : 'غير منتظمة — عدّل الأقطاب على المنصف',
       auxRect.x + auxRect.w / 2,
       auxRect.y + auxRect.h - 14,
       { color: uniform ? '#6ee7b7' : '#fda4af', font: '800 11px "Cairo", sans-serif' }
@@ -1546,7 +1834,6 @@ class SequenceWeaverGame {
     const L = this.paramState.L;
     const radFn = (n) => (round.mode === 'squeeze-contraction' ? 2 * Math.pow(this.paramState.k, n) : this.paramState.A / (n + 1));
 
-    // Shaded Squeeze Corridor
     ctx.save();
     ctx.fillStyle = 'rgba(16, 185, 129, 0.14)';
     ctx.beginPath();
@@ -1561,7 +1848,6 @@ class SequenceWeaverGame {
     ctx.closePath();
     ctx.fill();
 
-    // Guard envelopes w_n & v_n
     ctx.strokeStyle = '#f59e0b';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -1582,7 +1868,6 @@ class SequenceWeaverGame {
     }
     ctx.stroke();
 
-    // True limit crystal
     const cx = toX(nMax);
     const cy = toY(round.trueL);
     ctx.fillStyle = '#38bdf8';
@@ -1593,9 +1878,8 @@ class SequenceWeaverGame {
     ctx.lineTo(cx - 8, cy);
     ctx.closePath();
     ctx.fill();
-    this.drawLabel(`L=${round.trueL}`, cx - 22, cy - 15, { color: '#bae6fd' });
+    this.drawLabel(`L=${round.trueL}`, cx - 24, cy - 16, { color: '#bae6fd', fontSize: 12 });
 
-    // Sequence points
     const drawLimit = this.anim.active ? Math.min(nMax, Math.floor(this.anim.progress * 2)) : nMax;
     for (let n = 0; n <= drawLimit; n += 1) {
       const u = round.seqFn(n);
@@ -1608,7 +1892,6 @@ class SequenceWeaverGame {
     }
     ctx.restore();
 
-    // Draggable handles: Center L at right side, Envelope width at n=0 (or n=1 for k)
     const lx = toX(nMax);
     const ly = clamp(toY(L), padY + 12, padY + h - 12);
     this.drawDragHandle('L', lx, ly, `L=${L.toFixed(2)}`, '#38bdf8');
@@ -1634,6 +1917,92 @@ class SequenceWeaverGame {
         onDrag: (_, py) => this.setParam('k', (fromY(py) - this.paramState.L) / 2)
       });
     }
+  }
+
+  renderComparisonInfinity(round) {
+    const ctx = this.ctx;
+    const padX = 48;
+    const padY = 34;
+    const w = this.w - padX * 2;
+    const h = this.h - padY * 2;
+    const nMax = 20;
+    const yMin = -2;
+    const yMax = 11.5;
+    const toX = (n) => padX + ((n - 1) / (nMax - 1)) * w;
+    const toY = (y) => padY + h - ((clamp(y, yMin, yMax) - yMin) / (yMax - yMin)) * h;
+    const fromY = (py) => yMin + ((padY + h - py) / h) * (yMax - yMin);
+
+    const a = this.paramState.alpha;
+
+    // Zero baseline
+    const y0 = toY(0);
+    ctx.strokeStyle = 'rgba(148, 163, 184, 0.4)';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(padX, y0);
+    ctx.lineTo(padX + w, y0);
+    ctx.stroke();
+
+    // Shaded area below lower bounding ramp w_n = alpha * sqrt(n)
+    ctx.save();
+    ctx.fillStyle = a > 0 ? 'rgba(245, 158, 11, 0.14)' : 'rgba(251, 113, 133, 0.12)';
+    ctx.beginPath();
+    ctx.moveTo(toX(1), y0);
+    for (let n = 1; n <= nMax; n += 1) {
+      ctx.lineTo(toX(n), toY(a * Math.sqrt(n)));
+    }
+    ctx.lineTo(toX(nMax), y0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Lower ramp curve w_n = alpha * sqrt(n)
+    ctx.strokeStyle = a > 0 ? '#f59e0b' : '#fb7185';
+    ctx.lineWidth = 2.4;
+    ctx.beginPath();
+    for (let n = 1; n <= nMax; n += 1) {
+      const px = toX(n);
+      const py = toY(a * Math.sqrt(n));
+      if (n === 1) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    // Target diverging sequence u_n points
+    const drawLimit = this.anim.active ? Math.min(nMax, Math.max(1, Math.floor(this.anim.progress * 1.8))) : nMax;
+    ctx.strokeStyle = 'rgba(56, 189, 248, 0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    for (let n = 1; n <= drawLimit; n += 1) {
+      const u = round.seqFn(n);
+      if (n === 1) ctx.moveTo(toX(n), toY(u));
+      else ctx.lineTo(toX(n), toY(u));
+    }
+    ctx.stroke();
+
+    for (let n = 1; n <= drawLimit; n += 1) {
+      const u = round.seqFn(n);
+      const wVal = a * Math.sqrt(n);
+      const breach = wVal > u + 1e-6;
+      ctx.fillStyle = breach ? '#fb7185' : '#10b981';
+      ctx.beginPath();
+      ctx.arc(toX(n), toY(u), breach ? 5.5 : 4.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    this.drawLabel(`w_n = ${a.toFixed(1)}\\sqrt{n} → ${a > 0 ? '+∞' : a === 0 ? '0' : '-∞'}`, padX + w * 0.5, padY + 12, {
+      color: a > 0 ? '#fcd34d' : '#fda4af',
+      fontSize: 12
+    });
+    ctx.restore();
+
+    // Draggable alpha handle at n = 16 (sqrt(16) = 4)
+    const hx = toX(16);
+    const hy = clamp(toY(a * 4), padY + 14, padY + h - 14);
+    this.drawDragHandle('alpha', hx, hy, `α=${a.toFixed(1)}`, '#f59e0b');
+    this.handles.push({
+      id: 'alpha', x: hx, y: hy,
+      onDrag: (_, py) => this.setParam('alpha', fromY(py) / 4)
+    });
   }
 }
 
