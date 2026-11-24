@@ -135,12 +135,13 @@ fi
 echo "[$TIMESTAMP] Awakening Math-Arcid-V2 Evolution Cycle - Phase: $PHASE" >> "$LOG_FILE"
 
 # ------------------------------------------------------------------------------
-# 3. Compose Autonomous Prompt
+# 3. Compose Autonomous Prompt (single-quoted heredoc prevents backtick execution!)
 # ------------------------------------------------------------------------------
 if [ "$PHASE" = "ARCHITECT" ]; then
-  PROMPT="[AUTONOMOUS EVOLUTION TRIGGER: MATH-ARCID-V2 | ARCHITECT - $TIMESTAMP]
-You are \"My Homie\" (@eulerx0bot). This is your autonomous **Phase ARCHITECT (Comprehensive Codebase Audit & Next Multi-Day Roadmap Planning)** cycle in **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
-${RECOVERY_NOTE}
+  read -r -d '' PROMPT_TEMPLATE <<'EOF_ARCH_PROMPT' || true
+[AUTONOMOUS EVOLUTION TRIGGER: MATH-ARCID-V2 | ARCHITECT - __TIMESTAMP__]
+You are "My Homie" (@eulerx0bot). This is your autonomous **Phase ARCHITECT (Comprehensive Codebase Audit & Next Multi-Day Roadmap Planning)** cycle in **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
+__RECOVERY_NOTE__
 
 ⚠️ CRITICAL BOUNDARY RULE:
 - Operate EXCLUSIVELY inside /home/ubuntu/Math-Arcid-V2 (GitHub: https://github.com/Ayoubvvch/Math-Arcid-V2 | Live: https://ayoubvvch.github.io/Math-Arcid-V2/).
@@ -165,15 +166,17 @@ ${RECOVERY_NOTE}
 5. Update:
    - `/home/ubuntu/Math-Arcid-V2/evolution/ROADMAP.md`
    - `/home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md`
-   - `/home/ubuntu/Math-Arcid-V2/evolution/STATE.json`: increment `totalCyclesCompleted`, update `lastCycleTimestamp`, set `architectPolicy.lastArchitectCycle` to the new `totalCyclesCompleted` and `architectPolicy.lastArchitectTimestamp` to `$TIMESTAMP`, update `currentSprint` (`status: "ACTIVE"`, `nextCycleNumber`, `nextAlphaMilestone`, `nextOmegaMilestone`), and update `sprintHistory`.
+   - `/home/ubuntu/Math-Arcid-V2/evolution/STATE.json`: increment `totalCyclesCompleted`, update `lastCycleTimestamp`, set `architectPolicy.lastArchitectCycle` to the new `totalCyclesCompleted` and `architectPolicy.lastArchitectTimestamp` to `__TIMESTAMP__`, update `currentSprint` (`status: "ACTIVE"`, `nextCycleNumber`, `nextAlphaMilestone`, `nextOmegaMilestone`), and update `sprintHistory`.
    - `/home/ubuntu/Math-Arcid-V2/evolution/EVOLUTION_LOG.md` (sliding window <= 10 recent entries).
 6. Run `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh` (all 9 stages must pass 100%).
 7. Sync with remote cleanly (`git pull --rebase origin main || true`), commit, and push to `origin main`.
-8. Deliver a concise, sharp Arabic engineering report to Owner Ayoub detailing: (a) Truthful Audit findings, and (b) The newly generated Roadmap."
+8. Deliver a concise, sharp Arabic engineering report to Owner Ayoub detailing: (a) Truthful Audit findings, and (b) The newly generated Roadmap.
+EOF_ARCH_PROMPT
 else
-  PROMPT="[AUTONOMOUS EVOLUTION TRIGGER: MATH-ARCID-V2 | $PHASE - $TIMESTAMP]
-You are \"My Homie\" (@eulerx0bot). This is your scheduled autonomous evolution cycle ($PHASE_DESC) for **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
-${RECOVERY_NOTE}
+  read -r -d '' PROMPT_TEMPLATE <<'EOF_CYCLE_PROMPT' || true
+[AUTONOMOUS EVOLUTION TRIGGER: MATH-ARCID-V2 | __PHASE__ - __TIMESTAMP__]
+You are "My Homie" (@eulerx0bot). This is your scheduled autonomous evolution cycle (__PHASE_DESC__) for **Math-Arcid-V2** (/home/ubuntu/Math-Arcid-V2).
+__RECOVERY_NOTE__
 
 ⚠️ CRITICAL BOUNDARY RULE:
 - Operate EXCLUSIVELY inside /home/ubuntu/Math-Arcid-V2 (GitHub: https://github.com/Ayoubvvch/Math-Arcid-V2 | Live: https://ayoubvvch.github.io/Math-Arcid-V2/).
@@ -186,18 +189,29 @@ ${RECOVERY_NOTE}
    - /home/ubuntu/Math-Arcid-V2/evolution/SPRINT.md
 2. Every curriculum game (Math, Physics, or Chemistry 2BAC PC) MUST satisfy `GOLD_STANDARD.md`:
    - Full-Screen 100vw x 100dvh 60FPS Canvas, zero `backdrop-filter`, zero `shadowBlur > 0`.
-   - Arabic RTL interface (`<html lang=\"ar\" dir=\"rtl\">`) using `ArcadeCore.setBidiSafeMath` + `../../index.html?from=game`.
+   - Arabic RTL interface (`<html lang="ar" dir="rtl">`) using `ArcadeCore.setBidiSafeMath` + `../../index.html?from=game`.
    - Complete 6-Module Architecture (`curriculum.js`, `world.js`, `renderer.js`, `controls.js`, `audio.js`, `game.js` >= 2,800 LOC, >= 24 National Exam Qs, >= 6 interactive `graphSpec` plots, Fisher-Yates option shuffling, DualSense across gameplay + modals, bespoke SVG in `js/hub.js`, and strict `subject`/`order`/`topicStart`/`topicEnd` in `games.json`).
-3. Execute the scheduled milestone for this cycle ($PHASE) from `SPRINT.md` (`[NEXT]` / `[UPCOMING]`) and `STATE.json`. Always verify real file state before editing so you never duplicate existing code or chase false assumptions.
+3. Execute the scheduled milestone for this cycle (__PHASE__) from `SPRINT.md` (`[NEXT]` / `[UPCOMING]`) and `STATE.json`. Always verify real file state before editing so you never duplicate existing code or chase false assumptions.
 4. **PERPETUAL SPRINT TRANSITION RULE**:
-   - If you just completed the **FINAL** milestone of the active Sprint (zero `[UPCOMING]` / `PLANNED` milestones remain), set `\"status\": \"COMPLETED_NEEDS_ROADMAP\"` inside `currentSprint` in `STATE.json` and leave zero `[NEXT` / `[UPCOMING` entries in `SPRINT.md` so **Phase ARCHITECT** triggers automatically on the next cycle.
+   - If you just completed the **FINAL** milestone of the active Sprint (zero `[UPCOMING]` / `PLANNED` milestones remain), set `"status": "COMPLETED_NEEDS_ROADMAP"` inside `currentSprint` in `STATE.json` and leave zero `[NEXT` / `[UPCOMING` entries in `SPRINT.md` so **Phase ARCHITECT** triggers automatically on the next cycle.
 5. Run the 9-Stage Ironclad Quality Gate:
    `bash /home/ubuntu/Math-Arcid-V2/evolution/scripts/verify.sh`
    Do NOT commit or push until ALL 9 stages (including VM graph render & Headless Chromium browser test) pass 100%!
 6. Update `STATE.json`, `SPRINT.md`, `ROADMAP.md` (if changed), and `EVOLUTION_LOG.md` (keep <= 10 entries).
 7. Pull/rebase safely (`git pull --rebase origin main || true`), commit, and push to `origin main` (retry push once if transient network error).
-8. Deliver a concise, sharp Arabic engineering report to Owner Ayoub detailing the achievements of this cycle."
+8. Deliver a concise, sharp Arabic engineering report to Owner Ayoub detailing the achievements of this cycle.
+EOF_CYCLE_PROMPT
 fi
+
+PROMPT=$(node -e '
+  const [tpl, phase, desc, ts, rec] = process.argv.slice(1);
+  process.stdout.write(
+    tpl.replace(/__PHASE__/g, phase)
+       .replace(/__PHASE_DESC__/g, desc)
+       .replace(/__TIMESTAMP__/g, ts)
+       .replace(/__RECOVERY_NOTE__/g, rec)
+  );
+' "$PROMPT_TEMPLATE" "$PHASE" "$PHASE_DESC" "$TIMESTAMP" "$RECOVERY_NOTE")
 
 PRE_HEAD=$(git -C "$REPO_DIR" rev-parse HEAD 2>/dev/null || echo "")
 
