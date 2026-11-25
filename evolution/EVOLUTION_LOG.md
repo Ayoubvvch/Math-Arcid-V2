@@ -3,6 +3,16 @@
 
 ---
 
+### [Cycle 005 — CREATE] 2026-11-25 05:13 UTC | Milestone 1.5: Tangent Prism (الدرس 2: الاشتقاق ودراسة الدوال وتطبيقاتها | 23–40)
+* **Invention & Web Research**: Researched derivative-slope reflector optics, concavity gravity wells, inflection threshold gates, and 2BAC curve-study mechanics; invented **`tangent-prism` («موشور المماس — مرصد الاشتقاق والمنحنيات»)** with a brand-new asymmetric split optical bench + live $f'/f''$ derivative scope and warm Solar-Amber & Obsidian-Plum Atelier aesthetic (`tangent-optics-ricochet-and-symmetry-arcade` / `split-atelier-optical-bench-with-live-derivative-scope` / `analog-glide-aim-phase-beam-and-symmetry-mirror-start` / `solar-amber-obsidian-optical-atelier`).
+* **Real-Time Math-as-Gameplay (5 Observatories covering Skills 23–40, Zero Hors-programme)**:
+  1. **عاكس المماس والانكسار (23–30)**: Live sweeping tangent lighthouse ray $(T)$ ($dy=f'(x)\,dx$) to shatter orbiting prisms, real-time classification of angular points $|x-1|$, vertical half-tangents $\sqrt{x+2}$, chain/radical derivatives, and inverse derivative $(f^{-1})'(y_0)=\frac{1}{f'(x_0)}$.
+  2. **شرارة الدالة المساعدة والمطاريف (31–34, 39)**: Auxiliary sign meteors $g(x)$ & extrema locks, graphical shelter $f(x)\le g(x)$ & irrational intersection $\sqrt{x+2}=x$, plus live rectangle optimization $A(x)=2x(4-x^2)$ and inequality pulse $x+\frac{1}{x}\ge 2$.
+  3. **عدسة التحدّب وبوابات الانعطاف (35)**: Active convex $\cup$ / concave $\cap$ polarity shield, tangent-crossing inflection portals, and 2BAC trap detection on $f''(0)=0$ without sign change ($x^4$).
+  4. **شجرة الفروع اللانهائية والوضع النسبي (36–37, 39)**: Live parabolic branch lock ($(Ox)$, $(Oy)$, $y=ax$) & oblique asymptotes (including irrational $\sqrt{x^2+2x}$) plus above/below $(\Delta)$ relative-position flight.
+  5. **التوأم المتماثل والإنشاء الهندسي (38–40)**: Real-time twin-ship mirror choreography across even $(Oy)$, odd $O$, axis $x=a$, center $\Omega(a,b)$, and periodic $T$ laws to trace $(C_f)$ while dodging disruption orbs.
+* **Verification & Visual Self-Review**: Passed all 7 stages of `verify.sh` including interactive Chromium CDP playtest (`0` console errors, `0` `.katex-error`, animated canvas verified, DualSense `Start(9)` PauseMenu & `390px` mobile zero-overflow confirmed), visually audited desktop & mobile screenshots, fixed 5 layout/KaTeX/formatting details (single-row top bar, non-fractional wave chip, clean `0.0` readout, sleek mobile toast), and re-passed all 7 stages.
+
 ### [Cycle 004 — REMASTER v4.0] 2026-11-24 22:30 UTC | Real-Time Arcade Rebuild + Unified Start Menu & Controller Parity
 * **Root Fix (Zero Passive Sliders)**: Replaced the passive GeoGebra-slider design of `sequence-weaver` and `continuity-rider` with true real-time action gameplay (`v2.0.0`):
   - **`sequence-weaver` v2.0.0**: 5 active real-time modes (induction seed catching + rogue shield deflect `▢`, MCT polarity beam shooter `▢/△/◯`, 3-lane geometric rhythm highway + `Sₙ` nova, homographic fixed-point sniper amid bullet hell, and Gendarme pinch tunnel survival `L2/R2`).

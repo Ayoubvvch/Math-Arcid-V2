@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, viewport-fit=cover" />
+  <title>موشور المماس — مرصد الاشتقاق والمنحنيات | Math-Arcid-V2</title>
+  <meta name="description" content="لعبة أركيد بصرية في الزمن الحقيقي للدرس 2 (الاشتقاق ودراسة الدوال 2BAC PC): صوّب شعاع المماس على المنحنيات، فكّك نقط الانكسار والانعطاف، اعبر شجرة الفروع اللانهائية والوضع النسبي، وقُد التوأم المتماثل بدعم كامل لـ DualSense." />
+  <link rel="stylesheet" href="../../css/common.css" />
+  <link rel="stylesheet" href="../../shared/vendor/katex/katex.min.css" />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+</head>
+<body class="tp-body">
+  <div class="tp-shell">
+    <!-- الشريط العلوي المدمج للمرصد -->
+    <header class="tp-topbar">
+      <div class="tp-bar-group tp-brand-group">
+        <button id="btnPause" class="tp-pill tp-pause-btn" type="button" title="القائمة والإيقاف [Start / Esc]">
+          <span aria-hidden="true">⏸</span>
+          <span>القائمة (Start)</span>
+        </button>
+        <div class="tp-brand">
+          <span class="tp-emblem" data-tex="f'(x)" dir="ltr"></span>
+          <div class="tp-brand-text">
+            <h1 class="tp-title">موشور المماس</h1>
+            <div class="tp-sub">مرصد الاشتقاق والمنحنيات • <bdi dir="ltr" class="math-ltr">2BAC PC (23–40)</bdi></div>
+          </div>
+        </div>
+      </div>
+
+      <nav id="trialNav" class="tp-trial-nav" aria-label="مراصد الدرس الثاني"></nav>
+
+      <div class="tp-bar-group tp-status-group">
+        <div id="gpBadge" class="gp-pill-badge">🎮 لوحة المفاتيح / الماوس</div>
+        <button id="btnAudio" class="tp-pill tp-icon-btn" type="button" title="الصوت [M]" aria-label="تبديل الصوت">🔊</button>
+      </div>
+    </header>
+
+    <!-- مساحة العمل البصرية غير المتماثلة: لوحة التحليل على اليسار + طاولة الموشور على اليمين -->
+    <main class="tp-workspace">
+      <!-- طاولة الموشور التفاعلية الرئيسية -->
+      <section class="tp-bench-pane" aria-label="ساحة بصريات الاشتقاق">
+        <div class="tp-bench-header">
+          <div class="tp-bench-meta">
+            <span id="trialBadge" class="tp-badge">المرصد 1/5</span>
+            <h2 id="trialName" class="tp-trial-name">عاكس المماس والانكسار</h2>
+          </div>
+          <div class="tp-bench-progress">
+            <span id="waveCounter" class="tp-wave-counter" dir="ltr">0 / 9</span>
+            <div class="tp-progress-track">
+              <div id="progressFill" class="tp-progress-fill"></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="canvasFrame" class="tp-canvas-frame">
+          <canvas id="prismCanvas" role="application" aria-label="ساحة موشور المماس التفاعلية"></canvas>
+          <div id="toastOverlay" class="tp-toast hidden" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <!-- عمود القياس التفاضلي ووحدة الأزرار التكتيكية -->
+      <aside class="tp-telemetry-pane" aria-label="رادار المشتقات والتحكم">
+        <!-- عدادات الأركيد -->
+        <div class="tp-arcade-stats">
+          <div class="tp-stat-card">
+            <span class="tp-stat-label">النقاط</span>
+            <strong id="hudScore" class="tp-stat-val" dir="ltr">0</strong>
+          </div>
+          <div class="tp-stat-card accent">
+            <span class="tp-stat-label">الكومبو</span>
+            <strong id="hudCombo" class="tp-stat-val" dir="ltr">×1</strong>
+          </div>
+          <div class="tp-stat-card hp">
+            <span class="tp-stat-label">الدرع</span>
+            <strong id="hudHp" class="tp-stat-val" dir="ltr">♥♥♥♥♥</strong>
+          </div>
+        </div>
+
+        <!-- بطاقة الدالة والهدف المباشر (KaTeX) -->
+        <div class="tp-formula-panel">
+          <div class="tp-panel-eyebrow">
+            <span id="skillTag">المهارات 23–30</span>
+            <span id="subWaveTag" class="tp-subwave-chip">الموجة 1</span>
+          </div>
+          <div id="formulaMain" class="tp-formula-box" data-tex="f(x) = \frac{1}{2}x^2 - 1" dir="ltr"></div>
+          <div id="formulaLive" class="tp-formula-live" data-tex="dy = f'(x)\,dx" dir="ltr"></div>
+          <p id="missionGoal" class="tp-mission-goal"></p>
+        </div>
+
+        <!-- رادار إشارات المشتقة الأولى والثانية الحي -->
+        <div class="tp-scope-panel">
+          <div class="tp-scope-head">
+            <span>رادار التغيّر والانحناء الحي</span>
+            <span id="scopeReadout" class="tp-scope-num" dir="ltr">x₀ = 0.00</span>
+          </div>
+          <div class="tp-scope-gauges">
+            <div class="tp-gauge-row">
+              <span class="tp-gauge-sym" data-tex="f'(x)" dir="ltr"></span>
+              <div class="tp-gauge-bar"><div id="gaugeDf" class="tp-gauge-fill"></div></div>
+              <span id="valDf" class="tp-gauge-val" dir="ltr">0.0</span>
+            </div>
+            <div class="tp-gauge-row">
+              <span class="tp-gauge-sym" data-tex="f''(x)" dir="ltr"></span>
+              <div class="tp-gauge-bar"><div id="gaugeD2f" class="tp-gauge-fill secondary"></div></div>
+              <span id="valD2f" class="tp-gauge-val" dir="ltr">0.0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- لوحة أسلحة ومفاتيح اللعب (متزامنة مع DualSense / كيبورد / لمس) -->
+        <div class="tp-deck-panel">
+          <div class="tp-deck-title">وحدة الإطلاق والطور <span class="tp-deck-keys" dir="ltr">DualSense / Keys</span></div>
+          <div id="actionDeck" class="tp-action-grid"></div>
+          <div id="controlHint" class="tp-control-hint"></div>
+        </div>
+      </aside>
+    </main>
+  </div>
+
+  <!-- شاشة نهاية المرصد -->
+  <div id="endOverlay" class="tp-end-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="tp-end-card">
+      <div id="endGlyph" class="tp-end-glyph">✦</div>
+      <h2 id="endTitle" class="tp-end-title">اكتمل المرصد!</h2>
+      <p id="endDesc" class="tp-end-desc"></p>
+      <div class="tp-end-stats">
+        <div class="tp-end-box"><span>النقاط</span><strong id="endScore" dir="ltr">0</strong></div>
+        <div class="tp-end-box"><span>الدقة</span><strong id="endAcc" dir="ltr">100%</strong></div>
+        <div class="tp-end-box"><span>الرتبة</span><strong id="endRank" dir="ltr">S</strong></div>
+      </div>
+      <div class="tp-end-actions">
+        <button id="btnEndReplay" class="tp-end-btn primary" type="button">🔄 إعادة المرصد (✕)</button>
+        <button id="btnEndNext" class="tp-end-btn accent hidden" type="button">➡ المرصد التالي (△)</button>
+        <a id="btnEndHub" href="../../index.html?from=game" class="tp-end-btn danger">🏠 بوابة الألعاب (◯)</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="../../shared/vendor/katex/katex.min.js"></script>
+  <script src="../../shared/arcade-core.js"></script>
+  <script type="module" src="js/game.js"></script>
+</body>
+</html>

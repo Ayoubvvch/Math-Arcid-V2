@@ -80,6 +80,31 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'tangent-prism') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="tpGlow" cx="54%" cy="46%" r="58%">
+            <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.34" />
+            <stop offset="100%" stop-color="#0e0a15" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#0e0a15" />
+        <circle cx="164" cy="96" r="92" fill="url(#tpGlow)" />
+        <circle cx="160" cy="100" r="64" fill="none" stroke="#f59e0b" stroke-opacity="0.16" stroke-width="1.2" />
+        <line x1="34" y1="100" x2="286" y2="100" stroke="#fde68a" stroke-opacity="0.22" stroke-width="1.1" />
+        <line x1="160" y1="22" x2="160" y2="178" stroke="#fde68a" stroke-opacity="0.22" stroke-width="1.1" />
+        <path d="M 44 156 C 98 156, 126 116, 160 100 C 194 84, 222 44, 276 44" fill="none" stroke="#fef08a" stroke-width="2.8" />
+        <line x1="66" y1="146" x2="254" y2="54" stroke="#f59e0b" stroke-width="2.4" stroke-dasharray="6 4" />
+        <polygon points="160,86 173,100 160,114 147,100" fill="#fde047" stroke="#ffffff" stroke-width="1.8" />
+        <circle cx="234" cy="64" r="10" fill="none" stroke="#34d399" stroke-width="2.2" />
+        <circle cx="86" cy="136" r="8" fill="#fb7185" fill-opacity="0.88" />
+        <text x="86" y="48" text-anchor="middle" fill="#fde047" font-family="KaTeX_Math, Georgia, serif" font-style="italic" font-weight="700" font-size="14">dy = f'(x)dx</text>
+        <text x="238" y="156" text-anchor="middle" fill="#fb7185" font-family="KaTeX_Main, Georgia, serif" font-weight="700" font-size="12">f''(x₀) = 0</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />
