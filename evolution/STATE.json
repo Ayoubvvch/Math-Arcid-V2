@@ -21,9 +21,9 @@
     "lastArchitectTimestamp": "2026-11-24T02:00:00Z"
   },
   "metrics": {
-    "totalCyclesCompleted": 5,
-    "lastCycleTimestamp": "2026-11-25T05:13:00Z",
-    "lastCyclePhase": "Cycle 005 (CREATE): Invented & built Tangent Prism (موشور المماس) for Lesson 2 (Dérivation & Étude de Fonctions, Skills 23–40) with Solar-Amber Optical Atelier UI, 5 real-time trials, live derivative radar, full DualSense & ArcadeCore.PauseMenu",
+    "totalCyclesCompleted": 6,
+    "lastCycleTimestamp": "2026-11-25T17:15:00Z",
+    "lastCyclePhase": "Cycle 006 (POLISH): Deep interactive playtest, bug-fixing, game-feel juice (hit-stop, shockwaves, trails, right-stick micro-aim, touch drag-vs-tap) & 100% Lesson 2 (Skills 23–40) coverage polish for Tangent Prism v1.1.0",
     "totalGamesLive": 4,
     "verificationStatus": "PASSED_ALL_7_GATES"
   },
@@ -68,7 +68,7 @@
       "slug": "tangent-prism",
       "title": "موشور المماس — مرصد الاشتقاق والمنحنيات",
       "category": "التحليل",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "genre": "tangent-optics-ricochet-and-symmetry-arcade",
       "status": "LIVE_ACTIVE"
     }
@@ -77,9 +77,9 @@
     "id": "REBOOT_SPRINT_01",
     "name": "الولادة الإبداعية الجديدة — ألعاب حقيقية للدروس 3، 1، 2، 4 (v4.0)",
     "status": "ACTIVE",
-    "nextCycleNumber": 6,
+    "nextCycleNumber": 7,
     "nextAlphaMilestone": "Milestone 1.7 (Cycle 007-CREATE): Research & invent an original real-time game for Lesson 4: الدوال اللوغاريتمية (Skills 53–62)",
-    "nextOmegaMilestone": "Milestone 1.6 (Cycle 006-POLISH): Playtest, deepen mechanics & polish Lesson 2 Tangent Prism (موشور المماس)"
+    "nextOmegaMilestone": "Milestone 1.8 (Cycle 008-POLISH): Playtest, deepen mechanics & polish Lesson 4 game and close REBOOT_SPRINT_01"
   },
   "perpetualRoadmapPolicy": {
     "enabled": true,

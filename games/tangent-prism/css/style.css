@@ -234,8 +234,34 @@
 .tp-bench-progress {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
   flex-shrink: 0;
+}
+
+.tp-wave-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24rem;
+}
+
+.tp-wave-pip {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(253, 224, 71, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+  transition: transform 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+
+.tp-wave-pip.done {
+  background: var(--tp-jade);
+  border-color: #6ee7b7;
+}
+
+.tp-wave-pip.active {
+  background: var(--tp-gold);
+  border-color: #ffffff;
+  transform: scale(1.22);
 }
 
 .tp-wave-counter {
@@ -281,16 +307,16 @@
 
 .tp-toast {
   position: absolute;
-  top: 0.55rem;
+  bottom: 0.55rem;
   left: 50%;
   transform: translateX(-50%);
-  max-width: 90%;
-  padding: 0.32rem 0.8rem;
+  max-width: 92%;
+  padding: 0.32rem 0.85rem;
   border-radius: 12px;
   border: 1.5px solid var(--tp-border-strong);
-  background: rgba(20, 14, 29, 0.94);
+  background: rgba(16, 11, 24, 0.94);
   color: var(--tp-ivory);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
   text-align: center;
   pointer-events: none;
@@ -339,6 +365,13 @@
 
 .tp-stat-card.accent {
   border-color: rgba(253, 224, 71, 0.42);
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+.tp-stat-card.accent.overdrive {
+  border-color: var(--tp-gold);
+  background: rgba(245, 158, 11, 0.22);
+  transform: scale(1.03);
 }
 
 .tp-stat-card.hp {
@@ -382,20 +415,30 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.4rem;
+  gap: 0.38rem;
   font-size: 0.7rem;
   font-weight: 800;
   color: var(--tp-amber);
   margin-bottom: 0.35rem;
+  flex-wrap: nowrap;
+}
+
+.tp-panel-eyebrow > span:first-child {
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .tp-subwave-chip {
-  padding: 0.1rem 0.46rem;
+  padding: 0.12rem 0.48rem;
   border-radius: 999px;
   background: rgba(251, 113, 133, 0.16);
   border: 1px solid rgba(251, 113, 133, 0.42);
   color: #fecdd3;
-  font-size: 0.68rem;
+  font-size: 0.67rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .tp-formula-box {
@@ -775,10 +818,12 @@
   }
 
   .tp-toast {
-    top: 0.38rem;
-    padding: 0.24rem 0.58rem;
-    font-size: 0.7rem;
-    line-height: 1.35;
+    bottom: 0.25rem;
+    max-width: 96%;
+    padding: 0.18rem 0.52rem;
+    font-size: 0.66rem;
+    line-height: 1.28;
+    border-radius: 9px;
   }
 
   .tp-act-btn {
