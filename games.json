@@ -175,5 +175,49 @@
     "accentColor": "#f59e0b",
     "status": "ready",
     "featured": true
+  },
+  {
+    "id": "log-pulse",
+    "subject": "math",
+    "order": 5,
+    "unitLabel": "الدرس 4 • اللوغاريتم",
+    "topicStart": 53,
+    "topicEnd": 62,
+    "title": "سُونار اللوغاريتم — نبض الديسيبل و ln",
+    "slug": "log-pulse",
+    "category": "التحليل",
+    "topicRange": "الدوال اللوغاريتمية (53–62)",
+    "difficulty": "حركي • سونار قطبي",
+    "difficultyLevel": 4,
+    "version": "1.0.0",
+    "description": "أركيد سونار أعماق في الزمن الحقيقي للدرس 4 (2BAC PC): احمِ جدار المجال $]0,+\\infty[$ وعاير الأصلية لـ $\\frac{1}{x}$ المنعدمة في $1$، صوّب سونار 360° لصهر $\\ln(ab)$ و $\\ln(\\frac{a}{b})$ و $r\\ln a$، اخترق بوابات المعادلات وفخ $D_E$ ومفاعل $\\frac{u'}{u}$، سابق التزايد المقارن نحو $0^+$ و $+\\infty$، واقلب أساس $\\log_a$ وموجات الديسيبل $10^x=a$ لهزيمة زعيم المنحنى!",
+    "mathConcepts": [
+      "مجال $]0,+\\infty[$، الأصلية لـ $\\frac{1}{x}$ المنعدمة في $1$، وإشارة $\\ln x$",
+      "صهر الخواص الجبرية $\\ln(ab), \\ln(\\frac{a}{b}), -\\ln b, r\\ln a$ ($r\\in\\mathbb{Q}$)",
+      "المعادلات والمتراجحات والنظمات اللوغاريتمية ومشتقة وأصلية $\\frac{u'}{u}$",
+      "النهايات والتزايد المقارن ($x^n, \\sqrt{x}$)، لوغاريتم الأساس $a$، والديسيبل $10^x=a$"
+    ],
+    "keywords": ["اللوغاريتم", "ln", "log", "التزايد المقارن", "لوغاريتم عشري", "الأساس a", "المشتقة اللوغاريتمية", "logarithme", "decibel"],
+    "controls": [
+      "عصا اليسار / اليمين / WASD / الماوس: توجيه الغواصة وتدوير سونار 360°",
+      "✕ (Cross / Space / نقر): قفل المعايرة / صهر الجداء / اختراق المعادلة / رنين log_a",
+      "▢ / △ / ◯ (J / K / L): نبضات الحظر والإشارة والخارج والمقلوب والقوى والتزايد المقارن",
+      "L2 / R2 (Q / E): ضبط الأس r وتبديل الأساس a في log_a لحظياً",
+      "L1 / R1 (Tab): التنقل بين العمليات الصوتية الخمس",
+      "Start (Options) / Esc: قائمة الإيقاف والخروج لبوابة الألعاب"
+    ],
+    "creativeProfile": {
+      "genre": "polar-acoustic-sonar-and-logarithmic-forge-arcade",
+      "camera": "full-bleed-polar-bathyscaphe-sonar-with-hud-deck",
+      "coreMechanic": "توجيه سونار قطبي 360° لصهر خواص ln، قيادة الغواصة داخل مجال التعريف ومتراجحات ln ومفاعلات u'/u، سباق التزايد المقارن نحو 0+ و +∞، وقلب أساس log_a وموجات الديسيبل 10^x=a وزعيم المنحنى بالزمن الحقيقي",
+      "controlScheme": "polar-analog-sonar-aim-beam-fusion-and-base-flip-start",
+      "visualStyle": "abyssal-crimson-bioluminescent-sonar-deck"
+    },
+    "path": "games/log-pulse/index.html",
+    "badge": "الدرس 4 • 53–62",
+    "icon": "$\\ln x$",
+    "accentColor": "#f43f5e",
+    "status": "ready",
+    "featured": true
   }
 ]

@@ -105,6 +105,33 @@ function getGameArtworkSVG(game) {
     `;
   }
 
+  if (game.id === 'log-pulse') {
+    return `
+      <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <defs>
+          <radialGradient id="lpGlow" cx="50%" cy="50%" r="58%">
+            <stop offset="0%" stop-color="#f43f5e" stop-opacity="0.34" />
+            <stop offset="65%" stop-color="#2dd4bf" stop-opacity="0.12" />
+            <stop offset="100%" stop-color="#040d12" stop-opacity="0" />
+          </radialGradient>
+        </defs>
+        <rect width="320" height="200" fill="#040d12" />
+        <circle cx="160" cy="100" r="92" fill="url(#lpGlow)" />
+        <circle cx="160" cy="100" r="72" fill="none" stroke="#2dd4bf" stroke-opacity="0.22" stroke-width="1.2" />
+        <circle cx="160" cy="100" r="46" fill="none" stroke="#f43f5e" stroke-opacity="0.32" stroke-width="1.4" stroke-dasharray="5 4" />
+        <line x1="88" y1="24" x2="88" y2="176" stroke="#f43f5e" stroke-width="2" stroke-opacity="0.72" />
+        <line x1="34" y1="118" x2="286" y2="118" stroke="#94b3bc" stroke-opacity="0.26" stroke-width="1.1" />
+        <path d="M 96 172 C 102 126, 128 118, 160 100 C 195 82, 236 72, 282 64" fill="none" stroke="#2dd4bf" stroke-width="3" />
+        <path d="M 96 42 C 108 92, 146 118, 282 146" fill="none" stroke="#fb7185" stroke-width="2" stroke-opacity="0.75" stroke-dasharray="4 4" />
+        <circle cx="128" cy="118" r="5" fill="#fcd34d" />
+        <circle cx="204" cy="84" r="7" fill="#071a24" stroke="#fcd34d" stroke-width="2.2" />
+        <text x="60" y="54" text-anchor="middle" fill="#fda4af" font-family="KaTeX_Main, Georgia, serif" font-weight="700" font-size="11">x &gt; 0</text>
+        <text x="234" y="46" text-anchor="middle" fill="#5eead4" font-family="KaTeX_Math, Georgia, serif" font-style="italic" font-weight="700" font-size="14">y = ln(x)</text>
+        <text x="234" y="168" text-anchor="middle" fill="#fcd34d" font-family="KaTeX_Main, Georgia, serif" font-weight="700" font-size="12">logₐ(x) • 10ˣ</text>
+      </svg>
+    `;
+  }
+
   return `
     <svg class="tile-svg" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <rect width="320" height="200" fill="#070c18" />

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>سُونار اللوغاريتم — نبض الديسيبل و ln | Math-Arcid-V2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../shared/vendor/katex/katex.min.css" />
+  <link rel="stylesheet" href="../../css/common.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="sonar-shell" id="sonarShell">
+    <!-- Top Sonar Command Bar -->
+    <header class="sonar-topbar">
+      <div class="brand-cluster">
+        <a href="../../index.html?from=game" class="exit-pill" id="btnBackHub" title="العودة إلى بوابة الألعاب">
+          <span aria-hidden="true">⟵</span>
+          <span>البوابة</span>
+        </a>
+        <div class="brand-title-wrap">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <h1 class="brand-title">سُونار اللوغاريتم</h1>
+          <span class="lesson-tag math-auto">درس 4 • $\ln$</span>
+        </div>
+      </div>
+
+      <nav class="ops-rail" id="opsRail" aria-label="العمليات الصوتية الخمس">
+        <button type="button" class="op-tab active" data-op="0">
+          <span class="op-idx">1</span>
+          <span class="op-name math-auto">المجال و $\frac{1}{x}$</span>
+        </button>
+        <button type="button" class="op-tab" data-op="1">
+          <span class="op-idx">2</span>
+          <span class="op-name math-auto">مِصهر $\ln$</span>
+        </button>
+        <button type="button" class="op-tab" data-op="2">
+          <span class="op-idx">3</span>
+          <span class="op-name math-auto">معادلات $\frac{u'}{u}$</span>
+        </button>
+        <button type="button" class="op-tab" data-op="3">
+          <span class="op-idx">4</span>
+          <span class="op-name">التزايد</span>
+        </button>
+        <button type="button" class="op-tab" data-op="4">
+          <span class="op-idx">5</span>
+          <span class="op-name math-auto">$\log_a$ و $10^x$</span>
+        </button>
+      </nav>
+
+      <div class="hud-cluster">
+        <div class="stat-chip hull" title="سلامة هيكل الغواصة">
+          <span class="stat-lbl">الهيكل</span>
+          <span class="stat-val" id="hudHull">♥♥♥♥</span>
+        </div>
+        <div class="stat-chip score" title="النقاط والمضاعف">
+          <span class="stat-lbl">النقاط</span>
+          <span class="stat-val" id="hudScore">0</span>
+          <span class="combo-pill" id="hudCombo">×1</span>
+        </div>
+        <div class="gp-pill-badge disconnected" id="gpBadge" title="حالة وحدة التحكم DualSense">
+          <span class="gp-dot" aria-hidden="true"></span>
+          <span id="gpLabel">لوحة المفاتيح / DualSense</span>
+        </div>
+        <button type="button" class="icon-pill" id="btnMute" title="كتم / تشغيل الصوت (M)" aria-label="تبديل الصوت">🔊</button>
+        <button type="button" class="pause-pill" id="btnPause" title="القائمة (Start / Esc)">
+          <span>⏸ القائمة</span>
+          <kbd>Start</kbd>
+        </button>
+      </div>
+    </header>
+
+    <!-- Full-Bleed Polar Bathyscaphe Sonar Stage -->
+    <main class="sonar-stage-wrap" id="sonarStageWrap">
+      <canvas id="sonarCanvas" aria-label="لوحة سونار الدوال اللوغاريتمية التفاعلية"></canvas>
+
+      <!-- Floating Top Mission Strip (Non-Blocking) -->
+      <div class="mission-strip" id="missionStrip">
+        <div class="mission-badge-row">
+          <span class="op-pill" id="hudOpBadge">العملية 1/5</span>
+          <div class="wave-pips" id="wavePips" aria-label="تقدم الموجات"></div>
+          <span class="skills-chip" id="hudSkills">المهارات 53 • 56</span>
+        </div>
+        <div class="mission-prompt" id="hudPrompt"></div>
+        <div class="mission-formula-bar" id="hudFormulaBar"></div>
+      </div>
+
+      <!-- Floating Telemetry Pill (Bottom Right, Live Math Readout) -->
+      <div class="live-readout" id="liveReadout" aria-live="off"></div>
+
+      <!-- Non-Blocking Pedagogical Sonar Toast (Bottom Left) -->
+      <div class="sonar-toast" id="sonarToast" aria-live="polite"></div>
+
+      <!-- Bottom Tactile Action Deck (DualSense + Keyboard + Click/Touch Parity) -->
+      <section class="action-deck" id="actionDeck" aria-label="أدوات السونار الصوتية">
+        <button type="button" class="deck-btn btn-cross" id="actCross" data-action="cross">
+          <span class="ps-glyph cross">✕</span>
+          <span class="deck-label" id="lblCross">نبضة القفل</span>
+          <kbd class="key-hint">Space</kbd>
+        </button>
+        <button type="button" class="deck-btn btn-square" id="actSquare" data-action="square">
+          <span class="ps-glyph square">▢</span>
+          <span class="deck-label" id="lblSquare">درع الحظر</span>
+          <kbd class="key-hint">J / 1</kbd>
+        </button>
+        <button type="button" class="deck-btn btn-triangle" id="actTriangle" data-action="triangle">
+          <span class="ps-glyph triangle">△</span>
+          <span class="deck-label" id="lblTriangle">نبضة السالب</span>
+          <kbd class="key-hint">K / 2</kbd>
+        </button>
+        <button type="button" class="deck-btn btn-circle" id="actCircle" data-action="circle">
+          <span class="ps-glyph circle">◯</span>
+          <span class="deck-label" id="lblCircle">نبضة الموجب</span>
+          <kbd class="key-hint">L / 3</kbd>
+        </button>
+        <div class="trigger-pair" id="triggerPair">
+          <button type="button" class="deck-btn btn-trig" id="actL2" data-action="l2">
+            <span class="ps-glyph trig">L2</span>
+            <span class="deck-label" id="lblL2">خفض</span>
+            <kbd class="key-hint">Q</kbd>
+          </button>
+          <button type="button" class="deck-btn btn-trig" id="actR2" data-action="r2">
+            <span class="ps-glyph trig">R2</span>
+            <span class="deck-label" id="lblR2">رفع</span>
+            <kbd class="key-hint">E</kbd>
+          </button>
+        </div>
+      </section>
+
+      <!-- Result / Operation Complete / Hull Breach Modal -->
+      <div class="result-overlay hidden" id="resultOverlay" role="dialog" aria-modal="true" aria-label="تقرير المهمة">
+        <div class="result-card">
+          <div class="result-eyebrow" id="resEyebrow">LOGARITHMIC SONAR REPORT</div>
+          <h2 class="result-title" id="resTitle">اكتملت العملية الصوتية!</h2>
+          <p class="result-sub" id="resSub"></p>
+          <div class="result-grid">
+            <div class="res-stat">
+              <span class="res-k">النقاط</span>
+              <strong class="res-v" id="resScore">0</strong>
+            </div>
+            <div class="res-stat">
+              <span class="res-k">الدقة</span>
+              <strong class="res-v" id="resAcc">100%</strong>
+            </div>
+            <div class="res-stat">
+              <span class="res-k">أعلى كومبو</span>
+              <strong class="res-v" id="resCombo">×1</strong>
+            </div>
+            <div class="res-stat rank-box">
+              <span class="res-k">الرتبة</span>
+              <strong class="res-v rank" id="resRank">S</strong>
+            </div>
+          </div>
+          <div class="result-actions">
+            <button type="button" class="res-btn primary" id="btnResNext">
+              <span>▶ العملية التالية</span>
+              <kbd>✕ / Enter</kbd>
+            </button>
+            <button type="button" class="res-btn" id="btnResRetry">
+              <span>🔄 إعادة العملية</span>
+              <kbd>△ / R</kbd>
+            </button>
+            <a href="../../index.html?from=game" class="res-btn danger" id="btnResHub">
+              <span>🏠 العودة للبوابة</span>
+              <kbd>◯</kbd>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="../../shared/vendor/katex/katex.min.js"></script>
+  <script src="../../shared/arcade-core.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
