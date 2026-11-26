@@ -21,9 +21,9 @@
     "lastArchitectTimestamp": "2026-11-24T02:00:00Z"
   },
   "metrics": {
-    "totalCyclesCompleted": 7,
-    "lastCycleTimestamp": "2026-11-26T05:16:00Z",
-    "lastCyclePhase": "Cycle 007 (CREATE): Researched logarithmic acoustics/sonar mechanics and built Log Pulse (سُونار اللوغاريتم v1.0.0) — 5 real-time polar sonar operations (15 waves) covering 100% of Lesson 4 (Skills 53–62)",
+    "totalCyclesCompleted": 8,
+    "lastCycleTimestamp": "2026-11-26T17:20:00Z",
+    "lastCyclePhase": "Cycle 008 (POLISH): Deep interactive playtest, physics/input/spoiler fixes, DualSense parity, audio/visual juice & Lesson 4 (53–62) 100% polish for Log Pulse v1.1.0 — closed REBOOT_SPRINT_01",
     "totalGamesLive": 5,
     "verificationStatus": "PASSED_ALL_7_GATES"
   },
@@ -79,7 +79,7 @@
       "slug": "log-pulse",
       "title": "سُونار اللوغاريتم — نبض الديسيبل و ln",
       "category": "التحليل",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "genre": "polar-acoustic-sonar-and-logarithmic-forge-arcade",
       "status": "LIVE_ACTIVE"
     }
@@ -87,9 +87,9 @@
   "currentSprint": {
     "id": "REBOOT_SPRINT_01",
     "name": "الولادة الإبداعية الجديدة — ألعاب حقيقية للدروس 3، 1، 2، 4 (v4.0)",
-    "status": "ACTIVE",
-    "nextCycleNumber": 8,
-    "nextAlphaMilestone": "Milestone 1.8 (Cycle 008-POLISH): Deep interactive playtest, polish & deepen Log Pulse (Lesson 4) and close REBOOT_SPRINT_01",
+    "status": "COMPLETED_NEEDS_ROADMAP",
+    "nextCycleNumber": 9,
+    "nextAlphaMilestone": "Phase ARCHITECT (Post-Sprint Audit): Audit REBOOT_SPRINT_01 (Lessons 3, 1, 2, 4) & architect REBOOT_SPRINT_02 (Lessons 5, 6, 7, 8)",
     "nextOmegaMilestone": "Phase ARCHITECT (Post-Sprint Audit): Audit REBOOT_SPRINT_01 (Lessons 3, 1, 2, 4) & architect REBOOT_SPRINT_02 (Lessons 5, 6, 7, 8)"
   },
   "perpetualRoadmapPolicy": {

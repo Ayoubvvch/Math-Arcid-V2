@@ -251,9 +251,10 @@ html, body {
 }
 
 .combo-pill.hot {
-  background: rgba(252, 211, 77, 0.22);
+  background: rgba(252, 211, 77, 0.24);
   border-color: var(--sonar-gold);
   color: var(--sonar-gold);
+  box-shadow: 0 0 10px rgba(252, 211, 77, 0.35);
 }
 
 .gp-dot {
@@ -854,19 +855,43 @@ html, body {
   }
 
   .live-readout {
-    bottom: 108px;
+    bottom: 96px;
+    left: 8px;
     right: 8px;
     font-size: 0.68rem;
-    padding: 4px 8px;
-    max-width: calc(56% - 10px);
+    padding: 4px 9px;
+    max-width: none;
+    text-align: center;
   }
 
   .sonar-toast {
-    bottom: 108px;
+    bottom: 132px;
     left: 8px;
-    font-size: 0.68rem;
-    padding: 5px 8px;
-    max-width: calc(44% - 10px);
+    right: 8px;
+    font-size: 0.69rem;
+    padding: 5px 10px;
+    max-width: none;
+    text-align: center;
+  }
+
+  .sonar-stage-wrap.single-pad .live-readout {
+    bottom: 56px;
+  }
+
+  .sonar-stage-wrap.single-pad .sonar-toast {
+    bottom: 92px;
+  }
+
+  .sonar-stage-wrap.single-pad .action-deck .deck-btn:not(.hidden-pad) {
+    grid-column: 1 / -1;
+  }
+
+  .sonar-stage-wrap.has-triggers .live-readout {
+    bottom: 138px;
+  }
+
+  .sonar-stage-wrap.has-triggers .sonar-toast {
+    bottom: 174px;
   }
 
   .action-deck {
