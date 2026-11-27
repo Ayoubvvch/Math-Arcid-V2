@@ -1,236 +1,437 @@
-.sw-arcade-body {
-  background: #04090e;
-  color: #f8fafc;
+/* ==========================================================================
+   Sequence Weaver v2.1 — Emerald & Gilded Brass Astrolabe Deck
+   Architecturally distinct from continuity-rider, tangent-prism & log-pulse.
+   Zero backdrop-filter, 60FPS GPU-composited, 1280x800 & 390x844 clean fit.
+   ========================================================================== */
+
+:root {
+  --astro-bg: #030d0b;
+  --astro-deep: #051613;
+  --astro-surface: #081e1a;
+  --astro-surface-hi: #0d2b25;
+  --astro-emerald: #10b981;
+  --astro-emerald-hi: #34d399;
+  --astro-brass: #e6b95c;
+  --astro-brass-dim: rgba(230, 185, 92, 0.36);
+  --astro-teal: #2dd4bf;
+  --astro-cyan: #38bdf8;
+  --astro-rose: #fb7185;
+  --astro-ivory: #ecfdf5;
+  --astro-muted: #94b8ad;
+}
+
+.astro-body {
+  background: var(--astro-bg);
+  color: var(--astro-ivory);
   overflow: hidden;
   user-select: none;
   -webkit-user-select: none;
 }
 
-.sw-shell {
+.astro-shell {
   display: flex;
   flex-direction: column;
   width: 100vw;
   height: 100dvh;
-  background: radial-gradient(circle at 50% 25%, rgba(16, 185, 129, 0.12), #04090e 72%);
+  background:
+    radial-gradient(circle at 50% 18%, rgba(16, 185, 129, 0.14), transparent 56%),
+    radial-gradient(circle at 82% 85%, rgba(230, 185, 92, 0.08), transparent 46%),
+    var(--astro-bg);
 }
 
-.sw-topbar {
+/* ---------- 1. Single-Row Emerald Brass Header ---------- */
+.astro-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.65rem;
-  padding: 0.5rem 0.9rem;
-  background: rgba(7, 15, 22, 0.96);
-  border-bottom: 1px solid rgba(16, 185, 129, 0.25);
-  flex-shrink: 0;
-  flex-wrap: wrap;
-}
-
-.sw-top-group {
-  display: flex;
-  align-items: center;
   gap: 0.6rem;
+  padding: 0.42rem 0.85rem;
+  background: #04120f;
+  border-bottom: 1.5px solid rgba(230, 185, 92, 0.28);
+  flex-shrink: 0;
 }
 
-.sw-brand {
+.astro-cluster {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.5rem;
+  min-width: 0;
 }
 
-.sw-emblem {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+.astro-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.astro-medallion {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
   display: grid;
   place-items: center;
-  background: rgba(16, 185, 129, 0.16);
-  border: 1px solid rgba(16, 185, 129, 0.45);
-  color: #6ee7b7;
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.25), rgba(5, 22, 19, 0.96));
+  border: 1.5px solid var(--astro-brass);
+  box-shadow: inset 0 0 0 2px rgba(16, 185, 129, 0.25);
+  color: var(--astro-brass);
+  flex-shrink: 0;
+}
+
+.astro-medallion-tex {
+  font-size: 0.82rem;
   font-weight: 800;
 }
 
-.sw-title {
-  font-size: 1rem;
-  font-weight: 900;
-  line-height: 1.15;
-}
-
-.sw-sub {
-  font-size: 0.72rem;
-  color: #94a3b8;
-}
-
-.sw-stage-nav {
+.astro-brand-copy {
   display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  overflow-x: auto;
-  max-width: 100%;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.sw-stage-pill {
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  background: rgba(15, 23, 42, 0.85);
-  color: #cbd5e1;
-  padding: 0.3rem 0.62rem;
-  border-radius: 999px;
-  font-family: var(--font-sans);
-  font-size: 0.74rem;
-  font-weight: 700;
+.astro-title {
+  font-size: 0.96rem;
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--astro-ivory);
   white-space: nowrap;
+}
+
+.astro-sub {
+  font-size: 0.68rem;
+  color: var(--astro-muted);
+  white-space: nowrap;
+}
+
+.astro-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.32rem;
+  border: 1px solid rgba(230, 185, 92, 0.34);
+  background: var(--astro-surface);
+  color: var(--astro-ivory);
+  padding: 0.28rem 0.62rem;
+  border-radius: 9px;
+  font-family: var(--font-sans);
+  font-size: 0.76rem;
+  font-weight: 800;
   cursor: pointer;
+  white-space: nowrap;
   transition: border-color 0.14s ease, background 0.14s ease, transform 0.14s ease;
 }
 
-.sw-stage-pill.active {
-  border-color: #10b981;
-  background: rgba(16, 185, 129, 0.22);
-  color: #ecfdf5;
+.astro-btn:hover {
+  border-color: var(--astro-brass);
+  background: var(--astro-surface-hi);
 }
 
-.sw-stage-pill.cleared {
-  border-color: rgba(245, 158, 11, 0.55);
-  color: #fde68a;
-}
-
-.sw-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  border: 1px solid rgba(148, 163, 184, 0.28);
-  background: rgba(15, 23, 42, 0.9);
-  color: #f8fafc;
-  padding: 0.34rem 0.72rem;
-  border-radius: 10px;
-  font-family: var(--font-sans);
-  font-size: 0.78rem;
-  font-weight: 800;
-  cursor: pointer;
-}
-
-.sw-pause-btn {
-  border-color: rgba(0, 229, 255, 0.45);
-  background: rgba(0, 229, 255, 0.12);
-  color: #cffafe;
-}
-
-.sw-stat {
-  display: flex;
-  align-items: baseline;
-  gap: 0.35rem;
-  padding: 0.24rem 0.62rem;
-  border-radius: 9px;
-  background: rgba(15, 23, 42, 0.85);
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  font-size: 0.75rem;
-}
-
-.sw-stat span {
-  color: #94a3b8;
-}
-
-.sw-stat strong {
+.astro-btn kbd {
   font-family: var(--font-mono);
-  color: #6ee7b7;
-  font-size: 0.86rem;
+  font-size: 0.66rem;
+  padding: 0.08rem 0.32rem;
+  border-radius: 5px;
+  background: rgba(3, 13, 11, 0.85);
+  border: 1px solid rgba(230, 185, 92, 0.35);
+  color: var(--astro-brass);
 }
 
-#hudHp {
-  color: #fb7185;
+.astro-pause-btn {
+  border-color: rgba(45, 212, 191, 0.5);
+  background: rgba(16, 185, 129, 0.14);
+}
+
+.astro-icon-btn {
+  padding: 0.28rem 0.5rem;
+}
+
+.astro-meter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.32rem;
+  padding: 0.2rem 0.56rem;
+  border-radius: 8px;
+  background: rgba(8, 30, 26, 0.9);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  white-space: nowrap;
+}
+
+.astro-meter-lbl {
+  font-size: 0.68rem;
+  color: var(--astro-muted);
+  font-weight: 700;
+}
+
+.astro-meter-val {
+  font-family: var(--font-mono);
+  font-size: 0.84rem;
+  color: var(--astro-emerald-hi);
+  font-weight: 800;
+}
+
+.astro-meter.combo {
+  border-color: rgba(230, 185, 92, 0.36);
+}
+
+.astro-meter.combo .astro-meter-val {
+  color: var(--astro-brass);
+}
+
+.astro-meter.hp .astro-meter-val {
+  color: var(--astro-rose);
   letter-spacing: 1px;
 }
 
-.sw-arena-wrap {
+.astro-gp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #64748b;
+  flex-shrink: 0;
+}
+
+.gp-pill-badge.connected .astro-gp-dot {
+  background: var(--astro-emerald-hi);
+}
+
+.astro-header .gp-pill-badge {
+  padding: 0.22rem 0.58rem;
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+
+/* ---------- 2. 5-Column Astrolabe Dial Arch ---------- */
+.astro-dial-rail {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.38rem;
+  padding: 0.36rem 0.85rem;
+  background: #051512;
+  border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+  flex-shrink: 0;
+}
+
+.astro-dial-tab {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 9px;
+  border: 1px solid rgba(148, 184, 173, 0.22);
+  background: rgba(8, 28, 24, 0.85);
+  color: #b7d3c9;
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 800;
+  cursor: pointer;
+  min-width: 0;
+  transition: border-color 0.14s ease, background 0.14s ease, transform 0.14s ease;
+}
+
+.astro-dial-tab:hover {
+  border-color: rgba(230, 185, 92, 0.55);
+  color: var(--astro-ivory);
+}
+
+.astro-dial-tab.active {
+  border-color: var(--astro-brass);
+  background: linear-gradient(180deg, rgba(16, 185, 129, 0.24), rgba(10, 38, 32, 0.94));
+  color: var(--astro-ivory);
+}
+
+.astro-dial-tab.cleared {
+  border-color: rgba(16, 185, 129, 0.65);
+}
+
+.astro-dial-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: rgba(3, 13, 11, 0.85);
+  border: 1px solid rgba(230, 185, 92, 0.35);
+  color: var(--astro-brass);
+  flex-shrink: 0;
+}
+
+.astro-dial-tab.active .astro-dial-num {
+  background: var(--astro-brass);
+  color: #03100d;
+  border-color: var(--astro-brass);
+}
+
+.astro-dial-tab.cleared .astro-dial-num {
+  background: var(--astro-emerald);
+  color: #03100d;
+  border-color: var(--astro-emerald-hi);
+}
+
+.astro-dial-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- 3. Main Chamber ---------- */
+.astro-chamber {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  padding: 0.55rem 0.9rem 0.65rem;
-  gap: 0.5rem;
+  padding: 0.42rem 0.85rem 0.5rem;
+  gap: 0.42rem;
 }
 
-.sw-mission-strip {
+.astro-directive-bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.45rem 0.8rem;
-  background: rgba(8, 18, 26, 0.92);
-  border: 1px solid rgba(16, 185, 129, 0.24);
+  gap: 0.6rem;
+  padding: 0.38rem 0.72rem;
+  background: linear-gradient(90deg, rgba(7, 25, 22, 0.96), rgba(9, 32, 27, 0.94));
+  border: 1px solid rgba(230, 185, 92, 0.3);
   border-radius: 12px;
   flex-shrink: 0;
   flex-wrap: wrap;
 }
 
-.sw-mission-left {
+.astro-dir-primary {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
+  min-width: 0;
 }
 
-.sw-badge {
-  background: rgba(16, 185, 129, 0.2);
-  border: 1px solid rgba(16, 185, 129, 0.45);
-  color: #6ee7b7;
-  padding: 0.15rem 0.55rem;
-  border-radius: 8px;
-  font-size: 0.74rem;
+.astro-stage-chip {
+  background: rgba(230, 185, 92, 0.16);
+  border: 1px solid rgba(230, 185, 92, 0.5);
+  color: #fde68a;
+  padding: 0.12rem 0.52rem;
+  border-radius: 7px;
+  font-size: 0.72rem;
   font-weight: 800;
+  white-space: nowrap;
 }
 
-.sw-stage-title {
-  font-size: 0.92rem;
-  font-weight: 800;
+.astro-wave-pips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.24rem;
 }
 
-.sw-formula {
-  padding: 0.12rem 0.55rem;
+.astro-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(148, 184, 173, 0.25);
+  border: 1px solid rgba(230, 185, 92, 0.4);
+}
+
+.astro-pip.active {
+  background: var(--astro-brass);
+  transform: scale(1.18);
+}
+
+.astro-pip.done {
+  background: var(--astro-emerald-hi);
+  border-color: var(--astro-emerald-hi);
+}
+
+.astro-stage-title {
+  font-size: 0.88rem;
+  font-weight: 900;
+  color: var(--astro-ivory);
+  white-space: nowrap;
+}
+
+.astro-formula-pill {
+  padding: 0.12rem 0.58rem;
   border-radius: 8px;
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(56, 189, 248, 0.35);
-  color: #bae6fd;
-  font-size: 0.85rem;
+  background: #041310;
+  border: 1px solid rgba(45, 212, 191, 0.42);
+  color: #ccfbf1;
+  font-size: 0.84rem;
 }
 
-.sw-mission-right {
+.astro-dir-secondary {
   display: flex;
   align-items: center;
   gap: 0.65rem;
+  flex: 1;
+  justify-content: flex-end;
+  min-width: 240px;
 }
 
-.sw-goal {
-  font-size: 0.78rem;
-  color: #cbd5e1;
+.astro-goal-text {
+  font-size: 0.76rem;
+  color: #d1fae5;
   font-weight: 700;
+  line-height: 1.35;
 }
 
-.sw-progress-track {
-  width: 150px;
-  height: 10px;
+.astro-gauge-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.42rem;
+  flex-shrink: 0;
+}
+
+.astro-counter {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--astro-brass);
+}
+
+.astro-gauge-track {
+  width: 112px;
+  height: 9px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.95);
-  border: 1px solid rgba(16, 185, 129, 0.35);
+  background: #03100d;
+  border: 1px solid rgba(230, 185, 92, 0.4);
   overflow: hidden;
 }
 
-.sw-progress-fill {
+.astro-gauge-fill {
   height: 100%;
   width: 0%;
-  background: linear-gradient(90deg, #10b981, #38bdf8);
+  background: linear-gradient(90deg, var(--astro-emerald), var(--astro-brass));
   transition: width 0.18s ease-out;
 }
 
-.sw-canvas-box {
+/* ---------- 4. Astrolabe Canvas Viewport ---------- */
+.astro-viewport {
   position: relative;
   flex: 1;
-  min-height: 240px;
-  border-radius: 16px;
-  border: 1.5px solid rgba(16, 185, 129, 0.3);
-  background: #040b12;
+  min-height: 230px;
+  border-radius: 14px;
+  border: 1.5px solid rgba(230, 185, 92, 0.34);
+  background: #030e0c;
   overflow: hidden;
 }
+
+.astro-caliper {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  z-index: 3;
+  border-color: var(--astro-brass);
+  border-style: solid;
+  border-width: 0;
+  opacity: 0.78;
+}
+
+.astro-caliper.tl { top: 6px; left: 6px; border-top-width: 2px; border-left-width: 2px; }
+.astro-caliper.tr { top: 6px; right: 6px; border-top-width: 2px; border-right-width: 2px; }
+.astro-caliper.bl { bottom: 6px; left: 6px; border-bottom-width: 2px; border-left-width: 2px; }
+.astro-caliper.br { bottom: 6px; right: 6px; border-bottom-width: 2px; border-right-width: 2px; }
 
 #weaverCanvas {
   display: block;
@@ -239,176 +440,425 @@
   touch-action: none;
 }
 
-.sw-toast {
+/* Bottom-anchored toast so top falling orbs & notes are NEVER blocked */
+.astro-toast {
   position: absolute;
-  top: 12px;
+  bottom: 12px;
   left: 50%;
   transform: translateX(-50%);
-  padding: 0.38rem 0.9rem;
+  max-width: min(92%, 580px);
+  padding: 0.32rem 0.85rem;
   border-radius: 999px;
-  background: rgba(6, 16, 26, 0.94);
-  border: 1.5px solid #10b981;
-  color: #ecfdf5;
-  font-size: 0.84rem;
+  background: rgba(4, 18, 15, 0.95);
+  border: 1.5px solid var(--astro-emerald);
+  color: var(--astro-ivory);
+  font-size: 0.8rem;
   font-weight: 800;
+  text-align: center;
   pointer-events: none;
-  z-index: 5;
+  z-index: 6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.sw-toast.bad {
-  border-color: #fb7185;
+.astro-toast.bad {
+  border-color: var(--astro-rose);
   color: #ffe4e6;
 }
 
-.sw-toast.hidden {
+.astro-toast.gold {
+  border-color: var(--astro-brass);
+  color: #fef3c7;
+}
+
+.astro-toast.hidden {
   display: none;
 }
 
-.sw-action-deck {
+/* ---------- 5. Bottom Twin-Wing Brass Command Console ---------- */
+.astro-console-deck {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  padding: 0.45rem 0.8rem;
-  background: rgba(7, 15, 22, 0.96);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  gap: 0.65rem;
+  padding: 0.4rem 0.72rem;
+  background: #041310;
+  border: 1px solid rgba(230, 185, 92, 0.28);
   border-radius: 12px;
   flex-shrink: 0;
-  flex-wrap: wrap;
 }
 
-.sw-deck-btns {
+.astro-deck-btns {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.42rem;
   flex-wrap: wrap;
 }
 
-.sw-deck-btn {
+.astro-pad {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.42rem 0.82rem;
+  gap: 0.36rem;
+  padding: 0.36rem 0.72rem;
   border-radius: 10px;
-  border: 1.5px solid rgba(56, 189, 248, 0.4);
-  background: rgba(15, 23, 42, 0.92);
-  color: #f8fafc;
+  border: 1.5px solid rgba(45, 212, 191, 0.42);
+  background: rgba(8, 30, 26, 0.94);
+  color: var(--astro-ivory);
   font-family: var(--font-sans);
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 800;
   cursor: pointer;
+  white-space: nowrap;
+  transition: transform 0.1s ease, border-color 0.14s ease, background 0.14s ease;
 }
 
-.sw-deck-btn:active {
-  transform: scale(0.96);
+.astro-pad:hover {
+  background: rgba(16, 52, 44, 0.96);
 }
 
-.sw-deck-btn.cyan { border-color: #38bdf8; color: #e0f2fe; }
-.sw-deck-btn.amber { border-color: #f59e0b; color: #fef3c7; }
-.sw-deck-btn.rose { border-color: #fb7185; color: #ffe4e6; }
-.sw-deck-btn.emerald { border-color: #10b981; color: #d1fae5; }
-
-.sw-deck-hint {
-  font-size: 0.76rem;
-  color: #94a3b8;
+.astro-pad:active,
+.astro-pad.active-press {
+  transform: scale(0.95);
 }
 
-/* End Modal */
-.sw-end-overlay {
+.astro-pad kbd {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  padding: 0.08rem 0.34rem;
+  border-radius: 5px;
+  background: rgba(2, 10, 8, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #cbd5e1;
+}
+
+.astro-pad.cyan { border-color: #38bdf8; color: #e0f2fe; }
+.astro-pad.amber { border-color: #e6b95c; color: #fef3c7; }
+.astro-pad.rose { border-color: #fb7185; color: #ffe4e6; }
+.astro-pad.emerald { border-color: #10b981; color: #d1fae5; }
+.astro-pad.ready {
+  border-color: #fbbf24;
+  background: rgba(245, 158, 11, 0.24);
+  color: #fef3c7;
+}
+
+.astro-tape-wing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.16rem;
+  min-width: 0;
+}
+
+.astro-term-tape {
+  font-family: var(--font-sans);
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--astro-brass);
+  background: rgba(3, 13, 11, 0.9);
+  border: 1px solid rgba(230, 185, 92, 0.28);
+  padding: 0.14rem 0.56rem;
+  border-radius: 7px;
+  max-width: 480px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.astro-deck-hint {
+  font-size: 0.7rem;
+  color: var(--astro-muted);
+  white-space: nowrap;
+}
+
+/* ---------- 6. End Modal ---------- */
+.astro-end-overlay {
   position: fixed;
   inset: 0;
   z-index: 9500;
-  background: rgba(3, 8, 14, 0.9);
+  background: rgba(2, 10, 8, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
 }
 
-.sw-end-overlay.hidden {
+.astro-end-overlay.hidden {
   display: none;
 }
 
-.sw-end-card {
+.astro-end-card {
   width: min(460px, 100%);
-  background: #09131d;
-  border: 1.5px solid rgba(16, 185, 129, 0.5);
+  background: #061814;
+  border: 1.5px solid var(--astro-brass);
   border-radius: 18px;
-  padding: 1.4rem;
+  padding: 1.35rem;
   text-align: center;
 }
 
-.sw-end-glyph {
-  font-size: 2.5rem;
-  margin-bottom: 0.35rem;
-}
-
-.sw-end-title {
-  font-size: 1.35rem;
-  font-weight: 900;
-  margin-bottom: 0.35rem;
-}
-
-.sw-end-desc {
-  font-size: 0.88rem;
-  color: #cbd5e1;
-  margin-bottom: 1rem;
-}
-
-.sw-end-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.55rem;
-  margin-bottom: 1rem;
-}
-
-.sw-end-stat {
-  background: rgba(15, 23, 42, 0.9);
-  border: 1px solid rgba(148, 163, 184, 0.24);
-  border-radius: 10px;
-  padding: 0.55rem;
-}
-
-.sw-end-stat span {
-  display: block;
-  font-size: 0.72rem;
-  color: #94a3b8;
-}
-
-.sw-end-stat strong {
+.astro-end-eyebrow {
   font-family: var(--font-mono);
-  font-size: 1.15rem;
-  color: #6ee7b7;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--astro-brass);
+  margin-bottom: 0.25rem;
 }
 
-.sw-end-actions {
+.astro-end-glyph {
+  font-size: 2.3rem;
+  color: var(--astro-emerald-hi);
+  margin-bottom: 0.2rem;
+}
+
+.astro-end-title {
+  font-size: 1.28rem;
+  font-weight: 900;
+  margin-bottom: 0.3rem;
+}
+
+.astro-end-desc {
+  font-size: 0.84rem;
+  color: #cbd5e1;
+  margin-bottom: 0.95rem;
+}
+
+.astro-end-grid {
   display: grid;
-  gap: 0.55rem;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.45rem;
+  margin-bottom: 0.95rem;
 }
 
-.sw-end-btn {
+.astro-end-stat {
+  background: rgba(3, 13, 11, 0.9);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  border-radius: 10px;
+  padding: 0.5rem 0.35rem;
+}
+
+.astro-end-stat.rank {
+  border-color: var(--astro-brass);
+}
+
+.astro-end-stat span {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--astro-muted);
+}
+
+.astro-end-stat strong {
+  font-family: var(--font-mono);
+  font-size: 1.05rem;
+  color: var(--astro-emerald-hi);
+}
+
+.astro-end-stat.rank strong {
+  color: var(--astro-brass);
+}
+
+.astro-end-actions {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.astro-end-btn {
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0.68rem 1rem;
-  border-radius: 12px;
-  border: 1.5px solid rgba(148, 163, 184, 0.28);
-  background: rgba(15, 23, 42, 0.95);
-  color: #f8fafc;
+  justify-content: space-between;
+  padding: 0.66rem 0.95rem;
+  border-radius: 11px;
+  border: 1.5px solid rgba(148, 184, 173, 0.28);
+  background: rgba(8, 28, 24, 0.95);
+  color: var(--astro-ivory);
   text-decoration: none;
   font-family: var(--font-sans);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 800;
   cursor: pointer;
 }
 
-.sw-end-btn.primary { border-color: #10b981; background: rgba(16, 185, 129, 0.18); }
-.sw-end-btn.danger { border-color: rgba(255, 59, 127, 0.45); }
-.sw-end-btn.hidden { display: none; }
+.astro-end-btn kbd {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 0.14rem 0.42rem;
+  border-radius: 6px;
+  background: rgba(3, 13, 11, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: var(--astro-muted);
+}
+
+.astro-end-btn.primary { border-color: var(--astro-emerald); background: rgba(16, 185, 129, 0.18); }
+.astro-end-btn.accent { border-color: var(--astro-brass); background: rgba(230, 185, 92, 0.14); }
+.astro-end-btn.danger { border-color: rgba(251, 113, 133, 0.48); }
+.astro-end-btn.hidden { display: none; }
+
+/* ---------- 7. Compact Desktop <= 1080px & Crisp Mobile 390x844 ---------- */
+@media (max-width: 1024px) {
+  .astro-sub,
+  .astro-deck-hint {
+    display: none;
+  }
+  .astro-term-tape {
+    max-width: 260px;
+  }
+}
 
 @media (max-width: 720px) {
-  .sw-topbar { padding: 0.45rem 0.6rem; }
-  .sw-arena-wrap { padding: 0.4rem 0.55rem 0.5rem; }
-  .sw-progress-track { width: 100px; }
-  .sw-deck-hint { display: none; }
+  .astro-header {
+    padding: 0.34rem 0.48rem;
+    gap: 0.32rem;
+    flex-wrap: wrap;
+  }
+
+  .astro-brand-cluster {
+    flex: 1 1 auto;
+    justify-content: space-between;
+  }
+
+  .astro-telemetry-cluster {
+    width: 100%;
+    justify-content: space-between;
+    gap: 0.28rem;
+  }
+
+  .astro-medallion {
+    width: 28px;
+    height: 28px;
+  }
+
+  .astro-title {
+    font-size: 0.86rem;
+  }
+
+  .astro-pause-btn {
+    padding: 0.24rem 0.48rem;
+    font-size: 0.72rem;
+  }
+
+  .astro-pause-btn kbd {
+    display: none;
+  }
+
+  .astro-meter {
+    padding: 0.16rem 0.4rem;
+    gap: 0.22rem;
+  }
+
+  .astro-meter-lbl {
+    font-size: 0.62rem;
+  }
+
+  .astro-meter-val {
+    font-size: 0.74rem;
+  }
+
+  .astro-header .gp-pill-badge {
+    padding: 0.16rem 0.42rem;
+    font-size: 0.64rem;
+  }
+
+  .astro-dial-rail {
+    padding: 0.28rem 0.42rem;
+    gap: 0.22rem;
+  }
+
+  .astro-dial-tab {
+    flex-direction: column;
+    gap: 0.14rem;
+    padding: 0.24rem 0.18rem;
+    font-size: 0.62rem;
+  }
+
+  .astro-dial-num {
+    width: 17px;
+    height: 17px;
+    font-size: 0.62rem;
+  }
+
+  .astro-chamber {
+    padding: 0.32rem 0.45rem 0.4rem;
+    gap: 0.32rem;
+  }
+
+  .astro-directive-bar {
+    padding: 0.3rem 0.48rem;
+    gap: 0.3rem;
+  }
+
+  .astro-stage-chip {
+    font-size: 0.66rem;
+    padding: 0.1rem 0.38rem;
+  }
+
+  .astro-stage-title {
+    font-size: 0.76rem;
+  }
+
+  .astro-formula-pill {
+    font-size: 0.74rem;
+    padding: 0.08rem 0.4rem;
+  }
+
+  .astro-dir-secondary {
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 0.4rem;
+  }
+
+  .astro-goal-text {
+    font-size: 0.68rem;
+    flex: 1;
+  }
+
+  .astro-gauge-track {
+    width: 66px;
+    height: 7px;
+  }
+
+  .astro-console-deck {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0.34rem 0.45rem;
+    gap: 0.3rem;
+  }
+
+  .astro-deck-btns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+
+  .astro-deck-btns.cols-3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .astro-pad {
+    justify-content: center;
+    padding: 0.38rem 0.34rem;
+    font-size: 0.7rem;
+    gap: 0.24rem;
+  }
+
+  .astro-pad kbd {
+    display: none;
+  }
+
+  .astro-tape-wing {
+    align-items: stretch;
+  }
+
+  .astro-term-tape {
+    max-width: 100%;
+    text-align: center;
+    font-size: 0.66rem;
+    padding: 0.12rem 0.36rem;
+  }
+
+  .astro-toast {
+    font-size: 0.72rem;
+    padding: 0.26rem 0.65rem;
+    bottom: 8px;
+  }
 }

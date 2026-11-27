@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, viewport-fit=cover" />
-  <title>نسّاج المتتاليات — معركة التقارب | Math-Arcid-V2</title>
-  <meta name="description" content="لعبة أركيد تفاعلية حقيقية للدرس 3 (المتتاليات العددية 2BAC PC): حارس الترجع والمكبر، قنّاص الرتابة MCT، إيقاع المتتاليات الهندسية، صائد النقط الصامدة، ونفق الدركيين بدعم كامل لـ DualSense." />
+  <title>نسّاج المتتاليات — الإسطرلاب الزمردي | Math-Arcid-V2</title>
+  <meta name="description" content="لعبة أركيد حقيقية بهوية الإسطرلاب الزمردي للدرس 3 (المتتاليات العددية 2BAC PC — المهارات 41–52): الترجع والمحدودية، قنّاص الرتابة MCT، فرز المتتاليات وسباق القوى الحسابية ضد الهندسية، عدسة المتخاطة والمتتالية المساعدة، ونفق الدركيين والمركب وهيرون بدعم كامل لـ DualSense." />
   <link rel="stylesheet" href="../../css/common.css" />
   <link rel="stylesheet" href="../../shared/vendor/katex/katex.min.css" />
   <link rel="stylesheet" href="css/style.css" />
@@ -12,74 +12,119 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
 </head>
-<body class="sw-arcade-body">
-  <div class="sw-shell">
-    <header class="sw-topbar">
-      <div class="sw-top-group">
-        <button id="btnPause" class="sw-pill sw-pause-btn" type="button" title="القائمة والإيقاف [Start / Esc]">
-          <span>⏸</span>
-          <span>القائمة (Start)</span>
+<body class="astro-body">
+  <div class="astro-shell">
+    <!-- شريط الإسطرلاب العلوي الموحد في سطر واحد -->
+    <header class="astro-header">
+      <div class="astro-cluster astro-brand-cluster">
+        <button id="btnPause" class="astro-btn astro-pause-btn" type="button" title="القائمة والإيقاف [Start / Esc]">
+          <span aria-hidden="true">⏸</span>
+          <span class="astro-pause-lbl">القائمة</span>
+          <kbd>Start</kbd>
         </button>
-        <div class="sw-brand">
-          <span class="sw-emblem" data-tex="u_n" dir="ltr"></span>
-          <div>
-            <h1 class="sw-title">نسّاج المتتاليات</h1>
-            <div class="sw-sub">معركة التقارب • <bdi dir="ltr" class="math-ltr">2BAC PC (41–52)</bdi></div>
+        <div class="astro-brand">
+          <div class="astro-medallion" aria-hidden="true">
+            <span class="astro-medallion-tex" data-tex="u_n" dir="ltr"></span>
+          </div>
+          <div class="astro-brand-copy">
+            <h1 class="astro-title">نسّاج المتتاليات</h1>
+            <div class="astro-sub">الإسطرلاب الزمردي • <bdi dir="ltr" class="math-ltr">2BAC PC (41–52)</bdi></div>
           </div>
         </div>
       </div>
 
-      <nav id="stageNav" class="sw-stage-nav" aria-label="أطوار المتتاليات"></nav>
-
-      <div class="sw-top-group sw-hud-stats">
-        <div id="gpBadge" class="gp-pill-badge">🎮 لوحة المفاتيح / الماوس</div>
-        <div class="sw-stat"><span>النقاط</span><strong id="hudScore" dir="ltr">0</strong></div>
-        <div class="sw-stat"><span>الكومبو</span><strong id="hudCombo" dir="ltr">×1</strong></div>
-        <div class="sw-stat"><span>الدرع</span><strong id="hudHp" dir="ltr">♥♥♥♥♥</strong></div>
-        <button id="btnAudio" class="sw-pill" type="button" title="الصوت [M]">🔊</button>
+      <div class="astro-cluster astro-telemetry-cluster">
+        <div class="astro-meter">
+          <span class="astro-meter-lbl">النقاط</span>
+          <strong id="hudScore" class="astro-meter-val" dir="ltr">0</strong>
+        </div>
+        <div class="astro-meter combo">
+          <span class="astro-meter-lbl">الكومبو</span>
+          <strong id="hudCombo" class="astro-meter-val" dir="ltr">×1</strong>
+        </div>
+        <div class="astro-meter hp">
+          <span class="astro-meter-lbl">الدرع</span>
+          <strong id="hudHp" class="astro-meter-val" dir="ltr">♥♥♥♥♥</strong>
+        </div>
+        <div id="gpBadge" class="gp-pill-badge disconnected" title="حالة وحدة التحكم DualSense">
+          <span class="astro-gp-dot" aria-hidden="true"></span>
+          <span id="gpLabel">لوحة المفاتيح</span>
+        </div>
+        <button id="btnAudio" class="astro-btn astro-icon-btn" type="button" title="كتم أو تشغيل الصوت [M]" aria-label="الصوت">🔊</button>
       </div>
     </header>
 
-    <main class="sw-arena-wrap">
-      <div class="sw-mission-strip">
-        <div class="sw-mission-left">
-          <span id="stageBadge" class="sw-badge">الطور 1/5</span>
-          <span id="stageTitle" class="sw-stage-title">حارس الترجع والمكبر</span>
-          <span id="stageFormula" class="sw-formula" data-tex="u_{n+1} = \frac{1}{2}u_n + 2" dir="ltr"></span>
+    <!-- قوس الأطوار الخمسة (شبكة متساوية من 5 أعمدة — صفر تمرير أفقي على الموبايل) -->
+    <nav id="stageNav" class="astro-dial-rail" aria-label="أطوار الإسطرلاب الخمسة"></nav>
+
+    <!-- غرفة القياس الرئيسية للإسطرلاب -->
+    <main class="astro-chamber">
+      <!-- شريط المهمة والصيغة والموجات -->
+      <section class="astro-directive-bar" aria-label="معطيات الطور">
+        <div class="astro-dir-primary">
+          <span id="stageBadge" class="astro-stage-chip">الطور 1 من 5</span>
+          <div id="wavePips" class="astro-wave-pips" aria-label="موجات الطور"></div>
+          <h2 id="stageTitle" class="astro-stage-title">حارس الترجع والمكبر</h2>
+          <div id="stageFormula" class="astro-formula-pill" data-tex="u_{n+1} = \frac{1}{2}u_n + 2" dir="ltr"></div>
         </div>
-        <div class="sw-mission-right">
-          <span id="stageGoal" class="sw-goal"></span>
-          <div class="sw-progress-track"><div id="stageProgressFill" class="sw-progress-fill"></div></div>
+        <div class="astro-dir-secondary">
+          <p id="stageGoal" class="astro-goal-text"></p>
+          <div class="astro-gauge-wrap">
+            <span id="stageCounter" class="astro-counter" dir="ltr">0 / 10</span>
+            <div class="astro-gauge-track">
+              <div id="stageProgressFill" class="astro-gauge-fill"></div>
+            </div>
+          </div>
         </div>
+      </section>
+
+      <!-- ساحة الإسطرلاب الحية -->
+      <div id="canvasBox" class="astro-viewport">
+        <span class="astro-caliper tl" aria-hidden="true"></span>
+        <span class="astro-caliper tr" aria-hidden="true"></span>
+        <span class="astro-caliper bl" aria-hidden="true"></span>
+        <span class="astro-caliper br" aria-hidden="true"></span>
+        <canvas id="weaverCanvas" role="application" aria-label="ساحة الإسطرلاب الزمردي التفاعلية للمتتاليات"></canvas>
+        <div id="toastFeed" class="astro-toast hidden" aria-live="polite"></div>
       </div>
 
-      <div id="canvasBox" class="sw-canvas-box">
-        <canvas id="weaverCanvas" role="application" aria-label="ساحة معركة المتتاليات التفاعلية"></canvas>
-        <div id="toastFeed" class="sw-toast hidden" aria-live="polite"></div>
-      </div>
-
-      <footer class="sw-action-deck" aria-label="أزرار اللعب السريعة">
-        <div id="deckButtons" class="sw-deck-btns"></div>
-        <div id="deckHint" class="sw-deck-hint"></div>
+      <!-- لوحة التحكم النحاسية السفلية + شريط حدود المتتالية الحي -->
+      <footer class="astro-console-deck" aria-label="أزرار اللعب وشريط الحدود">
+        <div id="deckButtons" class="astro-deck-btns"></div>
+        <div class="astro-tape-wing">
+          <div id="termTape" class="astro-term-tape" dir="rtl"></div>
+          <div id="deckHint" class="astro-deck-hint"></div>
+        </div>
       </footer>
     </main>
   </div>
 
-  <!-- شاشة النصر / انتهاء المحاولة -->
-  <div id="endOverlay" class="sw-end-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle">
-    <div class="sw-end-card">
-      <div id="endGlyph" class="sw-end-glyph">🏆</div>
-      <h2 id="endTitle" class="sw-end-title">انتهت المهمة!</h2>
-      <p id="endDesc" class="sw-end-desc"></p>
-      <div class="sw-end-grid">
-        <div class="sw-end-stat"><span>النتيجة</span><strong id="endScore" dir="ltr">0</strong></div>
-        <div class="sw-end-stat"><span>الدقة</span><strong id="endAcc" dir="ltr">100%</strong></div>
-        <div class="sw-end-stat"><span>الرتبة</span><strong id="endRank" dir="ltr">S</strong></div>
+  <!-- شاشة النتيجة / اكتمال الطور -->
+  <div id="endOverlay" class="astro-end-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="endTitle">
+    <div class="astro-end-card">
+      <div class="astro-end-eyebrow">EMERALD ASTROLABE TELEMETRY</div>
+      <div id="endGlyph" class="astro-end-glyph">✦</div>
+      <h2 id="endTitle" class="astro-end-title">اكتمل الطور!</h2>
+      <p id="endDesc" class="astro-end-desc"></p>
+      <div class="astro-end-grid">
+        <div class="astro-end-stat"><span>النتيجة</span><strong id="endScore" dir="ltr">0</strong></div>
+        <div class="astro-end-stat"><span>الدقة</span><strong id="endAcc" dir="ltr">100%</strong></div>
+        <div class="astro-end-stat"><span>أعلى كومبو</span><strong id="endCombo" dir="ltr">×1</strong></div>
+        <div class="astro-end-stat rank"><span>الرتبة</span><strong id="endRank" dir="ltr">S</strong></div>
       </div>
-      <div class="sw-end-actions">
-        <button id="btnEndPrimary" class="sw-end-btn primary" type="button">🔄 العب مجدداً (✕)</button>
-        <button id="btnEndNext" class="sw-end-btn hidden" type="button">➡ الطور التالي (△)</button>
-        <a id="btnEndHub" href="../../index.html?from=game" class="sw-end-btn danger">🏠 بوابة الألعاب (◯)</a>
+      <div class="astro-end-actions">
+        <button id="btnEndNext" class="astro-end-btn primary hidden" type="button">
+          <span>➡ الطور التالي</span>
+          <kbd>△ / Enter</kbd>
+        </button>
+        <button id="btnEndPrimary" class="astro-end-btn accent" type="button">
+          <span>🔄 إعادة اللعب</span>
+          <kbd>✕ / R</kbd>
+        </button>
+        <a id="btnEndHub" href="../../index.html?from=game" class="astro-end-btn danger">
+          <span>🏠 بوابة الألعاب</span>
+          <kbd>◯</kbd>
+        </a>
       </div>
     </div>
   </div>
