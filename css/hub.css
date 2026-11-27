@@ -538,9 +538,10 @@
   position: relative;
   flex: 0 0 auto;
   width: clamp(168px, 16vw, 224px);
+  min-width: 0;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
+  align-items: stretch;
   cursor: pointer;
   scroll-snap-align: center;
   transform: scale(0.95);
@@ -609,6 +610,7 @@
   position: absolute;
   top: 8px;
   inset-inline-start: 8px;
+  max-width: calc(100% - 48px);
   font-family: var(--font-mono);
   font-size: 0.64rem;
   font-weight: 800;
@@ -617,6 +619,9 @@
   background: rgba(5, 7, 14, 0.85);
   border: 1px solid rgba(255, 255, 255, 0.16);
   color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .tile-ring-badge {
@@ -698,16 +703,21 @@
 
 .tile-meta {
   width: 100%;
-  padding: 0.52rem 0.2rem 0;
+  min-width: 0;
+  padding: 0.48rem 0.18rem 0;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.12rem;
+  overflow: hidden;
 }
 
 .tile-title {
-  font-size: 0.86rem;
+  display: block;
+  width: 100%;
+  font-size: 0.82rem;
   font-weight: 700;
+  line-height: 1.3;
   color: #cbd5e1;
   white-space: nowrap;
   overflow: hidden;
@@ -720,10 +730,15 @@
 }
 
 .tile-lvl {
+  display: block;
+  width: 100%;
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
+  line-height: 1.25;
   color: var(--text-dim);
-  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ---------- Hero Game Showcase ---------- */
@@ -1529,25 +1544,40 @@
 }
 
 /* ---------- Responsive Laptop & Mobile Breakpoints ---------- */
-@media (max-height: 780px) and (min-width: 900px) {
+@media (max-height: 840px) and (min-width: 900px) {
   .console-shell {
-    padding-top: 0.55rem;
+    padding-top: 0.6rem;
     padding-bottom: 0.5rem;
   }
+  .console-main {
+    gap: 0.55rem;
+    padding: 0.2rem 0;
+  }
   .ps5-tile {
-    width: 162px;
+    width: clamp(164px, 14.5vw, 196px);
   }
   .games-rail {
-    padding: 0.45rem 0.4rem 0.6rem;
+    padding: 0.5rem 0.45rem 0.65rem;
+  }
+  .ps5-showcase {
+    padding: 0.72rem 1.25rem;
   }
   .showcase-left {
-    gap: 0.5rem;
+    gap: 0.46rem;
+  }
+  .showcase-title {
+    font-size: clamp(1.38rem, 2.4vw, 2.05rem);
   }
   .showcase-telemetry {
-    padding: 0.26rem 0.48rem;
+    padding: 0.24rem 0.48rem;
   }
   .showcase-desc {
     -webkit-line-clamp: 2;
+  }
+  .cta-play,
+  .cta-secondary {
+    padding: 0.56rem 1.2rem;
+    font-size: 0.88rem;
   }
 }
 

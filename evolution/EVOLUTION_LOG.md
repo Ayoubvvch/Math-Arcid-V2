@@ -3,6 +3,18 @@
 
 ---
 
+### [Cycle 009 — ARCHITECT] 2026-11-27 05:05 UTC | Brutal Audit of REBOOT_SPRINT_01 + Hub Visual Fixes + Launch of REBOOT_SPRINT_02
+* **Truthful Visual & Code Audit (Hub + 5 Live Games in Chromium)**:
+  - **Strong Pass**: `log-pulse` v1.1.0 (**A+** — gold standard polar sonar & single-screen mobile `390px`), `tangent-prism` v1.1.0 (**A-** — deep optical bench across 22 waves; minor mobile button fold), `math-battle` v2.2.0 (**A** — crisp Genesis twin-stick arena).
+  - **Critical Failures Exposed**:
+    1. **`sequence-weaver` v2.0.0 (C-)**: Stage 3 (`rhythm-lanes`) mathematically unwinnable on ~67% of notes (`spawnLane !== targetLane` with unfinished comment); color-spoilers in Stages 1–3; idle mouse permanently hijacks keyboard/DualSense in Stage 1; missing Lesson 3 skills (`44, 46, 50, 52`); bare canvas + KaTeX stacked-fraction bugs (`1/5`, `W/S`) + cloned 91-line UI shell.
+    2. **`continuity-rider` v2.0.0 (C-)**: Sector 4 (`tvi-dash`) uses fake `Math.random()` with literal button spoilers (`[أيسر L2/Q]`); Sector 5 (`mirror-flipper`) lacks actual $f^{-1}$ / $\sqrt[n]{x}$ / $x^r$ math; missing Lesson 1 skills (`6, 10, 11, 13–14, 17, 0^\pm`); idle mouse hijacks pitch in Sector 3; bare canvas + raw ASCII Tab 5 + cloned UI shell.
+* **Immediate Platform Hub Fixes & CDP Guard Upgrade**:
+  - Fixed PS5 Hub `hub_desktop.png` severe visual bugs: eliminated `.tile-badge-pill` (`dir="ltr"`) overlapping `.tile-ring-badge`, stacked `.tile-meta` vertically with concise `unitLabel` (zero raw `$...$` leak, zero cross-card text collision), tuned `@media (max-height: 840px)` spacing so Showcase never clips the footer at `1280×800`, and wired accurate `totalStages` (`4` / `5`) from `games.json`.
+  - Upgraded `evolution/scripts/playtest_cdp.py` with automated Hub tile-badge overlap, subtitle overflow, raw-`$` leak, showcase-footer collision, and Hub mobile `390px` overflow assertions.
+* **Sprint Archive & Next Plan (`REBOOT_SPRINT_02`, Cycles 010–017)**:
+  - Archived `REBOOT_SPRINT_01` into `ARCHIVE_MILESTONES.md`, updated `ROADMAP.md` & `STATE.json`, and scheduled `REBOOT_SPRINT_02` (8 cycles): **Cycle 010 (`sequence-weaver` overhaul)** -> **Cycle 011 (`continuity-rider` overhaul)** -> **Cycles 012–017 (Lessons 5, 6, 7 CREATE+POLISH)**.
+
 ### [Cycle 008 — POLISH] 2026-11-26 17:20 UTC | Milestone 1.8: Log Pulse v1.1.0 Deep Playtest, Bug Fixes, Juice & REBOOT_SPRINT_01 Closure
 * **Real Gameplay, Input & Pedagogical Bugs Fixed**:
   - **Global Input & Controller Parity**: Added `inputMode` (`keyboard | gamepad | pointer`) tracking so an idle mouse cursor never hijacks/rubber-bands WASD or DualSense movement across all 5 operations; added `140ms` action debounce, `waveGuard`, and `invulnTimer` hazard i-frames (eliminating dual Space+✕ penalties and accidental wave-skipping); prevented canvas taps on multi-weapon waves from misfiring `[✕]`; wired full DualSense D-Pad + Right-Stick (`0.38×`) precision micro-aim + `Shift+Tab` + `ArrowLeft/Right` on Op 5 base-flipping.

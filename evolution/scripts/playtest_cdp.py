@@ -221,8 +221,53 @@ async def audit_page(cdp: CDPClient, base_url: str, page_path: str, games: list[
         expected_titles = [g["title"] for g in games]
         if dom_info["tiles"] != expected_titles:
             raise AssertionError(f"Hub tiles mismatch: got {dom_info['tiles']}, expected {expected_titles}")
+        hub_layout = await cdp.evaluate("""
+        (() => {
+          const issues = [];
+          document.querySelectorAll('.ps5-tile').forEach((tile, i) => {
+            const tr = tile.getBoundingClientRect();
+            const badge = tile.querySelector('.tile-badge-pill');
+            const ring = tile.querySelector('.tile-ring-badge');
+            const lvl = tile.querySelector('.tile-lvl');
+            const title = tile.querySelector('.tile-title');
+            if (badge && ring) {
+              const br = badge.getBoundingClientRect();
+              const rr = ring.getBoundingClientRect();
+              const overlapX = Math.min(br.right, rr.right) - Math.max(br.left, rr.left);
+              const overlapY = Math.min(br.bottom, rr.bottom) - Math.max(br.top, rr.top);
+              if (overlapX > 2 && overlapY > 2) issues.push(`tile[${i}] badge overlaps progress ring`);
+            }
+            if (lvl) {
+              const lr = lvl.getBoundingClientRect();
+              if (lr.right > tr.right + 6 || lr.left < tr.left - 6) issues.push(`tile[${i}] subtitle overflows card`);
+              if (/\\$/.test(lvl.textContent || '')) issues.push(`tile[${i}] raw LaTeX '$' in subtitle`);
+            }
+            if (title && title.getBoundingClientRect().width < 40) {
+              issues.push(`tile[${i}] title crushed (${title.getBoundingClientRect().width.toFixed(0)}px)`);
+            }
+          });
+          const sc = document.getElementById('ps5-showcase');
+          const ft = document.querySelector('.console-footer');
+          if (sc && ft) {
+            const sr = sc.getBoundingClientRect();
+            const fr = ft.getBoundingClientRect();
+            if (sr.bottom > fr.top + 2) issues.push(`showcase overlaps footer (${sr.bottom.toFixed(0)} > ${fr.top.toFixed(0)})`);
+          }
+          return issues;
+        })()
+        """)
+        if hub_layout:
+            raise AssertionError(f"Hub layout audit failed: {' | '.join(hub_layout)}")
         shot = await cdp.call("Page.captureScreenshot", {"format": "png"})
         (SHOTS_DIR / "hub_desktop.png").write_bytes(base64.b64decode(shot["data"]))
+        # Also verify Hub mobile 390x844 has zero horizontal overflow
+        await cdp.call("Emulation.setDeviceMetricsOverride", {
+            "width": 390, "height": 844, "deviceScaleFactor": 2, "mobile": True
+        })
+        await asyncio.sleep(0.25)
+        hub_mob = await cdp.evaluate("({ sw: document.documentElement.scrollWidth, iw: window.innerWidth })")
+        if hub_mob["sw"] > hub_mob["iw"] + 4:
+            raise AssertionError(f"Hub mobile horizontal overflow ({hub_mob['sw']} > {hub_mob['iw']})!")
     else:
         if not dom_info["hasCanvas"] or dom_info["canvasW"] < 100 or dom_info["canvasH"] < 100:
             raise AssertionError(f"{page_path}: Missing or undersized <canvas>!")

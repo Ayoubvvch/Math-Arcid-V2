@@ -1025,8 +1025,7 @@ class ArcadeConsoleHub {
         const isSelected = idx === this.selectedIndex;
         const accent = game.accentColor || '#00e5ff';
         const pillText = game.badge || game.category;
-        const rangeText = game.topicRange || `المستوى ${game.difficultyLevel || 3}`;
-        const rangeLabel = game.unitLabel ? `${game.unitLabel} • ${rangeText}` : rangeText;
+        const rangeLabel = game.unitLabel || game.category || `المستوى ${game.difficultyLevel || 3}`;
         const m = this.getGameMetrics(game.id);
         const rev = this._reviewReasonMap?.get(game.id);
         const offset = (tileRingCirc * (1 - m.masteryPct / 100)).toFixed(2);
@@ -1034,7 +1033,7 @@ class ArcadeConsoleHub {
         const ringLabel = m.bestRank ? m.bestRank : (m.played ? `${m.masteryPct}%` : '0%');
 
         let progClass = '';
-        const stagesMax = m.totalStages || 4;
+        const stagesMax = game.totalStages || m.totalStages || 4;
         const stagesDone = typeof m.stagesCleared === 'number' ? m.stagesCleared : m.sealsCleared;
         let progText = `0/${stagesMax} مراحل`;
         if (m.bossDefeated) {
@@ -1064,7 +1063,7 @@ class ArcadeConsoleHub {
           >
             <div class="tile-art-frame">
               ${getGameArtworkSVG(game)}
-              <span class="tile-badge-pill" dir="ltr">${pillText}</span>
+              <span class="tile-badge-pill"><bdi>${pillText}</bdi></span>
               <div class="tile-ring-badge" title="الإتقان ${m.masteryPct}%">
                 <svg class="tile-ring-svg" viewBox="0 0 28 28" aria-hidden="true">
                   <circle class="ring-track" cx="14" cy="14" r="10"></circle>
@@ -1187,7 +1186,7 @@ class ArcadeConsoleHub {
       this.showcaseTelemetryRank.textContent = m.bestRank ? `الرتبة ${m.bestRank}` : (m.played ? 'قيد التقدّم' : 'جديد');
     }
     if (this.showcaseTelemetrySeals) {
-      const sMax = m.totalStages || 4;
+      const sMax = game.totalStages || m.totalStages || 4;
       const sDone = typeof m.stagesCleared === 'number' ? m.stagesCleared : m.sealsCleared;
       this.showcaseTelemetrySeals.textContent = `✓ ${sDone}/${sMax} مراحل`;
       this.showcaseTelemetrySeals.classList.toggle('is-cleared', sDone >= sMax);

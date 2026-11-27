@@ -1,6 +1,6 @@
 {
   "project": "Math-Arcid-V2",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "repository": "https://github.com/Ayoubvvch/Math-Arcid-V2",
   "deployment": "https://ayoubvvch.github.io/Math-Arcid-V2/",
   "owner": "Ayoub (eulerx0)",
@@ -12,18 +12,18 @@
   "schedule": {
     "morningPhase": "05:00 UTC - Phase CREATE (Web Research, Original Genre Invention & Lightweight Game Build)",
     "eveningPhase": "17:00 UTC - Phase POLISH (Interactive Playtest, Game Feel, Math Depth & Chromium Verification)",
-    "architectPhase": "Auto-triggered on Sprint completion OR every <= 14 days (28 cycles) -> Truthful Audit, Anti-Clone Check & Next Sprint Planning"
+    "architectPhase": "Auto-triggered on Sprint completion OR every <= 7 days (8 cycles) -> Truthful Audit, Anti-Clone Check & Next Sprint Planning"
   },
   "architectPolicy": {
     "cadenceDays": 7,
     "maxCyclesBetweenAudits": 8,
-    "lastArchitectCycle": 0,
-    "lastArchitectTimestamp": "2026-11-24T02:00:00Z"
+    "lastArchitectCycle": 9,
+    "lastArchitectTimestamp": "2026-11-27T05:05:00Z"
   },
   "metrics": {
-    "totalCyclesCompleted": 8,
-    "lastCycleTimestamp": "2026-11-26T17:20:00Z",
-    "lastCyclePhase": "Cycle 008 (POLISH): Deep interactive playtest, physics/input/spoiler fixes, DualSense parity, audio/visual juice & Lesson 4 (53–62) 100% polish for Log Pulse v1.1.0 — closed REBOOT_SPRINT_01",
+    "totalCyclesCompleted": 9,
+    "lastCycleTimestamp": "2026-11-27T05:05:00Z",
+    "lastCyclePhase": "Cycle 009 (ARCHITECT): Brutal Chromium visual + code audit of Hub & 5 live games, fixed Hub tile collisions/raw LaTeX & upgraded CDP guard, archived REBOOT_SPRINT_01, and launched REBOOT_SPRINT_02 (2 urgent overhauls + Lessons 5, 6, 7)",
     "totalGamesLive": 5,
     "verificationStatus": "PASSED_ALL_7_GATES"
   },
@@ -37,7 +37,8 @@
       "category": "الأساسيات والتقويم",
       "version": "2.2.0",
       "genre": "bullet-hell-operator-arena",
-      "status": "GENESIS_RETAINED"
+      "status": "GENESIS_RETAINED",
+      "auditGrade": "A"
     },
     {
       "id": "sequence-weaver",
@@ -48,7 +49,8 @@
       "category": "التحليل",
       "version": "2.0.0",
       "genre": "multi-mode-convergence-arcade-defender",
-      "status": "LIVE_ACTIVE"
+      "status": "NEEDS_OVERHAUL_CYCLE_010",
+      "auditGrade": "C-"
     },
     {
       "id": "continuity-rider",
@@ -59,7 +61,8 @@
       "category": "التحليل",
       "version": "2.0.0",
       "genre": "high-speed-calculus-curve-skater",
-      "status": "LIVE_ACTIVE"
+      "status": "NEEDS_OVERHAUL_CYCLE_011",
+      "auditGrade": "C-"
     },
     {
       "id": "tangent-prism",
@@ -70,7 +73,8 @@
       "category": "التحليل",
       "version": "1.1.0",
       "genre": "tangent-optics-ricochet-and-symmetry-arcade",
-      "status": "LIVE_ACTIVE"
+      "status": "LIVE_ACTIVE",
+      "auditGrade": "A-"
     },
     {
       "id": "log-pulse",
@@ -81,40 +85,46 @@
       "category": "التحليل",
       "version": "1.1.0",
       "genre": "polar-acoustic-sonar-and-logarithmic-forge-arcade",
-      "status": "LIVE_ACTIVE"
+      "status": "LIVE_ACTIVE",
+      "auditGrade": "A+"
     }
   ],
   "currentSprint": {
-    "id": "REBOOT_SPRINT_01",
-    "name": "الولادة الإبداعية الجديدة — ألعاب حقيقية للدروس 3، 1، 2، 4 (v4.0)",
-    "status": "COMPLETED_NEEDS_ROADMAP",
-    "nextCycleNumber": 9,
-    "nextAlphaMilestone": "Phase ARCHITECT (Post-Sprint Audit): Audit REBOOT_SPRINT_01 (Lessons 3, 1, 2, 4) & architect REBOOT_SPRINT_02 (Lessons 5, 6, 7, 8)",
-    "nextOmegaMilestone": "Phase ARCHITECT (Post-Sprint Audit): Audit REBOOT_SPRINT_01 (Lessons 3, 1, 2, 4) & architect REBOOT_SPRINT_02 (Lessons 5, 6, 7, 8)"
+    "id": "REBOOT_SPRINT_02",
+    "name": "الإنقاذ النوعي وبناء الدروس 5، 6، 7 (Cycles 010–017 | Charter v4.0)",
+    "status": "IN_PROGRESS",
+    "nextCycleNumber": 10,
+    "nextAlphaMilestone": "Cycle 010 (POLISH Overhaul): Rescue sequence-weaver v2.1.0 (fix broken Stage 3 rhythm-lanes, remove color spoilers, decouple inputMode, restore Skills 44/46/50/52, distinct Astrolabe UI & crisp axes)",
+    "nextOmegaMilestone": "Cycle 011 (POLISH Overhaul): Rescue continuity-rider v2.1.0 (real non-spoiler TVI bisection, real f^-1 & nth-root mirror gameplay, full Skills 1–22, decouple inputMode & distinct Velodrome UI)"
   },
   "perpetualRoadmapPolicy": {
     "enabled": true,
     "stopCondition": "Manual Owner stop only (autoEvolutionPaused: true or crontab disable)",
     "lessonBuildOrder": [
-      "Lesson 3: المتتاليات العددية (41–52) [FIRST]",
-      "Lesson 1: النهايات والاتصال (1–22)",
-      "Lesson 2: الاشتقاق ودراسة الدوال وتطبيقاتها (23–40)",
-      "Lesson 4: الدوال اللوغاريتمية (53–62)",
-      "Lesson 5: الأعداد العقدية — الجزء الأول (63–74)",
-      "Lesson 6: الدوال الأسية (75–83)",
-      "Lesson 7: الأعداد العقدية — الجزء الثاني (84–94)",
-      "Lesson 8: الدوال الأصلية وحساب التكامل (95–103)",
-      "Lesson 9: المعادلات التفاضلية (104–110)",
-      "Lesson 10: الهندسة الفضائية (111–125)",
-      "Lesson 11: حساب الاحتمالات (126–137)"
+      "Lesson 3: المتتاليات العددية (41–52) [OVERHAUL Cycle 010]",
+      "Lesson 1: النهايات والاتصال (1–22) [OVERHAUL Cycle 011]",
+      "Lesson 2: الاشتقاق ودراسة الدوال وتطبيقاتها (23–40) [VERIFIED A-]",
+      "Lesson 4: الدوال اللوغاريتمية (53–62) [VERIFIED A+]",
+      "Lesson 5: الأعداد العقدية — الجزء الأول (63–74) [Cycles 012–013]",
+      "Lesson 6: الدوال الأسية (75–83) [Cycles 014–015]",
+      "Lesson 7: الأعداد العقدية — الجزء الثاني (84–94) [Cycles 016–017]",
+      "Lesson 8: الدوال الأصلية وحساب التكامل (95–103) [SPRINT 03]",
+      "Lesson 9: المعادلات التفاضلية (104–110) [SPRINT 03]",
+      "Lesson 10: الهندسة الفضائية (111–125) [SPRINT 03]",
+      "Lesson 11: حساب الاحتمالات (126–137) [SPRINT 03]"
     ],
-    "creativeMandate": "Every lesson becomes a lightweight, genuinely fun, unique game where math IS the gameplay mechanic. Never clone genres, button layouts, or QCM-door popups. Use search_web for fresh inspiration before designing."
+    "creativeMandate": "Every lesson becomes a lightweight, genuinely fun, unique real-time game with full DualSense & Start PauseMenu parity where math IS the gameplay mechanic. Zero sliders, zero QCM popups, zero color spoilers, zero cloned UI shells."
   },
   "sprintHistory": [
     {
       "id": "PRE_REBOOT_V1_V2",
       "name": "Legacy V1/V2 Sprints 01–03 (Replaced by Creative Reboot V3)",
       "status": "ARCHIVED_RESET"
+    },
+    {
+      "id": "REBOOT_SPRINT_01",
+      "name": "الولادة الإبداعية الجديدة — الدروس 3، 1، 2، 4 + ميثاق v4.0 (Cycles 001–008)",
+      "status": "ARCHIVED_AUDITED_CYCLE_009"
     }
   ]
 }
